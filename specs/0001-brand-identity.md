@@ -2,7 +2,7 @@
 id: 0001
 title: Brand Identity
 slug: brand-identity
-status: accepted
+status: verified
 owner-agent: magpie
 created: 2026-05-01
 last-updated: 2026-05-01
@@ -12,8 +12,9 @@ reviewers:
   - { agent: magpie, required: true, signed-off-at: 2026-05-01T00:00:00Z }
   - { agent: otter,  required: true, signed-off-at: 2026-05-01T00:00:00Z }
   - { agent: octopus, required: false, signed-off-at: null }
-implementing-commits: []
-verified-at: null
+implementing-commits:
+  - 1e5fdb1e264be5d09143f00a7c51f4b7d372effa
+verified-at: 2026-05-01T00:00:00Z
 docs-extract:
   - public-summary
   - mental-model
