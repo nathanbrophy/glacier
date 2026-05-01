@@ -1,0 +1,22 @@
+# Go
+*.exe
+*.test
+*.out
+*.prof
+coverage.*
+vendor/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build / cache
+/dist/
+/build/
+.tmp/
