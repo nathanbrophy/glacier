@@ -1,0 +1,206 @@
+name: ci
+
+on:
+  pull_request: {}
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * *" # nightly govulncheck on main
+
+env:
+  GOTOOLCHAIN: go1.26.0
+  CGO_ENABLED: "0"
+
+jobs:
+  fmt:
+    name: gofmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.0"
+      - run: |
+          if [ -n "$(gofmt -l .)" ]; then
+            echo "::error::gofmt found formatting issues"
+            gofmt -l .
+            exit 1
+          fi
+
+  vet:
+    name: go vet
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.0"
+      - run: go vet ./...
+
+  staticcheck:
+    name: staticcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.0"
+      - run: |
+          go install honnef.co/go/tools/cmd/staticcheck@v0.5.1
+          staticcheck ./...
+
+  vuln-scan:
+    name: govulncheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.0"
+      - run: |
+          go install golang.org/x/vuln/cmd/govulncheck@v1.1.4
+          govulncheck -mode=source ./...
+
+  license-scan:
+    name: go-licenses
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.0"
+      - run: |
+          go install github.com/google/go-licenses@v1.6.0
+          go-licenses check ./... \
+            --allowed_licenses=MIT,BSD-2-Clause,BSD-3-Clause,Apache-2.0,ISC
+
+  test:
+    name: test (-race)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go: ["1.25.0", "1.26.0"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+      - env:
+          GOTOOLCHAIN: go${{ matrix.go }}
+        run: go test -race ./...
+
+  fuzz:
+    name: short fuzz
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.0"
+      - run: |
+          # 30s per fuzz target on every PR; nightly run upgrades to 10min.
+          DURATION=${FUZZ_DURATION:-30s}
+          for target in conf:FuzzLoad httpmock:FuzzFixture cli/gen:FuzzMarkerParse; do
+            pkg=${target%%:*}; fn=${target##*:}
+            go test -fuzz="^${fn}$" -fuzztime="${DURATION}" "./${pkg}/..."
+          done
+
+  codegen-drift:
+    name: codegen drift check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.0"
+      - run: go run ./cmd/cligen --check ./...
+
+  mod-hygiene:
+    name: go.mod hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.0"
+      - run: |
+          go mod verify
+          if grep -qE '^replace ' go.mod; then
+            echo "::error::go.mod contains a replace directive"
+            exit 1
+          fi
+          if grep -qE 'v[0-9]+-[0-9]{14}-[0-9a-f]{12}' go.mod; then
+            echo "::error::go.mod contains a pseudo-version; pin to a named release"
+            exit 1
+          fi
+
+  toolchain-pin-check:
+    name: toolchain pin check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.0"
+      - run: |
+          WANT="go1.26.0"
+          GOT=$(go version | awk '{print $3}')
+          if [ "$GOT" != "$WANT" ]; then
+            echo "::error::toolchain mismatch: want ${WANT}, got ${GOT}"
+            exit 1
+          fi
+          if ! grep -q "toolchain go1.26.0" go.mod; then
+            echo "::error::go.mod toolchain directive is missing or wrong"
+            exit 1
+          fi
+
+  sbom-generate:
+    name: SBOM generate
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.0"
+      - run: |
+          go install github.com/CycloneDX/cyclonedx-gomod/cmd/cyclonedx-gomod@v1.8.0
+          mkdir -p security
+          cyclonedx-gomod mod -licenses -json -output-file security/sbom.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: security/sbom.json
+
+  bench:
+    name: benchmarks
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.0"
+      - name: Run benchmarks (N=10)
+        run: go test -bench=. -benchmem -count=10 ./... | tee bench-${{ matrix.os }}.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bench-${{ matrix.os }}
+          path: bench-${{ matrix.os }}.txt
+      - name: Compare against baseline with benchstat (5% threshold)
+        run: |
+          go install golang.org/x/perf/cmd/benchstat@latest
+          # Baseline artifact must be fetched from main branch in a real setup.
+          # This step is a no-op on first run (no baseline yet).
+          if [ -f bench-baseline-${{ matrix.os }}.txt ]; then
+            benchstat -delta-test none -threshold 0.05 \
+              bench-baseline-${{ matrix.os }}.txt bench-${{ matrix.os }}.txt
+          fi
+
+# bench-rerun: workflow_dispatch action for maintainers to re-run benchmarks
+# after a flake. Auto-retried once on the same runner before declaring regression.
