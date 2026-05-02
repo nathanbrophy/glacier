@@ -45,15 +45,14 @@ type spinnerAnimation struct {
 	label string
 	cfg   spinnerConfig
 	frame atomic.Int64
-	done  atomic.Bool
 }
 
 // Render implements Animation. Returns one line formatted as "<glyph> <label>".
+// Always reports done=false: a spinner has no natural completion. Removal from
+// the active set is the caller's responsibility via Handle.Cancel on the
+// Handle returned by Animator.Add.
 // Performance target: ≤ 500 ns/op per §23.13.
 func (s *spinnerAnimation) Render() ([]string, bool) {
-	if s.done.Load() {
-		return nil, true
-	}
 	n := int(s.frame.Add(1) - 1)
 	frames := s.cfg.frames
 	glyph := frames[n%len(frames)]
@@ -64,6 +63,10 @@ func (s *spinnerAnimation) Render() ([]string, bool) {
 // Spinner returns an Animation that cycles through spinner glyphs at each frame.
 // Default frames: spinner_braille_0 through spinner_braille_7 (8 frames).
 // The label is rendered after the glyph on the same line.
+//
+// A Spinner has no natural completion — unlike Progress, there is no Done
+// method. Stop a running spinner via Handle.Cancel on the Handle returned by
+// Animator.Add; this removes it from the active set on the next frame.
 //
 // Performance target: ≤ 500 ns/op per frame per §23.13.
 func Spinner(label string, opts ...SpinnerOption) Animation {
