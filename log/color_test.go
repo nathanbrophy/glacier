@@ -25,30 +25,27 @@ func TestColorNever(t *testing.T) {
 
 // T#L25 ColorAlways → ANSI escapes present when writing to *bytes.Buffer.
 func TestColorAlways(t *testing.T) {
-	t.Parallel()
+	// Defend against environments that pre-set the no-color env vars.
+	// (t.Setenv is incompatible with t.Parallel.)
+	t.Setenv("GLACIER_NO_COLOR", "")
+	t.Setenv("NO_COLOR", "")
+
 	var buf bytes.Buffer
 	h := log.NewHandler(&buf, log.WithColor(log.ColorAlways))
 	l := slog.New(h)
 	l.Info("with color")
 
-	// ColorAlways must inject ANSI escapes regardless of TTY status.
-	// However, the glacierHandler passes through to stdlib slog.NewTextHandler
-	// which does not add color itself. The glacierHandler pre-computes color at
-	// construction. If the handler resolves color=true, ANSI sequences appear.
-	// For a bytes.Buffer (non-TTY), ColorAlways still resolves to true unless
-	// NO_COLOR or GLACIER_NO_COLOR env vars are set.
-	//
-	// We cannot guarantee the test environment has no NO_COLOR set, so we verify
-	// that the handler was constructed without error and emitted something.
-	// The meaningful assertion is that ColorAlways does NOT suppress ANSI when
-	// no env override is present.
-	//
-	// Note: the glacierHandler currently delegates rendering to slog.NewTextHandler,
-	// which does not emit ANSI escapes itself. The color field controls sanitization
-	// and future palette injection. This test verifies no ANSI sanitization occurs
-	// (i.e. if color were in the output, it would not be stripped).
+	// ColorAlways forces color regardless of TTY status. The handler injects
+	// the per-level term.Style escape via ReplaceAttr, so the level label is
+	// wrapped in the cyan (INFO) prefix and the term.AnsiReset suffix.
 	out := buf.String()
 	assert.True(t, len(out) > 0, "ColorAlways handler should emit output")
+	assert.True(t, containsSubstring(out, "\x1b["), "ColorAlways must emit ANSI escapes")
+	assert.True(t, containsSubstring(out, "\x1b[0m"), "ColorAlways must emit reset sequence")
+	// The colored level field should appear adjacent to ` level=` and the
+	// label INFO should be wrapped (not the raw uncolored form).
+	assert.True(t, containsSubstring(out, " level=\x1b["), "color escape must wrap the level field")
+	assert.True(t, !containsSubstring(out, " level=INFO "), "uncolored INFO must not appear")
 }
 
 // T#L26 ColorAuto + non-TTY writer (bytes.Buffer) → no color (IsTTY=false).

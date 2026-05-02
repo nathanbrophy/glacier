@@ -3,8 +3,8 @@
 package log
 
 import (
+	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"log/slog"
 	"strings"
@@ -53,54 +53,80 @@ type glacierHandler struct {
 	color resolvedColor // invariant: computed once at construction; immutable after
 }
 
-// Pre-computed ANSI escape byte sequences, keyed by level.
-// These are computed once at package init (or handler construction) so that
-// Handle never calls fmt.Sprintf at log time — zero allocations for color lookup.
-var levelEscapes [9][]byte // indexed by (level+8)/4
+// levelStyles holds the per-level term.Style used to colorize the level
+// label in the text handler. Constructed via term.RGB so the log handler
+// owns its semantic palette directly rather than binding to term's brand
+// palette tokens (which have a separate purpose). Hex values are the spec
+// 0005 documentation set.
+var levelStyles = [6]term.Style{
+	term.New().Foreground(term.RGB(0x8B, 0x94, 0x9E)), // TRACE  — text-muted #8B949E
+	term.New().Foreground(term.RGB(0x8B, 0x94, 0x9E)), // DEBUG  — text-muted #8B949E
+	term.New().Foreground(term.RGB(0x22, 0xD3, 0xEE)), // INFO   — cyan       #22D3EE
+	term.New().Foreground(term.RGB(0x2D, 0xD4, 0xBF)), // NOTICE — teal       #2DD4BF
+	term.New().Foreground(term.RGB(0xFB, 0xBF, 0x24)), // WARN   — warning    #FBBF24
+	term.New().Foreground(term.RGB(0xF8, 0x71, 0x71)), // ERROR  — error      #F87171
+}
 
-// levelEscapeIdx maps a slog.Level to an index in levelEscapes.
-// Levels: Trace=-8, Debug=-4, Info=0, Notice=2, Warn=4, Error=8
-func levelEscapeIdx(l slog.Level) int {
-	switch l {
-	case LevelTrace:
-		return 0
-	case LevelDebug:
-		return 1
-	case LevelInfo:
-		return 2
-	case LevelNotice:
-		return 3
-	case LevelWarn:
-		return 4
-	case LevelError:
-		return 5
-	default:
-		return 2 // default to INFO
+// levelLabels mirrors levelStyles in the order TRACE, DEBUG, INFO, NOTICE,
+// WARN, ERROR. The byte-form needles and replacements below are derived
+// from this list once at init.
+var levelLabels = [6]string{"TRACE", "DEBUG", "INFO", "NOTICE", "WARN", "ERROR"}
+
+// levelNeedles and levelReplacements are pre-computed byte sequences used
+// by colorWriter to substitute the level field in serialized records when
+// color is on. The leading space anchors the match to the field position
+// in slog's text format (`time=… level=<LABEL> msg=…`); user-provided
+// attribute values starting with " level=" are vanishingly rare.
+var (
+	levelNeedles      [6][]byte
+	levelReplacements [6][]byte
+)
+
+func init() {
+	reset := []byte(term.AnsiReset)
+	for i, label := range levelLabels {
+		needle := []byte(" level=" + label)
+		prefix := []byte(levelStyles[i].Prefix())
+		repl := make([]byte, 0, len(needle)+len(prefix)+len(reset))
+		repl = append(repl, " level="...)
+		repl = append(repl, prefix...)
+		repl = append(repl, label...)
+		repl = append(repl, reset...)
+		levelNeedles[i] = needle
+		levelReplacements[i] = repl
 	}
 }
 
-// ansiEsc builds a 24-bit foreground ANSI escape sequence for the given RGB values.
-// Called once at init — never at log time.
-func ansiEsc(r, g, b uint8) []byte {
-	return []byte(fmt.Sprintf("\x1b[38;2;%d;%d;%dm", r, g, b))
+// colorWriter wraps an io.Writer and substitutes the slog text-handler's
+// emitted ` level=<LABEL>` field with its colored equivalent on each Write.
+// One Write call corresponds to one record (slog's text handler buffers a
+// full record before calling Write). The substitution happens at most once
+// per Write — slog emits the level field exactly once per record.
+type colorWriter struct {
+	w io.Writer
 }
 
-var ansiReset = []byte("\x1b[0m")
-
-func init() {
-	// Palette per spec 0005 handler documentation:
-	// TRACE:  text-muted #8B949E
-	// DEBUG:  text-muted #8B949E
-	// INFO:   cyan       #22D3EE
-	// NOTICE: teal       #2DD4BF
-	// WARN:   warning    #FBBF24
-	// ERROR:  error      #F87171
-	levelEscapes[0] = ansiEsc(0x8B, 0x94, 0x9E) // TRACE  (#8B949E)
-	levelEscapes[1] = ansiEsc(0x8B, 0x94, 0x9E) // DEBUG  (#8B949E)
-	levelEscapes[2] = ansiEsc(0x22, 0xD3, 0xEE) // INFO   (#22D3EE)
-	levelEscapes[3] = ansiEsc(0x2D, 0xD4, 0xBF) // NOTICE (#2DD4BF)
-	levelEscapes[4] = ansiEsc(0xFB, 0xBF, 0x24) // WARN   (#FBBF24)
-	levelEscapes[5] = ansiEsc(0xF8, 0x71, 0x71) // ERROR  (#F87171)
+// Write substitutes the first matching ` level=<LABEL>` needle (if any)
+// with its colored replacement, then forwards to the underlying writer.
+// Returns the original p length on success so callers see the byte count
+// they asked to write, not the post-substitution length.
+func (cw *colorWriter) Write(p []byte) (int, error) {
+	for i, needle := range levelNeedles {
+		idx := bytes.Index(p, needle)
+		if idx < 0 {
+			continue
+		}
+		repl := levelReplacements[i]
+		buf := make([]byte, 0, len(p)+len(repl)-len(needle))
+		buf = append(buf, p[:idx]...)
+		buf = append(buf, repl...)
+		buf = append(buf, p[idx+len(needle):]...)
+		if _, err := cw.w.Write(buf); err != nil {
+			return 0, err
+		}
+		return len(p), nil
+	}
+	return cw.w.Write(p)
 }
 
 // resolveColor determines the effective color setting at handler-construction time.
@@ -153,7 +179,19 @@ func resolveColor(w io.Writer, mode ColorMode) resolvedColor {
 //	)
 func NewHandler(w io.Writer, opts ...option.Option[handlerConfig]) slog.Handler {
 	cfg := applyHandlerConfig(opts)
-	inner := slog.NewTextHandler(w, &slog.HandlerOptions{
+	// Resolve color against the user-supplied writer (capability detection
+	// must see the real writer, not a wrapper that hides Fd()).
+	color := resolveColor(w, cfg.color)
+	// When color is enabled, wrap the writer in a colorWriter that
+	// substitutes the serialized level field with its colored form. The
+	// stdlib text handler quotes string values containing control bytes,
+	// so we cannot inject ANSI escapes via ReplaceAttr — the substitution
+	// has to happen on the rendered byte stream instead.
+	out := w
+	if bool(color) {
+		out = &colorWriter{w: w}
+	}
+	inner := slog.NewTextHandler(out, &slog.HandlerOptions{
 		Level:     cfg.level,
 		AddSource: cfg.source,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
@@ -167,7 +205,6 @@ func NewHandler(w io.Writer, opts ...option.Option[handlerConfig]) slog.Handler 
 			return a
 		},
 	})
-	color := resolveColor(w, cfg.color)
 	return &glacierHandler{inner: inner, color: color}
 }
 

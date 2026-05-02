@@ -9,6 +9,11 @@ import (
 	"sync"
 )
 
+// AnsiReset is the SGR reset escape sequence. Provided for callers that
+// pre-compute prefix/suffix pairs from Style.Prefix and want to avoid
+// re-typing the literal. Most callers should use Render or Sprint instead.
+const AnsiReset = "\x1b[0m"
+
 // Style is an immutable terminal style descriptor.
 //
 // Invariant: every method returns a new Style; the receiver is unchanged.
@@ -90,6 +95,23 @@ func (s Style) Strike() Style {
 // Concurrency: goroutine-safe; cache uses sync.Map.
 func (s Style) Render(text string) string {
 	return renderTo(s, text, os.Stderr)
+}
+
+// Prefix returns the raw ANSI escape sequence that opens this style. Returns
+// "" for the zero Style. No capability detection is performed — the caller
+// decides whether color should be emitted at all (typically by consulting
+// Capability once and gating subsequent calls on the result).
+//
+// Most callers should use Render or Sprint. Prefix exists for hot paths that
+// pre-compute the prefix once and concatenate with text per call, avoiding
+// the per-call capability check (e.g. log handlers that have already
+// resolved color at construction time).
+//
+// Pair with the AnsiReset constant for the matching close sequence.
+//
+// Concurrency: goroutine-safe; result is read from the package-level cache.
+func (s Style) Prefix() string {
+	return escapePrefix(s)
 }
 
 // Sprint is a convenience wrapper equivalent to s.Render(text).
