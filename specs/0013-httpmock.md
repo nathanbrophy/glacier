@@ -2,7 +2,7 @@
 id: 0013
 title: HTTPMock
 slug: httpmock
-status: implemented
+status: verified
 owner-agent: otter
 created: 2026-05-01
 last-updated: 2026-05-02
@@ -14,7 +14,7 @@ reviewers:
   - { agent: falcon, required: true,  signed-off-at: "2026-05-01T00:00:00Z" }
   - { agent: magpie, required: false, signed-off-at: null }
 implementing-commits: [6657420]
-verified-at: null
+verified-at: "2026-05-02T00:00:00Z"
 docs-extract:
   - public-summary
   - mental-model
