@@ -132,10 +132,7 @@ func TestSurfaceClosed_TermPackage(t *testing.T) {
 	var _ term.SpinnerOption
 	var _ func(term.Style) term.SpinnerOption = term.WithSpinnerStyle
 	var _ func([]string) term.SpinnerOption = term.WithSpinnerFrames
-	var _ func(*term.Animator) term.SpinnerOption = term.WithSpinnerAnimator
-	var _ func(string, ...term.SpinnerOption) *term.SpinnerAnimator = term.Spinner
-	// *SpinnerAnimator satisfies Animation.
-	var _ term.Animation = term.Spinner("check")
+	var _ func(string, ...term.SpinnerOption) term.Animation = term.Spinner
 
 	var _ *term.Progress
 	var _ func(int64, ...term.ProgressOption) *term.Progress = term.NewProgress
@@ -146,13 +143,11 @@ func TestSurfaceClosed_TermPackage(t *testing.T) {
 	var _ func() term.ProgressOption = term.WithProgressShowBytes
 	var _ func(term.Style) term.ProgressOption = term.WithProgressBarStyle
 	var _ func(string, string) term.ProgressOption = term.WithProgressGlyph
-	var _ func(*term.Animator) term.ProgressOption = term.WithProgressAnimator
 
 	var _ *term.StatusBar
 	var _ func(...term.StatusBarOption) *term.StatusBar = term.NewStatusBar
 	var _ term.StatusBarOption
 	var _ func(term.StatusBarLayout) term.StatusBarOption = term.WithStatusBarLayout
-	var _ func(*term.Animator) term.StatusBarOption = term.WithStatusBarAnimator
 	_ = term.StatusBarLines
 	_ = term.StatusBarColumns
 

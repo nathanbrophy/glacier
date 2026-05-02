@@ -3,7 +3,6 @@
 package term
 
 import (
-	"context"
 	"fmt"
 	"math"
 	"os"
@@ -21,9 +20,8 @@ type progressConfig struct {
 	showETA     bool
 	showBytes   bool
 	barStyle    Style
-	filledGlyph string    // default "█"
-	emptyGlyph  string    // default "░"
-	animator    *Animator // nil unless WithProgressAnimator was applied
+	filledGlyph string // default "█"
+	emptyGlyph  string // default "░"
 }
 
 // ProgressOption configures a Progress animation.
@@ -71,17 +69,6 @@ func WithProgressGlyph(filled, empty string) ProgressOption {
 	})
 }
 
-// WithProgressAnimator injects a shared Animator into the Progress.
-// When set, Run is a no-op — the consumer is expected to drive the injected
-// Animator themselves. The Progress is registered into the shared Animator at
-// construction time; Done or Close marks it complete.
-func WithProgressAnimator(a *Animator) ProgressOption {
-	return progressOptionFunc(func(c *progressConfig) error {
-		c.animator = a
-		return nil
-	})
-}
-
 // speedSample records a data point for the sliding-window speed calculation.
 type speedSample struct {
 	t time.Time
@@ -94,13 +81,10 @@ type speedSample struct {
 // values outside the range are accepted and render >100% or <0% visually.
 // Invariant: total == -1 signals indeterminate mode (spinner-style bar + byte counter).
 type Progress struct {
-	total    int64
-	current  atomic.Int64
-	done     atomic.Bool
-	cfg      progressConfig
-	injected bool      // true when animator was provided via WithProgressAnimator
-	owned    bool      // true when Run constructed the internal Animator
-	animator *Animator // shared (injected) or internal (owned); nil before Run if not injected
+	total   int64
+	current atomic.Int64
+	done    atomic.Bool
+	cfg     progressConfig
 
 	mu      sync.Mutex
 	samples []speedSample // sliding 5-second window
@@ -109,9 +93,6 @@ type Progress struct {
 
 // NewProgress constructs a Progress with the given total byte/item count.
 // total == -1 for indeterminate (unknown total) mode.
-//
-// When WithProgressAnimator is provided, the Progress is registered into the
-// shared Animator immediately and Run becomes a no-op.
 func NewProgress(total int64, opts ...ProgressOption) *Progress {
 	cfg := progressConfig{
 		filledGlyph: "█",
@@ -123,13 +104,7 @@ func NewProgress(total int64, opts ...ProgressOption) *Progress {
 		}
 		_ = o.applyProgress(&cfg)
 	}
-	injected := cfg.animator != nil
-	p := &Progress{total: total, cfg: cfg, started: time.Now(), injected: injected}
-	if injected {
-		p.animator = cfg.animator
-		cfg.animator.Add(p)
-	}
-	return p
+	return &Progress{total: total, cfg: cfg, started: time.Now()}
 }
 
 // Set sets the current progress to n. Goroutine-safe (atomic).
@@ -149,41 +124,6 @@ func (p *Progress) Increment(n int64) {
 // Goroutine-safe. Idempotent.
 func (p *Progress) Done() {
 	p.done.Store(true)
-}
-
-// Run starts the progress animation. If no Animator was injected via
-// WithProgressAnimator, an internal Animator is constructed (preferring
-// slog.Default() when available, falling back to a fresh os.Stderr logger) and
-// this Progress is added to it. Run blocks until ctx is cancelled or Done is
-// called (which causes Render to return done=true and the Animator to exit).
-//
-// If an Animator was injected, Run is a no-op and returns nil immediately; the
-// caller is responsible for running that Animator.
-//
-// Concurrency: goroutine-safe.
-func (p *Progress) Run(ctx context.Context) error {
-	if p.injected {
-		return nil
-	}
-	a := NewAnimator(newInternalLogger())
-	p.animator = a
-	p.owned = true
-	a.Add(p)
-	return a.Run(ctx)
-}
-
-// Close stops the Progress animation. If this Progress owns an internal Animator,
-// Close stops it. If using an injected Animator, Close marks the animation done
-// so its next Render returns done=true.
-//
-// Idempotent; returns nil on every call.
-// Concurrency: goroutine-safe.
-func (p *Progress) Close() error {
-	p.done.Store(true)
-	if p.owned && p.animator != nil {
-		return p.animator.Close()
-	}
-	return nil
 }
 
 // recordSample records a data point for the speed window.
