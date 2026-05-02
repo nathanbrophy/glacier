@@ -4,6 +4,7 @@ package httpmock_test
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -91,9 +92,7 @@ func TestPropertySequenceCycleSixCalls(t *testing.T) {
 		req := newReq(t, "GET", "https://example.com/x", nil)
 		resp, err := rt.RoundTrip(req)
 		assert.NoError(t, err)
-		if resp.StatusCode != want {
-			t.Errorf("call %d: got %d, want %d", i, resp.StatusCode, want)
-		}
+		assert.True(t, resp.StatusCode == want, fmt.Sprintf("call %d: got %d, want %d", i, resp.StatusCode, want))
 	}
 }
 

@@ -28,15 +28,12 @@ func TestNoNetworkImports(t *testing.T) {
 		data, err := os.ReadFile(f)
 		assert.NoError(t, err)
 
-		if bytes.Contains(data, []byte("DefaultTransport")) {
-			t.Errorf("httpmock production file %s references http.DefaultTransport", f)
-		}
-		if bytes.Contains(data, []byte("net.Dial")) {
-			t.Errorf("httpmock production file %s references net.Dial", f)
-		}
-		if bytes.Contains(data, []byte("\"net\"")) {
-			t.Errorf("httpmock production file %s directly imports the 'net' package", f)
-		}
+		assert.False(t, bytes.Contains(data, []byte("DefaultTransport")),
+			"httpmock production file "+f+" references http.DefaultTransport")
+		assert.False(t, bytes.Contains(data, []byte("net.Dial")),
+			"httpmock production file "+f+" references net.Dial")
+		assert.False(t, bytes.Contains(data, []byte("\"net\"")),
+			"httpmock production file "+f+" directly imports the 'net' package")
 	}
 }
 
@@ -54,8 +51,7 @@ func TestImportSurfaceFluentInternal(t *testing.T) {
 		data, err := os.ReadFile(f)
 		assert.NoError(t, err)
 
-		if bytes.Contains(data, []byte("glacier/fluent")) {
-			t.Errorf("httpmock production file %s imports fluent (tier violation)", f)
-		}
+		assert.False(t, bytes.Contains(data, []byte("glacier/fluent")),
+			"httpmock production file "+f+" imports fluent (tier violation)")
 	}
 }

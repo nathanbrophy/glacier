@@ -3,10 +3,12 @@
 package errs_test
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 
 	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/errs"
 )
 
@@ -18,7 +20,7 @@ func mustPanic(t *testing.T, name string, f func()) (msg string) {
 		if r := recover(); r != nil {
 			msg = r.(string)
 		} else {
-			t.Fatalf("%s: expected panic but did not panic", name)
+			require.True(t, false, name+": expected panic but did not panic")
 		}
 	}()
 	f()
@@ -30,7 +32,7 @@ func mustNotPanic(t *testing.T, name string, f func()) {
 	t.Helper()
 	defer func() {
 		if r := recover(); r != nil {
-			t.Fatalf("%s: unexpected panic: %v", name, r)
+			require.True(t, false, fmt.Sprintf("%s: unexpected panic: %v", name, r))
 		}
 	}()
 	f()

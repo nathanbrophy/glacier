@@ -5,8 +5,11 @@ package term_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/term"
 )
 
@@ -25,9 +28,8 @@ func TestPromptCtxAlreadyCancelled(t *testing.T) {
 	if err == nil {
 		t.Skip("stdin may have returned data; skipping TTY-less test")
 	}
-	if !errors.Is(err, term.ErrCancelled) {
-		t.Errorf("Prompt(cancelled ctx) error = %v, want ErrCancelled", err)
-	}
+	assert.True(t, errors.Is(err, term.ErrCancelled),
+		fmt.Sprintf("Prompt(cancelled ctx) error = %v, want ErrCancelled", err))
 }
 
 func TestSentinelErrors(t *testing.T) {
@@ -46,12 +48,9 @@ func TestSentinelErrors(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			if tc.err.Error() != tc.want {
-				t.Errorf("error %q = %q, want %q", tc.name, tc.err.Error(), tc.want)
-			}
-			if !errors.Is(tc.err, tc.err) {
-				t.Errorf("errors.Is(%q, itself) = false", tc.name)
-			}
+			assert.Equal(t, tc.want, tc.err.Error())
+			assert.True(t, errors.Is(tc.err, tc.err),
+				fmt.Sprintf("errors.Is(%q, itself) = false", tc.name))
 		})
 	}
 }
@@ -59,31 +58,19 @@ func TestSentinelErrors(t *testing.T) {
 func TestHexParseError(t *testing.T) {
 	t.Parallel()
 	_, err := term.Hex("BADCOLOR")
-	if err == nil {
-		t.Fatal("expected HexParseError, got nil")
-	}
+	require.Error(t, err, "expected HexParseError, got nil")
 	var he *term.HexParseError
-	if !errors.As(err, &he) {
-		t.Fatalf("expected *HexParseError, got %T", err)
-	}
-	if he.Unwrap() == nil {
-		t.Error("HexParseError.Unwrap() should not be nil")
-	}
+	require.True(t, errors.As(err, &he), fmt.Sprintf("expected *HexParseError, got %T", err))
+	assert.NotNil(t, he.Unwrap(), "HexParseError.Unwrap() should not be nil")
 }
 
 func TestGlyphError(t *testing.T) {
 	t.Parallel()
 	err := term.RegisterGlyph("1invalid", "X", "x")
-	if err == nil {
-		t.Fatal("expected GlyphError, got nil")
-	}
+	require.Error(t, err, "expected GlyphError, got nil")
 	var ge *term.GlyphError
-	if !errors.As(err, &ge) {
-		t.Fatalf("expected *GlyphError, got %T", err)
-	}
-	if ge.Cause == "" {
-		t.Error("GlyphError.Cause must not be empty")
-	}
+	require.True(t, errors.As(err, &ge), fmt.Sprintf("expected *GlyphError, got %T", err))
+	assert.True(t, ge.Cause != "", "GlyphError.Cause must not be empty")
 }
 
 func TestConfirmOpts(t *testing.T) {

@@ -8,6 +8,8 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/mock"
 )
 
@@ -30,9 +32,8 @@ func TestExpectationTimes_Exact(t *testing.T) {
 			}
 			m.Verify()
 			failed := len(ft.errors) > 0
-			if failed != tc.wantFail {
-				t.Errorf("wantFail=%v, got failed=%v; errors: %v", tc.wantFail, failed, ft.errors)
-			}
+			assert.True(t, failed == tc.wantFail,
+				fmt.Sprintf("wantFail=%v, got failed=%v; errors: %v", tc.wantFail, failed, ft.errors))
 		})
 	}
 }
@@ -45,9 +46,7 @@ func TestTimesExactTooMany(t *testing.T) {
 	for range 3 {
 		m.Interface().Greet("x")
 	}
-	if len(ft.errors) == 0 {
-		t.Fatal("expected error for call beyond Times(2)")
-	}
+	assert.True(t, len(ft.errors) > 0, "expected error for call beyond Times(2)")
 }
 
 func TestExpectationAtLeast(t *testing.T) {
@@ -70,10 +69,9 @@ func TestExpectationAtLeast(t *testing.T) {
 			}
 			m.Verify()
 			failed := len(ft.errors) > 0
-			if failed != tc.wantFail {
-				t.Errorf("calls=%d wantFail=%v got failed=%v errors=%v",
-					tc.calls, tc.wantFail, failed, ft.errors)
-			}
+			assert.True(t, failed == tc.wantFail,
+				fmt.Sprintf("calls=%d wantFail=%v got failed=%v errors=%v",
+					tc.calls, tc.wantFail, failed, ft.errors))
 		})
 	}
 }
@@ -99,10 +97,9 @@ func TestExpectationAtMost(t *testing.T) {
 			}
 			m.Verify()
 			failed := len(ft.errors) > 0 || len(ft.fatals) > 0
-			if failed != tc.wantFail {
-				t.Errorf("calls=%d wantFail=%v got failed=%v errors=%v",
-					tc.calls, tc.wantFail, failed, ft.errors)
-			}
+			assert.True(t, failed == tc.wantFail,
+				fmt.Sprintf("calls=%d wantFail=%v got failed=%v errors=%v",
+					tc.calls, tc.wantFail, failed, ft.errors))
 		})
 	}
 }
@@ -115,9 +112,7 @@ func TestExpectationAnyTimes(t *testing.T) {
 		m.Interface().Greet("x")
 	}
 	m.Verify()
-	if len(ft.errors) > 0 {
-		t.Fatalf("AnyTimes: unexpected errors: %v", ft.errors)
-	}
+	assert.True(t, len(ft.errors) == 0, "AnyTimes: unexpected errors: "+fmt.Sprintf("%v", ft.errors))
 }
 
 func TestExpectationNever(t *testing.T) {
@@ -126,9 +121,7 @@ func TestExpectationNever(t *testing.T) {
 	m.OnCall("Greet").Never()
 	// Don't call Greet → Verify should pass.
 	m.Verify()
-	if len(ft.errors) > 0 {
-		t.Fatalf("Never + no calls: unexpected errors: %v", ft.errors)
-	}
+	assert.True(t, len(ft.errors) == 0, "Never + no calls: unexpected errors: "+fmt.Sprintf("%v", ft.errors))
 }
 
 func TestExpectationNeverViolated(t *testing.T) {
@@ -155,9 +148,7 @@ func TestTimesZeroRejectsPanic(t *testing.T) {
 	m := mock.Of[Greeter](ft)
 	defer func() {
 		r := recover()
-		if r == nil {
-			t.Fatal("Times(0) should panic")
-		}
+		require.NotNil(t, r, "Times(0) should panic")
 	}()
 	m.OnCall("Greet").Times(0)
 }
@@ -167,9 +158,7 @@ func TestAtLeastZeroRejectsPanic(t *testing.T) {
 	m := mock.Of[Greeter](ft)
 	defer func() {
 		r := recover()
-		if r == nil {
-			t.Fatal("AtLeast(0) should panic")
-		}
+		require.NotNil(t, r, "AtLeast(0) should panic")
 	}()
 	m.OnCall("Greet").AtLeast(0)
 }
@@ -207,9 +196,8 @@ func TestTimes1RaceFix(t *testing.T) {
 					matchedCount++
 				}
 			}
-			if matchedCount != 1 {
-				t.Errorf("Times(1) under concurrent load: matched %d times (want 1)", matchedCount)
-			}
+			assert.True(t, matchedCount == 1,
+				fmt.Sprintf("Times(1) under concurrent load: matched count = %d, want 1", matchedCount))
 			// The error from Verify (0 < 1) is expected but we don't check it here.
 			_ = strings.Contains(strings.Join(ft.errors, " "), "expected")
 		})

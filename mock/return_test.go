@@ -3,8 +3,11 @@
 package mock_test
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/mock"
 )
 
@@ -20,9 +23,8 @@ func TestExpectationReturnSeq(t *testing.T) {
 	checkPop := func(wantV int, wantOK bool) {
 		t.Helper()
 		v, ok := q.Pop()
-		if v != wantV || ok != wantOK {
-			t.Errorf("Pop() = (%d,%v), want (%d,%v)", v, ok, wantV, wantOK)
-		}
+		assert.Equal(t, wantV, v)
+		assert.Equal(t, wantOK, ok)
 	}
 	checkPop(1, true)
 	checkPop(2, true)
@@ -43,9 +45,9 @@ func TestReturnSeqCycleDefault(t *testing.T) {
 	v1, _ := q.Pop()
 	v2, _ := q.Pop()
 	v3, _ := q.Pop() // wraps around
-	if v1 != 1 || v2 != 2 || v3 != 1 {
-		t.Errorf("SeqCycle: got %d,%d,%d want 1,2,1", v1, v2, v3)
-	}
+	assert.Equal(t, 1, v1)
+	assert.Equal(t, 2, v2)
+	assert.True(t, v3 == 1, fmt.Sprintf("SeqCycle: expected wrap-around to 1, got %d", v3))
 }
 
 func TestReturnSeqExhaustMode(t *testing.T) {
@@ -57,16 +59,11 @@ func TestReturnSeqExhaustMode(t *testing.T) {
 
 	q := m.Interface()
 	v1, ok1 := q.Pop() // uses index 0
-	if v1 != 1 || !ok1 {
-		t.Errorf("first Pop: got (%d,%v), want (1,true)", v1, ok1)
-	}
+	assert.Equal(t, 1, v1)
+	assert.True(t, ok1)
 	v2, _ := q.Pop() // exhausted → error
-	if v2 != 0 {
-		t.Errorf("exhausted Pop: got %d, want 0 (zero value)", v2)
-	}
-	if len(ft.errors) == 0 {
-		t.Fatal("SeqExhaust: expected Errorf on exhaustion")
-	}
+	assert.True(t, v2 == 0, fmt.Sprintf("exhausted Pop: expected zero value, got %d", v2))
+	assert.True(t, len(ft.errors) > 0, "SeqExhaust: expected Errorf on exhaustion")
 }
 
 func TestReturnSeqEmptyPanics(t *testing.T) {
@@ -74,9 +71,7 @@ func TestReturnSeqEmptyPanics(t *testing.T) {
 	m := mock.Of[Queue](ft)
 	defer func() {
 		r := recover()
-		if r == nil {
-			t.Fatal("expected panic for empty ReturnSeq")
-		}
+		require.NotNil(t, r, "expected panic for empty ReturnSeq")
 	}()
 	m.OnCall("Pop").ReturnSeq(nil)
 }
@@ -87,7 +82,7 @@ func TestReturnMutualExclusivity(t *testing.T) {
 		m := mock.Of[Queue](ft)
 		defer func() {
 			if r := recover(); r == nil {
-				t.Fatal("expected panic")
+				require.True(t, false, "expected panic")
 			}
 		}()
 		e := m.OnCall("Pop").Return(1, true)
@@ -99,7 +94,7 @@ func TestReturnMutualExclusivity(t *testing.T) {
 		m := mock.Of[Queue](ft)
 		defer func() {
 			if r := recover(); r == nil {
-				t.Fatal("expected panic")
+				require.True(t, false, "expected panic")
 			}
 		}()
 		e := m.OnCall("Pop").ReturnSeq([][]any{{1, true}})
@@ -111,7 +106,7 @@ func TestReturnMutualExclusivity(t *testing.T) {
 		m := mock.Of[Queue](ft)
 		defer func() {
 			if r := recover(); r == nil {
-				t.Fatal("expected panic")
+				require.True(t, false, "expected panic")
 			}
 		}()
 		e := m.OnCall("Pop").Return(1, true)
@@ -124,9 +119,7 @@ func TestWithArityMismatch(t *testing.T) {
 	m := mock.Of[Greeter](ft)
 	defer func() {
 		r := recover()
-		if r == nil {
-			t.Fatal("expected panic for With arity mismatch")
-		}
+		require.NotNil(t, r, "expected panic for With arity mismatch")
 	}()
 	// Greet takes 1 param; passing 2 matchers should panic.
 	m.OnCall("Greet").With(mock.Any[string](), mock.Any[string]())

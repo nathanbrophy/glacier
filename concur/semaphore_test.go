@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/concur"
 )
 
@@ -54,7 +55,7 @@ func TestSemaphore_Acquire_BlocksUntilRelease(t *testing.T) {
 	// Should be blocked.
 	select {
 	case <-acquired:
-		t.Fatal("Acquire should be blocked when at capacity")
+		require.True(t, false, "Acquire should be blocked when at capacity")
 	case <-time.After(30 * time.Millisecond):
 	}
 
@@ -64,7 +65,7 @@ func TestSemaphore_Acquire_BlocksUntilRelease(t *testing.T) {
 	case err := <-acquired:
 		assert.NoError(t, err)
 	case <-time.After(2 * time.Second):
-		t.Fatal("Acquire did not unblock after Release")
+		require.True(t, false, "Acquire did not unblock after Release")
 	}
 }
 

@@ -3,6 +3,7 @@
 package httpmock_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/nathanbrophy/glacier/assert"
@@ -25,9 +26,7 @@ func TestPropertySequenceCycleAlgebraic(t *testing.T) {
 		req := newReq(t, "GET", "https://example.com/x", nil)
 		resp, err := rt.RoundTrip(req)
 		assert.NoError(t, err)
-		if resp.StatusCode != want {
-			t.Errorf("call %d: got %d, want %d", i, resp.StatusCode, want)
-		}
+		assert.True(t, resp.StatusCode == want, fmt.Sprintf("call %d: got %d, want %d", i, resp.StatusCode, want))
 	}
 }
 

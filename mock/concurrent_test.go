@@ -3,9 +3,11 @@
 package mock_test
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/mock"
 )
 
@@ -25,9 +27,7 @@ func TestConcurrentCallsRecordedCorrectly(t *testing.T) {
 	wg.Wait()
 
 	calls := m.CallsTo("Greet")
-	if len(calls) != goroutines {
-		t.Errorf("expected %d recorded calls, got %d", goroutines, len(calls))
-	}
+	assert.True(t, len(calls) == goroutines, fmt.Sprintf("expected %d recorded calls, got %d", goroutines, len(calls)))
 }
 
 func TestConcurrentCallsAllMatched(t *testing.T) {
@@ -47,8 +47,6 @@ func TestConcurrentCallsAllMatched(t *testing.T) {
 
 	calls := m.CallsTo("Add")
 	for _, c := range calls {
-		if !c.Matched {
-			t.Error("all concurrent calls should be matched")
-		}
+		assert.True(t, c.Matched, "all concurrent calls should be matched")
 	}
 }

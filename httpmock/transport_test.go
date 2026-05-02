@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/httpmock"
 )
 
@@ -156,18 +157,14 @@ func TestLateRegistrationApplies(t *testing.T) {
 func newReq(t *testing.T, method, url string, body io.Reader) *http.Request {
 	t.Helper()
 	req, err := http.NewRequest(method, url, body)
-	if err != nil {
-		t.Fatalf("newReq: %s", err)
-	}
+	require.NoError(t, err, "newReq")
 	return req
 }
 
 func newReqWithBody(t *testing.T, method, url, body, contentType string) *http.Request {
 	t.Helper()
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
-	if err != nil {
-		t.Fatalf("newReqWithBody: %s", err)
-	}
+	require.NoError(t, err, "newReqWithBody")
 	req.Header.Set("Content-Type", contentType)
 	return req
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/mock"
 )
 
@@ -24,9 +25,8 @@ func PropertyTimes_n_Calls_Verifies(t *testing.T) {
 				m.Interface().Greet("x")
 			}
 			m.Verify()
-			if len(ft.errors) > 0 {
-				t.Errorf("n=%d exact calls: unexpected errors: %v", n, ft.errors)
-			}
+			assert.True(t, len(ft.errors) == 0,
+				fmt.Sprintf("n=%d exact calls: unexpected errors: %v", n, ft.errors))
 		})
 	}
 }
@@ -41,9 +41,7 @@ func PropertyExpectationOrderingMatters(t *testing.T) {
 			m.OnCall("Greet").With(mock.Any[string]()).Return("first").AnyTimes()
 			m.OnCall("Greet").With(mock.Any[string]()).Return("second").AnyTimes()
 			result := m.Interface().Greet("x")
-			if result != "first" {
-				t.Errorf("first-registered must win; got %q", result)
-			}
+			assert.True(t, result == "first", "first-registered must win, got: "+result)
 		})
 	}
 }
@@ -62,9 +60,7 @@ func PropertyMatcherStringIsStable(t *testing.T) {
 		for range 10 {
 			s1 := tc.m.String()
 			s2 := tc.m.String()
-			if s1 != s2 {
-				t.Errorf("%s.String() not stable: %q vs %q", tc.name, s1, s2)
-			}
+			assert.True(t, s1 == s2, tc.name+".String() not stable")
 		}
 	}
 }

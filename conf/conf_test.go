@@ -166,7 +166,7 @@ func TestRegister_PanicsDuplicate(t *testing.T) {
 
 	defer func() {
 		if r := recover(); r == nil {
-			t.Error("expected panic on duplicate Register; got none")
+			assert.True(t, false, "expected panic on duplicate Register; got none")
 		}
 	}()
 	conf.Register[serverCfg](path, serverCfg{Port: 2})
@@ -224,7 +224,7 @@ func TestLoader_MustLoad_Panics(t *testing.T) {
 
 	defer func() {
 		if r := recover(); r == nil {
-			t.Error("expected MustLoad to panic; got none")
+			assert.True(t, false, "expected MustLoad to panic; got none")
 		}
 	}()
 	l.MustLoad(context.Background())

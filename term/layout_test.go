@@ -3,6 +3,7 @@
 package term_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"unicode/utf8"
@@ -136,9 +137,8 @@ func TestWrap(t *testing.T) {
 			got := term.Wrap(tc.text, tc.width)
 			for _, line := range strings.Split(got, "\n") {
 				w := utf8.RuneCountInString(line)
-				if w > tc.width {
-					t.Errorf("Wrap(%q, %d): line %q has width %d > %d", tc.text, tc.width, line, w, tc.width)
-				}
+				assert.True(t, w <= tc.width,
+					fmt.Sprintf("Wrap(%q, %d): line %q has width %d > %d", tc.text, tc.width, line, w, tc.width))
 			}
 		})
 	}

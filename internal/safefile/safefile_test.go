@@ -3,11 +3,12 @@
 package safefile_test
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/internal/safefile"
 )
 
@@ -20,12 +21,8 @@ func TestCleanAcceptsRelative(t *testing.T) {
 	for _, name := range cases {
 		t.Run(name, func(t *testing.T) {
 			clean, err := safefile.Clean(name)
-			if err != nil {
-				t.Fatalf("Clean(%q) = %v; want nil", name, err)
-			}
-			if clean == "" {
-				t.Fatalf("Clean(%q) returned empty string", name)
-			}
+			require.NoError(t, err, "Clean("+name+")")
+			assert.True(t, clean != "", "Clean("+name+") returned empty string")
 		})
 	}
 }
@@ -40,9 +37,7 @@ func TestCleanRejectsTraversal(t *testing.T) {
 	for _, name := range cases {
 		t.Run(name, func(t *testing.T) {
 			_, err := safefile.Clean(name)
-			if !errors.Is(err, safefile.ErrTraversal) {
-				t.Fatalf("Clean(%q) = %v; want ErrTraversal", name, err)
-			}
+			assert.ErrorIs(t, err, safefile.ErrTraversal, "Clean("+name+") should return ErrTraversal")
 		})
 	}
 }
@@ -55,9 +50,7 @@ func TestCleanRejectsAbsolute(t *testing.T) {
 	for _, name := range cases {
 		t.Run(name, func(t *testing.T) {
 			_, err := safefile.Clean(name)
-			if !errors.Is(err, safefile.ErrAbsolute) {
-				t.Fatalf("Clean(%q) = %v; want ErrAbsolute", name, err)
-			}
+			assert.ErrorIs(t, err, safefile.ErrAbsolute, "Clean("+name+") should return ErrAbsolute")
 		})
 	}
 }
@@ -71,9 +64,7 @@ func TestCleanRejectsUNC(t *testing.T) {
 	for _, name := range cases {
 		t.Run(name, func(t *testing.T) {
 			_, err := safefile.Clean(name)
-			if !errors.Is(err, safefile.ErrUNC) {
-				t.Fatalf("Clean(%q) = %v; want ErrUNC", name, err)
-			}
+			assert.ErrorIs(t, err, safefile.ErrUNC, "Clean("+name+") should return ErrUNC")
 		})
 	}
 }
@@ -81,37 +72,23 @@ func TestCleanRejectsUNC(t *testing.T) {
 func TestReadFileRoundTrip(t *testing.T) {
 	dir := t.TempDir()
 	content := []byte("safefile test content")
-	if err := os.WriteFile(filepath.Join(dir, "test.txt"), content, 0o644); err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "test.txt"), content, 0o644))
 	got, err := safefile.ReadFile(dir, "test.txt")
-	if err != nil {
-		t.Fatalf("ReadFile: %v", err)
-	}
-	if string(got) != string(content) {
-		t.Fatalf("ReadFile got %q; want %q", got, content)
-	}
+	require.NoError(t, err, "ReadFile")
+	assert.Equal(t, string(content), string(got))
 }
 
 func TestWriteFileAtomicRoundTrip(t *testing.T) {
 	dir := t.TempDir()
 	content := []byte("atomic write content")
-	if err := safefile.WriteFileAtomic(dir, "atomic.txt", content, 0o644); err != nil {
-		t.Fatalf("WriteFileAtomic: %v", err)
-	}
+	require.NoError(t, safefile.WriteFileAtomic(dir, "atomic.txt", content, 0o644), "WriteFileAtomic")
 	got, err := os.ReadFile(filepath.Join(dir, "atomic.txt"))
-	if err != nil {
-		t.Fatalf("ReadFile after atomic write: %v", err)
-	}
-	if string(got) != string(content) {
-		t.Fatalf("atomic write content mismatch: got %q; want %q", got, content)
-	}
+	require.NoError(t, err, "ReadFile after atomic write")
+	assert.Equal(t, string(content), string(got))
 }
 
 func TestJoinRejectsTraversal(t *testing.T) {
 	dir := t.TempDir()
 	_, err := safefile.Join(dir, "../oops")
-	if !errors.Is(err, safefile.ErrTraversal) {
-		t.Fatalf("Join with traversal = %v; want ErrTraversal", err)
-	}
+	assert.ErrorIs(t, err, safefile.ErrTraversal, "Join with traversal should return ErrTraversal")
 }

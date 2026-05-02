@@ -3,6 +3,7 @@
 package httpmock_test
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 
@@ -28,9 +29,7 @@ func TestConcurrentRoundTrip(t *testing.T) {
 				errs[idx] = err
 				return
 			}
-			if resp.StatusCode != 200 {
-				t.Errorf("goroutine %d: expected 200, got %d", idx, resp.StatusCode)
-			}
+			assert.True(t, resp.StatusCode == 200, fmt.Sprintf("goroutine %d: expected 200, got %d", idx, resp.StatusCode))
 		}(i)
 	}
 	wg.Wait()

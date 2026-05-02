@@ -4,9 +4,11 @@ package term_test
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/term"
 )
 
@@ -22,7 +24,7 @@ func TestStyleNewIsZero(t *testing.T) {
 			t.Logf("TestStyleNewIsZero: ANSI detected; assuming TTY environment, skipping strict check")
 			return
 		}
-		t.Errorf("New().Render(%q) = %q, want plain text", text, got)
+		assert.True(t, got == text, fmt.Sprintf("New().Render(%q) = %q, want plain text", text, got))
 	}
 }
 
@@ -53,12 +55,9 @@ func TestStyleRenderNoColorWriter(t *testing.T) {
 	var buf bytes.Buffer
 	term.Fprint(&buf, s, text)
 	got := buf.String()
-	if strings.Contains(got, "\x1b[") {
-		t.Errorf("Fprint to non-TTY bytes.Buffer should not contain ANSI escapes, got %q", got)
-	}
-	if got != text {
-		t.Errorf("Fprint to bytes.Buffer = %q, want %q", got, text)
-	}
+	assert.False(t, strings.Contains(got, "\x1b["),
+		fmt.Sprintf("Fprint to non-TTY bytes.Buffer should not contain ANSI escapes, got %q", got))
+	assert.True(t, got == text, fmt.Sprintf("Fprint to bytes.Buffer = %q, want %q", got, text))
 }
 
 func TestStyleFprintOutput(t *testing.T) {
@@ -67,9 +66,7 @@ func TestStyleFprintOutput(t *testing.T) {
 	s := term.New()
 	text := "plain"
 	term.Fprint(&buf, s, text)
-	if buf.String() != text {
-		t.Errorf("Fprint with zero Style = %q, want %q", buf.String(), text)
-	}
+	assert.True(t, buf.String() == text, fmt.Sprintf("Fprint with zero Style = %q, want %q", buf.String(), text))
 }
 
 func TestStyleSprintMatchesRender(t *testing.T) {
@@ -79,9 +76,7 @@ func TestStyleSprintMatchesRender(t *testing.T) {
 	text := "warn"
 	r := s.Render(text)
 	sp := term.Sprint(s, text)
-	if r != sp {
-		t.Errorf("Sprint(%q) = %q, Render(%q) = %q; should match", text, sp, text, r)
-	}
+	assert.True(t, r == sp, fmt.Sprintf("Sprint(%q) = %q, Render(%q) = %q; should match", text, sp, text, r))
 }
 
 func TestStyleChaining(t *testing.T) {
@@ -122,9 +117,8 @@ func TestStyleModifiers(t *testing.T) {
 			var buf bytes.Buffer
 			term.Fprint(&buf, tc.s, "x")
 			// Non-TTY: must equal "x".
-			if buf.String() != "x" {
-				t.Errorf("Fprint(%s, 'x') = %q, want 'x' on non-TTY", tc.name, buf.String())
-			}
+			assert.True(t, buf.String() == "x",
+				fmt.Sprintf("Fprint(%s, 'x') = %q, want 'x' on non-TTY", tc.name, buf.String()))
 		})
 	}
 }
@@ -144,7 +138,5 @@ func TestStyleEscapesPrecomputedCached(t *testing.T) {
 		term.Fprint(&buf, s, "x")
 	})
 	// On non-TTY the result is a no-op write; 0 or very few allocs expected.
-	if allocs > 2 {
-		t.Errorf("expected ≤ 2 allocs on Fprint, got %v", allocs)
-	}
+	assert.True(t, allocs <= 2, fmt.Sprintf("expected <= 2 allocs on Fprint, got %v", allocs))
 }

@@ -3,6 +3,7 @@
 package term_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -46,7 +47,7 @@ func TestRegisterGlyphSuccess(t *testing.T) {
 		// persists for the lifetime of the test binary.
 		ge, ok := err.(*term.GlyphError)
 		if !ok || !strings.Contains(ge.Cause, "already registered") {
-			t.Fatalf("RegisterGlyph(%q): unexpected error: %v", name, err)
+			require.True(t, false, fmt.Sprintf("RegisterGlyph(%q): unexpected error: %v", name, err))
 		}
 		t.Logf("glyph %q already registered from a previous iteration; verifying lookup", name)
 	}

@@ -9,15 +9,16 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 )
 
 // TestNoUnsafeImports audits the mock and internal/reflectx source files for
 // any use of the unsafe package or unsafe reflect functions (§21.10 NF3, Falcon §1.2).
 func TestNoUnsafeImports(t *testing.T) {
 	_, thisFile, _, ok := runtime.Caller(0)
-	if !ok {
-		t.Fatal("could not determine test file path")
-	}
+	require.True(t, ok, "could not determine test file path")
 
 	// Find the module root (directory containing go.mod).
 	dir := filepath.Dir(thisFile) // mock/
@@ -52,14 +53,13 @@ func TestNoUnsafeImports(t *testing.T) {
 			path := filepath.Join(dir, name)
 			content, err := os.ReadFile(path)
 			if err != nil {
-				t.Errorf("failed to read %s: %v", path, err)
+				assert.True(t, false, "failed to read "+path+": "+err.Error())
 				continue
 			}
 			src := string(content)
 			for _, sym := range forbidden {
-				if strings.Contains(src, sym) {
-					t.Errorf("file %s contains forbidden symbol %q", path, sym)
-				}
+				assert.False(t, strings.Contains(src, sym),
+					"file "+path+" contains forbidden symbol "+sym)
 			}
 		}
 	}
@@ -71,9 +71,7 @@ func TestNoUnsafeImports(t *testing.T) {
 // os.Create, os.OpenFile with os.O_WRONLY/O_CREATE, or ioutil.WriteFile calls.
 func TestNoOnDiskEmissionAtRuntime(t *testing.T) {
 	_, thisFile, _, ok := runtime.Caller(0)
-	if !ok {
-		t.Fatal("could not determine test file path")
-	}
+	require.True(t, ok, "could not determine test file path")
 	mockDir := filepath.Dir(thisFile)
 
 	writeAPIs := []string{
@@ -84,9 +82,7 @@ func TestNoOnDiskEmissionAtRuntime(t *testing.T) {
 	}
 
 	entries, err := os.ReadDir(mockDir)
-	if err != nil {
-		t.Fatalf("cannot read mock dir: %v", err)
-	}
+	require.NoError(t, err, "cannot read mock dir")
 	for _, e := range entries {
 		if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") ||
 			strings.HasSuffix(e.Name(), "_test.go") {
@@ -95,14 +91,13 @@ func TestNoOnDiskEmissionAtRuntime(t *testing.T) {
 		path := filepath.Join(mockDir, e.Name())
 		content, err := os.ReadFile(path)
 		if err != nil {
-			t.Errorf("cannot read %s: %v", path, err)
+			assert.True(t, false, "cannot read "+path+": "+err.Error())
 			continue
 		}
 		src := string(content)
 		for _, api := range writeAPIs {
-			if strings.Contains(src, api) {
-				t.Errorf("production file %s contains file-write API %q", path, api)
-			}
+			assert.False(t, strings.Contains(src, api),
+				"production file "+path+" contains file-write API "+api)
 		}
 	}
 }
@@ -117,7 +112,5 @@ func TestGoVetMock(t *testing.T) {
 	cmd := exec.Command("go", "vet", "./mock/...")
 	cmd.Dir = root
 	out, err := cmd.CombinedOutput()
-	if err != nil {
-		t.Errorf("go vet ./mock/... failed:\n%s", out)
-	}
+	assert.True(t, err == nil, "go vet ./mock/... failed:\n"+string(out))
 }

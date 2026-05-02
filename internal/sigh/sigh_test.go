@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/internal/sigh"
 )
 
@@ -20,7 +21,7 @@ func TestNotifyCancel(t *testing.T) {
 	case <-ctx.Done():
 		// expected
 	case <-time.After(time.Second):
-		t.Fatal("context not cancelled after stop()")
+		require.True(t, false, "context not cancelled after stop()")
 	}
 }
 
@@ -34,7 +35,7 @@ func TestNotifyParentCancelPropagate(t *testing.T) {
 	case <-ctx.Done():
 		// expected: parent cancellation propagates
 	case <-time.After(time.Second):
-		t.Fatal("context not cancelled after parent cancel")
+		require.True(t, false, "context not cancelled after parent cancel")
 	}
 }
 
@@ -49,6 +50,6 @@ func TestNotifyAlreadyCancelledParent(t *testing.T) {
 	case <-ctx.Done():
 		// expected immediately
 	case <-time.After(time.Second):
-		t.Fatal("context not cancelled when parent already cancelled")
+		require.True(t, false, "context not cancelled when parent already cancelled")
 	}
 }

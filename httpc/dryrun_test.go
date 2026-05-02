@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/httpc"
 )
 
@@ -24,7 +25,7 @@ func TestIsDryRun(t *testing.T) {
 func TestDryRunCapturesPlan(t *testing.T) {
 	t.Parallel()
 	c := httpc.New(httpc.WithTransport(roundTripFunc(func(r *http.Request) (*http.Response, error) {
-		t.Fatal("network call should not be made in dry-run mode")
+		require.True(t, false, "network call should not be made in dry-run mode")
 		return nil, nil
 	})))
 
@@ -208,7 +209,7 @@ func TestStaticDryRunHelperOnClient(t *testing.T) {
 	t.Parallel()
 	var captured *httpc.RequestPlan
 	c := httpc.New(httpc.WithTransport(roundTripFunc(func(r *http.Request) (*http.Response, error) {
-		t.Fatal("should not reach transport in dry-run mode")
+		require.True(t, false, "should not reach transport in dry-run mode")
 		return nil, nil
 	})))
 	ctx := httpc.WithDryRun(context.Background(),

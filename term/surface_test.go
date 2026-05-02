@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/term"
 )
 
@@ -114,9 +115,7 @@ func TestSurfaceClosed_TermPackage(t *testing.T) {
 
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	a := term.NewAnimator(logger)
-	if a == nil {
-		t.Fatal("NewAnimator returned nil")
-	}
+	require.NotNil(t, a, "NewAnimator returned nil")
 	h := a.Add(&neverDoneAnimation{})
 	h.Cancel()
 	_ = a.Pause

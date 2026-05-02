@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/mock"
 )
 
@@ -42,21 +44,16 @@ func (f *fakeT) runCleanup() {
 
 func TestOfBasic(t *testing.T) {
 	m := mock.Of[Greeter](t)
-	if m.Interface() == nil {
-		t.Fatal("Interface() must not be nil")
-	}
+	require.NotNil(t, m.Interface(), "Interface() must not be nil")
 }
 
 func TestOfNonInterfacePanics(t *testing.T) {
 	defer func() {
 		r := recover()
-		if r == nil {
-			t.Fatal("expected panic for non-interface type")
-		}
+		require.NotNil(t, r, "expected panic for non-interface type")
 		msg := fmt.Sprintf("%v", r)
-		if !strings.Contains(msg, "must be an interface type") {
-			t.Fatalf("panic message %q does not mention 'must be an interface type'", msg)
-		}
+		assert.True(t, strings.Contains(msg, "must be an interface type"),
+			"panic message does not mention 'must be an interface type': "+msg)
 	}()
 	_ = mock.Of[int](t) // must panic
 }
@@ -67,42 +64,32 @@ func TestOfRegistersCleanup(t *testing.T) {
 	m.OnCall("Greet").Return("hello").Times(1)
 	// Do NOT call Greet — Verify at cleanup should report violation.
 	ft.runCleanup()
-	if len(ft.errors) == 0 {
-		t.Fatal("expected Verify error at cleanup for unmet expectation")
-	}
+	assert.True(t, len(ft.errors) > 0, "expected Verify error at cleanup for unmet expectation")
 }
 
 func TestInterfaceReturnsSatisfyingValue(t *testing.T) {
 	m := mock.Of[Greeter](t)
 	g := m.Interface()
 	// Satisfy the interface: just check the value is non-nil.
-	if g == nil {
-		t.Fatal("Interface() returned nil")
-	}
+	require.NotNil(t, g, "Interface() returned nil")
 	// Ensure the interface method can be called (set up a matching expectation).
 	m.OnCall("Greet").With(mock.Any[string]()).Return("hi").AnyTimes()
 	result := g.Greet("world")
-	if result != "hi" {
-		t.Fatalf("got %q, want %q", result, "hi")
-	}
+	assert.Equal(t, "hi", result)
 }
 
 func TestInterfaceMethodsRoutedToMock(t *testing.T) {
 	m := mock.Of[Calculator](t)
 	m.OnCall("Add").With(mock.Eq[int](2), mock.Eq[int](3)).Return(5).Times(1)
 	result := m.Interface().Add(2, 3)
-	if result != 5 {
-		t.Fatalf("got %d, want 5", result)
-	}
+	assert.Equal(t, 5, result)
 }
 
 func TestOnCallReturnSimple(t *testing.T) {
 	m := mock.Of[Greeter](t)
 	m.OnCall("Greet").With(mock.Eq[string]("alice")).Return("hello, alice").Times(1)
 	got := m.Interface().Greet("alice")
-	if got != "hello, alice" {
-		t.Fatalf("got %q, want %q", got, "hello, alice")
-	}
+	assert.Equal(t, "hello, alice", got)
 }
 
 func TestOnCallMethodNotInInterface(t *testing.T) {
@@ -110,9 +97,7 @@ func TestOnCallMethodNotInInterface(t *testing.T) {
 	m := mock.Of[Greeter](ft)
 	defer func() {
 		r := recover()
-		if r == nil {
-			t.Fatal("expected panic for unknown method")
-		}
+		require.NotNil(t, r, "expected panic for unknown method")
 	}()
 	m.OnCall("NoSuchMethod")
 }
@@ -132,9 +117,7 @@ func TestOnCallMethodNameRegex(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			defer func() {
 				r := recover()
-				if r == nil {
-					t.Fatalf("expected panic for invalid name %q", name)
-				}
+				require.NotNil(t, r, "expected panic for invalid name "+name)
 			}()
 			m.OnCall(name)
 		})
@@ -147,9 +130,7 @@ func TestOnCallMethodNameOversize(t *testing.T) {
 	longName := strings.Repeat("A", 65)
 	defer func() {
 		r := recover()
-		if r == nil {
-			t.Fatal("expected panic for oversize method name")
-		}
+		require.NotNil(t, r, "expected panic for oversize method name")
 	}()
 	m.OnCall(longName)
 }
@@ -160,15 +141,9 @@ func TestCallsToReturnsRecordedCalls(t *testing.T) {
 	m.Interface().Greet("alice")
 	m.Interface().Greet("bob")
 	calls := m.CallsTo("Greet")
-	if len(calls) != 2 {
-		t.Fatalf("got %d calls, want 2", len(calls))
-	}
-	if calls[0].Args[0] != "alice" {
-		t.Errorf("first call arg: got %v, want alice", calls[0].Args[0])
-	}
-	if calls[1].Args[0] != "bob" {
-		t.Errorf("second call arg: got %v, want bob", calls[1].Args[0])
-	}
+	require.Len(t, calls, 2, "expected 2 calls")
+	assert.Equal(t, "alice", calls[0].Args[0])
+	assert.Equal(t, "bob", calls[1].Args[0])
 }
 
 func TestCallsToOrderingPreserved(t *testing.T) {
@@ -179,9 +154,7 @@ func TestCallsToOrderingPreserved(t *testing.T) {
 	}
 	calls := m.CallsTo("Add")
 	for i, c := range calls {
-		if c.Args[0].(int) != i {
-			t.Errorf("call %d: arg[0]=%v, want %d", i, c.Args[0], i)
-		}
+		assert.True(t, c.Args[0].(int) == i, fmt.Sprintf("call %d: arg[0] = %v, want %d", i, c.Args[0], i))
 	}
 }
 
@@ -190,12 +163,8 @@ func TestUnmatchedCallsLenient(t *testing.T) {
 	m := mock.Of[Greeter](ft, mock.LenientMode())
 	m.Interface().Greet("nobody")
 	calls := m.UnmatchedCalls()
-	if len(calls) != 1 {
-		t.Fatalf("got %d unmatched calls, want 1", len(calls))
-	}
-	if len(ft.errors) != 0 {
-		t.Fatalf("lenient mode should not call Errorf; got: %v", ft.errors)
-	}
+	require.Len(t, calls, 1, "expected 1 unmatched call")
+	assert.True(t, len(ft.errors) == 0, "lenient mode should not call Errorf; got: "+fmt.Sprintf("%v", ft.errors))
 }
 
 func TestUnmatchedCallsStrictAlwaysEmpty(t *testing.T) {
@@ -203,12 +172,8 @@ func TestUnmatchedCallsStrictAlwaysEmpty(t *testing.T) {
 	m := mock.Of[Greeter](ft, mock.StrictDefault())
 	m.Interface().Greet("nobody")
 	calls := m.UnmatchedCalls()
-	if len(calls) != 0 {
-		t.Fatalf("strict mode: UnmatchedCalls should be empty, got %d", len(calls))
-	}
-	if len(ft.errors) == 0 {
-		t.Fatal("strict mode: expected Errorf for unmatched call")
-	}
+	require.Len(t, calls, 0, "strict mode: UnmatchedCalls should be empty")
+	assert.True(t, len(ft.errors) > 0, "strict mode: expected Errorf for unmatched call")
 }
 
 func TestVerifyAutoInvokedAtCleanup(t *testing.T) {
@@ -217,9 +182,7 @@ func TestVerifyAutoInvokedAtCleanup(t *testing.T) {
 	m.OnCall("Greet").Return("hi").Times(2)
 	m.Interface().Greet("x") // only 1 call, but Times(2)
 	ft.runCleanup()
-	if len(ft.errors) == 0 {
-		t.Fatal("expected verify error at cleanup")
-	}
+	assert.True(t, len(ft.errors) > 0, "expected verify error at cleanup")
 }
 
 func TestVerifyMidTestCheckpoint(t *testing.T) {
@@ -227,60 +190,45 @@ func TestVerifyMidTestCheckpoint(t *testing.T) {
 	m := mock.Of[Greeter](ft)
 	m.OnCall("Greet").Return("hi").Times(1)
 	m.Verify() // called 0 times, should fail
-	if len(ft.errors) == 0 {
-		t.Fatal("expected verify failure (0 calls, expected 1)")
-	}
+	assert.True(t, len(ft.errors) > 0, "expected verify failure (0 calls, expected 1)")
 }
 
 func TestStrictDefault(t *testing.T) {
 	ft := newFakeT()
 	m := mock.Of[Greeter](ft) // default is strict
 	m.Interface().Greet("x")
-	if len(ft.errors) == 0 {
-		t.Fatal("expected Errorf for unmatched call in default strict mode")
-	}
+	assert.True(t, len(ft.errors) > 0, "expected Errorf for unmatched call in default strict mode")
 }
 
 func TestStrictUnmatched_TErrorf(t *testing.T) {
 	ft := newFakeT()
 	m := mock.Of[Greeter](ft, mock.StrictDefault())
 	m.Interface().Greet("x")
-	if len(ft.errors) == 0 {
-		t.Fatal("expected Errorf")
-	}
-	if !strings.Contains(ft.errors[0], "Greet") {
-		t.Errorf("error message should mention method name; got: %q", ft.errors[0])
-	}
+	require.True(t, len(ft.errors) > 0, "expected Errorf")
+	assert.True(t, strings.Contains(ft.errors[0], "Greet"),
+		"error message should mention method name; got: "+ft.errors[0])
 }
 
 func TestStrictFatalHalts(t *testing.T) {
 	ft := newFakeT()
 	m := mock.Of[Greeter](ft, mock.StrictFatal())
 	m.Interface().Greet("x")
-	if len(ft.fatals) == 0 {
-		t.Fatal("expected Fatalf for unmatched call in StrictFatal mode")
-	}
+	assert.True(t, len(ft.fatals) > 0, "expected Fatalf for unmatched call in StrictFatal mode")
 }
 
 func TestLenientMode(t *testing.T) {
 	ft := newFakeT()
 	m := mock.Of[Greeter](ft, mock.LenientMode())
 	m.Interface().Greet("x")
-	if len(ft.errors) != 0 {
-		t.Fatalf("lenient mode: unexpected Errorf: %v", ft.errors)
-	}
-	if len(m.UnmatchedCalls()) != 1 {
-		t.Fatal("lenient mode: expected 1 unmatched call")
-	}
+	assert.True(t, len(ft.errors) == 0, "lenient mode: unexpected Errorf: "+fmt.Sprintf("%v", ft.errors))
+	assert.True(t, len(m.UnmatchedCalls()) == 1, "lenient mode: expected 1 unmatched call")
 }
 
 func TestStrictUnmatchedReturnsZeroValues(t *testing.T) {
 	ft := newFakeT()
 	m := mock.Of[Greeter](ft, mock.StrictDefault())
 	result := m.Interface().Greet("x")
-	if result != "" {
-		t.Fatalf("unmatched strict call: expected zero string, got %q", result)
-	}
+	assert.True(t, result == "", "unmatched strict call: expected zero string, got: "+result)
 }
 
 func TestFirstRegisteredMatchWins(t *testing.T) {
@@ -288,9 +236,7 @@ func TestFirstRegisteredMatchWins(t *testing.T) {
 	m.OnCall("Greet").With(mock.Any[string]()).Return("first").AnyTimes()
 	m.OnCall("Greet").With(mock.Any[string]()).Return("second").AnyTimes()
 	result := m.Interface().Greet("x")
-	if result != "first" {
-		t.Fatalf("expected first match to win, got %q", result)
-	}
+	assert.True(t, result == "first", "expected first match to win, got: "+result)
 }
 
 func TestVerifyReportsAllUnmetInOneError(t *testing.T) {
@@ -300,9 +246,7 @@ func TestVerifyReportsAllUnmetInOneError(t *testing.T) {
 	m.OnCall("Sub").With(mock.Any[int](), mock.Any[int]()).Return(0).Times(3)
 	// Call neither → Verify should report both in one Errorf.
 	m.Verify()
-	if len(ft.errors) != 1 {
-		t.Fatalf("expected exactly 1 Errorf call consolidating all violations; got %d", len(ft.errors))
-	}
+	require.Len(t, ft.errors, 1, "expected exactly 1 Errorf call consolidating all violations")
 }
 
 func TestMockClose_AliasForVerify(t *testing.T) {
@@ -310,13 +254,9 @@ func TestMockClose_AliasForVerify(t *testing.T) {
 	m := mock.Of[Greeter](ft)
 	m.OnCall("Greet").Return("hi").Times(1)
 	err := m.Close()
-	if err != nil {
-		t.Fatalf("Close() returned non-nil error: %v", err)
-	}
+	require.NoError(t, err, "Close() returned non-nil error")
 	// Greet was not called → Verify should have fired.
-	if len(ft.errors) == 0 {
-		t.Fatal("Close() should have run Verify and reported unmet expectation")
-	}
+	assert.True(t, len(ft.errors) > 0, "Close() should have run Verify and reported unmet expectation")
 }
 
 func TestMockCloseIdempotent(t *testing.T) {
@@ -326,9 +266,7 @@ func TestMockCloseIdempotent(t *testing.T) {
 	m.Close()
 	initialErrors := len(ft.errors)
 	m.Close() // second call should be a no-op
-	if len(ft.errors) != initialErrors {
-		t.Fatal("second Close() should not re-run Verify")
-	}
+	assert.True(t, len(ft.errors) == initialErrors, "second Close() should not re-run Verify")
 }
 
 func TestMockClose_BeforeCleanup(t *testing.T) {
@@ -338,9 +276,7 @@ func TestMockClose_BeforeCleanup(t *testing.T) {
 	m.Close() // manual close runs Verify
 	errorsBefore := len(ft.errors)
 	ft.runCleanup() // cleanup should not re-run Verify
-	if len(ft.errors) != errorsBefore {
-		t.Fatal("Cleanup should be no-op after manual Close")
-	}
+	assert.True(t, len(ft.errors) == errorsBefore, "Cleanup should be no-op after manual Close")
 }
 
 func TestThirdPartyInterfaceMockable(t *testing.T) {
@@ -356,12 +292,8 @@ func TestThirdPartyInterfaceMockable(t *testing.T) {
 
 	ctx := context.Background()
 	got, err := m.Interface().FindUser(ctx, "u-1")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if got.Name != "Alice" {
-		t.Errorf("got %q, want Alice", got.Name)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "Alice", got.Name)
 }
 
 func TestExpectationDoFn(t *testing.T) {
@@ -372,12 +304,8 @@ func TestExpectationDoFn(t *testing.T) {
 		return "hi " + name
 	}).AnyTimes()
 	result := m.Interface().Greet("world")
-	if result != "hi world" {
-		t.Errorf("Do fn: got %q, want %q", result, "hi world")
-	}
-	if called != "world" {
-		t.Errorf("Do fn not called with correct arg; got %q", called)
-	}
+	assert.True(t, result == "hi world", "Do fn result: got "+result+", want hi world")
+	assert.True(t, called == "world", "Do fn not called with correct arg: got "+called+", want world")
 }
 
 func TestExpectationDoFnWrongSignature(t *testing.T) {
@@ -385,9 +313,7 @@ func TestExpectationDoFnWrongSignature(t *testing.T) {
 	m := mock.Of[Greeter](ft)
 	defer func() {
 		r := recover()
-		if r == nil {
-			t.Fatal("expected panic for wrong Do signature")
-		}
+		require.NotNil(t, r, "expected panic for wrong Do signature")
 	}()
 	m.OnCall("Greet").Do(func(x int) string { return "" }) // wrong param type
 }
@@ -397,9 +323,7 @@ func TestExpectationReturnArityMismatch(t *testing.T) {
 	m := mock.Of[Greeter](ft)
 	defer func() {
 		r := recover()
-		if r == nil {
-			t.Fatal("expected panic for arity mismatch")
-		}
+		require.NotNil(t, r, "expected panic for arity mismatch")
 	}()
 	m.OnCall("Greet").Return("a", "b") // Greet returns 1 value, not 2
 }
@@ -409,9 +333,7 @@ func TestExpectationReturnTypeMismatch(t *testing.T) {
 	m := mock.Of[Calculator](ft)
 	defer func() {
 		r := recover()
-		if r == nil {
-			t.Fatal("expected panic for type mismatch")
-		}
+		require.NotNil(t, r, "expected panic for type mismatch")
 	}()
 	m.OnCall("Add").
 		With(mock.Any[int](), mock.Any[int]()).
@@ -422,9 +344,7 @@ func TestExpectationWithMatchersGeneric(t *testing.T) {
 	m := mock.Of[Greeter](t)
 	m.OnCall("Greet").With(mock.Eq[string]("world")).Return("hello").Times(1)
 	result := m.Interface().Greet("world")
-	if result != "hello" {
-		t.Fatalf("got %q, want hello", result)
-	}
+	assert.Equal(t, "hello", result)
 }
 
 func TestMockInBenchmarkB(t *testing.T) {
@@ -438,18 +358,14 @@ func TestFailureMessageRegisterCLI(t *testing.T) {
 	ft := newFakeT()
 	m := mock.Of[Greeter](ft, mock.StrictDefault())
 	m.Interface().Greet("x")
-	if len(ft.errors) == 0 {
-		t.Fatal("expected error message")
-	}
+	require.True(t, len(ft.errors) > 0, "expected error message")
 	msg := ft.errors[0]
 	// The message should be sentence-case, period-terminated.
-	if !strings.HasSuffix(strings.TrimSpace(msg), ".") {
-		t.Errorf("error message should end with '.'; got: %q", msg)
-	}
+	assert.True(t, strings.HasSuffix(strings.TrimSpace(msg), "."),
+		"error message should end with '.'; got: "+msg)
 	// Should start with uppercase.
-	if len(msg) > 0 && msg[0] < 'A' || msg[0] > 'Z' {
-		t.Errorf("error message should start with uppercase; got: %q", msg)
-	}
+	assert.True(t, len(msg) > 0 && msg[0] >= 'A' && msg[0] <= 'Z',
+		"error message should start with uppercase; got: "+msg)
 }
 
 func TestInternalPanicRegisterLibrary(t *testing.T) {
@@ -457,14 +373,11 @@ func TestInternalPanicRegisterLibrary(t *testing.T) {
 	m := mock.Of[Greeter](ft)
 	defer func() {
 		r := recover()
-		if r == nil {
-			t.Fatal("expected panic")
-		}
+		require.NotNil(t, r, "expected panic")
 		msg := fmt.Sprintf("%v", r)
 		// Library register: lowercase, colon-delimited, no trailing period.
-		if !strings.Contains(msg, "mock") {
-			t.Errorf("panic message should reference 'mock'; got: %q", msg)
-		}
+		assert.True(t, strings.Contains(msg, "mock"),
+			"panic message should reference 'mock'; got: "+msg)
 	}()
 	m.OnCall("Greet").Return("a", "b") // arity mismatch → panic
 }
@@ -486,7 +399,5 @@ func TestRepoMockWithError(t *testing.T) {
 		Return(User{}, errSentinel).
 		Times(1)
 	_, err := m.Interface().FindUser(context.Background(), "bad-id")
-	if !errors.Is(err, errSentinel) {
-		t.Fatalf("expected sentinel error, got: %v", err)
-	}
+	assert.ErrorIs(t, err, errSentinel)
 }

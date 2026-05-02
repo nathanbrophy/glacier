@@ -91,9 +91,7 @@ func TestNewWithoutBanner(t *testing.T) {
 	// Bare invocation — banner should not appear.
 	_ = app.Run(context.Background(), []string{"serve"})
 	// The banner text should not be in the output.
-	if strings.Contains(buf.String(), "GLACIER") {
-		t.Errorf("banner appeared despite WithoutBanner()")
-	}
+	assert.False(t, strings.Contains(buf.String(), "GLACIER"), "banner appeared despite WithoutBanner()")
 }
 
 func TestRunDispatchesArgs(t *testing.T) {

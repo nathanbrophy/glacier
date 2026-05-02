@@ -4,6 +4,7 @@ package option_test
 
 import (
 	"errors"
+	"fmt"
 	"go/token"
 	"go/types"
 	"regexp"
@@ -274,7 +275,7 @@ func TestApplyOptionPanicsPropagates(t *testing.T) {
 	defer func() {
 		r := recover()
 		if r == nil {
-			t.Fatal("expected panic to propagate from Apply, but it did not")
+			require.True(t, false, "expected panic to propagate from Apply, but it did not")
 		}
 	}()
 	//nolint:errcheck // panic expected — return never reached.
@@ -310,7 +311,7 @@ func TestOptionFuncTypedNilApplyPanics(t *testing.T) {
 	defer func() {
 		r := recover()
 		if r == nil {
-			t.Fatal("expected panic from nil OptionFunc, but Apply did not panic")
+			require.True(t, false, "expected panic from nil OptionFunc, but Apply did not panic")
 		}
 	}()
 	//nolint:errcheck
@@ -421,7 +422,7 @@ func TestValidateValidatorPanicsPropagates(t *testing.T) {
 	defer func() {
 		r := recover()
 		if r == nil {
-			t.Fatal("expected panic to propagate from Validate, but it did not")
+			require.True(t, false, "expected panic to propagate from Validate, but it did not")
 		}
 	}()
 	//nolint:errcheck
@@ -570,7 +571,7 @@ func TestErrorRegisterConformanceOption(t *testing.T) {
 
 	for _, e := range allErrors {
 		if e == nil {
-			t.Errorf("unexpected nil in error list (test setup bug)")
+			assert.True(t, false, "unexpected nil in error list (test setup bug)")
 			continue
 		}
 		assert.True(t, re.MatchString(e.Error()), "error string %q does not match register pattern %s", e.Error(), re)
@@ -590,9 +591,7 @@ func TestSurfaceClosed_OptionPackage(t *testing.T) {
 	require.NoError(t, err, "packages.Load failed")
 	require.Len(t, pkgs, 1)
 	pkg := pkgs[0]
-	if len(pkg.Errors) > 0 {
-		t.Fatalf("package load errors: %v", pkg.Errors)
-	}
+	require.True(t, len(pkg.Errors) == 0, fmt.Sprintf("package load errors: %v", pkg.Errors))
 
 	scope := pkg.Types.Scope()
 	names := scope.Names()

@@ -10,6 +10,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/concur"
 )
 
@@ -68,7 +69,5 @@ func TestRace_Once_ConcurrentDo(t *testing.T) {
 		}()
 	}
 	wg.Wait()
-	if calls.Load() != 1 {
-		t.Errorf("Once.Do fn called %d times; want 1", calls.Load())
-	}
+	assert.True(t, calls.Load() == int64(1), fmt.Sprintf("Once.Do fn called %d times; want 1", calls.Load()))
 }

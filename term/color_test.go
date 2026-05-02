@@ -3,6 +3,7 @@
 package term_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/nathanbrophy/glacier/assert"
@@ -61,9 +62,7 @@ func TestHexConstructorInvalid(t *testing.T) {
 			_, err := term.Hex(tc.input)
 			require.Error(t, err, "Hex("+tc.input+"): expected error")
 			he, ok := err.(*term.HexParseError)
-			if !ok {
-				t.Fatalf("Hex(%q): expected *HexParseError, got %T", tc.input, err)
-			}
+			require.True(t, ok, fmt.Sprintf("Hex(%q): expected *HexParseError, got %T", tc.input, err))
 			assert.Equal(t, he.Input, tc.input)
 			// Error must match ^term: hex:
 			assert.True(t, len(err.Error()) >= 10 && err.Error()[:9] == "term: hex",

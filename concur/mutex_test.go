@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/concur"
 )
 
@@ -95,7 +96,7 @@ func TestRWMutex_MultipleReadersSimultaneous(t *testing.T) {
 		select {
 		case <-held:
 		case <-time.After(2 * time.Second):
-			t.Fatal("timed out waiting for reader to acquire RLock")
+			require.True(t, false, "timed out waiting for reader to acquire RLock")
 		}
 	}
 	wg.Wait()
@@ -117,7 +118,7 @@ func TestRWMutex_WriterBlocksWhileReaderHolds(t *testing.T) {
 	// Writer should not have acquired yet.
 	select {
 	case <-writerAcquired:
-		t.Fatal("writer acquired lock while reader holds it")
+		require.True(t, false, "writer acquired lock while reader holds it")
 	case <-time.After(30 * time.Millisecond):
 	}
 
@@ -127,7 +128,7 @@ func TestRWMutex_WriterBlocksWhileReaderHolds(t *testing.T) {
 	select {
 	case <-writerAcquired:
 	case <-time.After(2 * time.Second):
-		t.Fatal("writer never acquired lock after reader released")
+		require.True(t, false, "writer never acquired lock after reader released")
 	}
 }
 

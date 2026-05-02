@@ -3,6 +3,7 @@
 package term_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"unicode/utf8"
@@ -58,9 +59,7 @@ func TestBoxWidthExceedsTerminal(t *testing.T) {
 	lines := strings.Split(got, "\n")
 	for _, l := range lines {
 		w := utf8.RuneCountInString(l)
-		if w > 82 { // 80 content + 2 border
-			t.Errorf("Box line too wide: %d runes (limit ~82): %q", w, l)
-		}
+		assert.True(t, w <= 82, "Box line too wide: "+fmt.Sprintf("%d runes (limit ~82): %q", w, l))
 	}
 }
 

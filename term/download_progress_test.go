@@ -4,6 +4,7 @@ package term_test
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"testing"
 
@@ -22,9 +23,7 @@ func TestDownloadProgressRead(t *testing.T) {
 	// Read 10 bytes.
 	buf := make([]byte, 10)
 	n, err := dp.Read(buf)
-	if err != nil && err != io.EOF {
-		t.Fatalf("Read error: %v", err)
-	}
+	assert.True(t, err == nil || err == io.EOF, "Read error: "+fmt.Sprintf("%v", err))
 	assert.Equal(t, n, 10)
 
 	lines, done := dp.Render()
@@ -67,12 +66,8 @@ func TestDownloadProgressReadAfterDone(t *testing.T) {
 	buf := make([]byte, 4)
 	n, err := dp.Read(buf)
 	// Source still has data; Read should work transparently.
-	if err != nil && err != io.EOF {
-		t.Fatalf("Read after Done(): error %v", err)
-	}
-	if n == 0 && err != io.EOF {
-		t.Error("Read after Done() returned 0 bytes without EOF")
-	}
+	assert.True(t, err == nil || err == io.EOF, "Read after Done(): error "+fmt.Sprintf("%v", err))
+	assert.True(t, n > 0 || err == io.EOF, "Read after Done() returned 0 bytes without EOF")
 }
 
 func TestNewDownloadProgressOptions(t *testing.T) {
