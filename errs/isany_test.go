@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/errs"
 )
 
@@ -56,9 +57,7 @@ func TestIsAny(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			got := errs.IsAny(c.err, c.targets...)
-			if got != c.want {
-				t.Fatalf("IsAny(%v, %v) = %v, want %v", c.err, c.targets, got, c.want)
-			}
+			assert.Equal(t, got, c.want)
 		})
 	}
 }

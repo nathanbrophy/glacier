@@ -6,6 +6,7 @@ import (
 	"io"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/errs"
 )
 
@@ -54,9 +55,7 @@ func TestCode(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			got := errs.Code(c.err)
-			if got != c.wantCode {
-				t.Fatalf("Code(%v) = %q, want %q", c.err, got, c.wantCode)
-			}
+			assert.Equal(t, got, c.wantCode)
 		})
 	}
 }

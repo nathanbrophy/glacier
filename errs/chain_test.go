@@ -9,6 +9,8 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/errs"
 )
 
@@ -92,13 +94,9 @@ func TestChainYieldCount(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			got := collectChain(c.err)
-			if len(got) != c.wantLen {
-				t.Fatalf("chain length = %d, want %d; got: %v", len(got), c.wantLen, got)
-			}
+			require.Len(t, got, c.wantLen)
 			for _, elem := range c.wantElems {
-				if got[elem.idx] != elem.val {
-					t.Errorf("got[%d] = %v, want %v", elem.idx, got[elem.idx], elem.val)
-				}
+				assert.Equal(t, got[elem.idx], elem.val)
 			}
 		})
 	}
@@ -118,9 +116,7 @@ func TestChainEarlyTermination(t *testing.T) {
 			break
 		}
 	}
-	if count != 2 {
-		t.Fatalf("expected exactly 2 yields, got %d", count)
-	}
+	assert.Equal(t, count, 2)
 }
 
 // TestChainComposesWithFluentTake: simulate bounded iteration via hand-rolled loop.
@@ -139,9 +135,7 @@ func TestChainComposesWithFluentTake(t *testing.T) {
 			break
 		}
 	}
-	if count != 5 {
-		t.Fatalf("expected 5 yields from bounded walk, got %d", count)
-	}
+	assert.Equal(t, count, 5)
 }
 
 // TestChainNoRaceConcurrent: 100 goroutines iterate Chain(sharedErr) concurrently.

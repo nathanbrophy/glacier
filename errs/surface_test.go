@@ -5,6 +5,7 @@ package errs_test
 import (
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/errs"
 )
 
@@ -33,9 +34,7 @@ func TestSurfaceClosed_ErrsPackage(t *testing.T) {
 
 	// Sentinel.
 	s := errs.Sentinel("surface: test")
-	if s == nil {
-		t.Error("Sentinel returned nil")
-	}
+	assert.NotNil(t, s, "Sentinel returned nil")
 
 	// IsAny.
 	var _ bool = errs.IsAny(nil)

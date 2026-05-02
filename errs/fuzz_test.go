@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/errs"
 )
 
@@ -62,11 +63,10 @@ func FuzzSentinelRegister(f *testing.F) {
 			_ = errs.Sentinel(text)
 		}()
 
-		if expectPanic && !panicked {
-			t.Errorf("Sentinel(%q): expected panic, got none", text)
-		}
-		if !expectPanic && panicked {
-			t.Errorf("Sentinel(%q): unexpected panic", text)
+		if expectPanic {
+			assert.True(t, panicked, "Sentinel("+text+"): expected panic, got none")
+		} else {
+			assert.False(t, panicked, "Sentinel("+text+"): unexpected panic")
 		}
 	})
 }

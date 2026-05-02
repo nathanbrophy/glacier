@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/errs"
 )
 
@@ -24,23 +26,17 @@ func TestWrapperTypedNilMethods(t *testing.T) {
 
 	t.Run("Error() on typed nil returns empty string", func(t *testing.T) {
 		t.Parallel()
-		if got := tw.Error(); got != "" {
-			t.Fatalf("nil.Error() = %q, want \"\"", got)
-		}
+		require.Equal(t, tw.Error(), "")
 	})
 
 	t.Run("Unwrap() on typed nil returns nil", func(t *testing.T) {
 		t.Parallel()
-		if got := tw.Unwrap(); got != nil {
-			t.Fatalf("nil.Unwrap() = %v, want nil", got)
-		}
+		assert.Nil(t, tw.Unwrap())
 	})
 
 	t.Run("WithStackTrace() on typed nil returns nil", func(t *testing.T) {
 		t.Parallel()
-		if got := tw.WithStackTrace(); got != nil {
-			t.Fatalf("nil.WithStackTrace() = %v, want nil", got)
-		}
+		assert.Nil(t, tw.WithStackTrace())
 	})
 }
 
@@ -49,9 +45,7 @@ func TestWrapperTypedNilMethods(t *testing.T) {
 func TestWrapNilReturnsNil(t *testing.T) {
 	t.Parallel()
 	w := errs.Wrap(nil, "x")
-	if w != nil {
-		t.Fatalf("expected nil, got %v", w)
-	}
+	assert.Nil(t, w)
 	// Calling methods on typed nil must be safe.
 	var tw *errs.Wrapper
 	_ = tw.Error()
@@ -94,11 +88,11 @@ func TestWrapFormatAndChain(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			got := errs.Wrap(c.inner, c.prefix)
-			if c.wantMsg != "" && got.Error() != c.wantMsg {
-				t.Fatalf("Error() = %q, want %q", got.Error(), c.wantMsg)
+			if c.wantMsg != "" {
+				require.Equal(t, got.Error(), c.wantMsg)
 			}
-			if c.wantIsErr && !errors.Is(got, c.inner) {
-				t.Fatalf("expected errors.Is(Wrap(e, %q), e) == true, got false", c.prefix)
+			if c.wantIsErr {
+				require.True(t, errors.Is(got, c.inner), "expected errors.Is(Wrap(e, "+c.prefix+"), e) == true")
 			}
 		})
 	}
@@ -111,12 +105,8 @@ func TestWrapErrorsAs(t *testing.T) {
 	inner := &customErr{msg: "inner"}
 	wrapped := errs.Wrap(inner, "x")
 	var target *customErr
-	if !errors.As(wrapped, &target) {
-		t.Fatalf("expected errors.As to find *customErr through Wrapper")
-	}
-	if target != inner {
-		t.Fatalf("expected target == inner, got %v", target)
-	}
+	require.True(t, errors.As(wrapped, &target), "expected errors.As to find *customErr through Wrapper")
+	assert.Equal(t, target, inner)
 }
 
 // --- Unwrap ---
@@ -125,9 +115,7 @@ func TestWrapperUnwrapReturnsInner(t *testing.T) {
 	t.Parallel()
 	inner := io.EOF
 	w := errs.Wrap(inner, "pkg: act")
-	if w.Unwrap() != inner {
-		t.Fatalf("Unwrap() = %v, want %v", w.Unwrap(), inner)
-	}
+	require.Equal(t, w.Unwrap(), inner)
 }
 
 // --- WithStackTrace / StackOf ---
@@ -139,13 +127,10 @@ func TestStackTraceCapture(t *testing.T) {
 		t.Parallel()
 		w := errs.Wrap(io.EOF, "x").WithStackTrace()
 		frames := errs.StackOf(w)
-		if len(frames) == 0 {
-			t.Fatal("expected at least 1 frame, got 0")
-		}
+		require.True(t, len(frames) > 0, "expected at least 1 frame, got 0")
 		first := frames[0]
-		if !strings.Contains(first.Function, "TestStackTraceCapture") {
-			t.Fatalf("first frame Function = %q, want it to contain TestStackTraceCapture", first.Function)
-		}
+		assert.True(t, strings.Contains(first.Function, "TestStackTraceCapture"),
+			"first frame Function = "+first.Function+" want it to contain TestStackTraceCapture")
 	})
 
 	t.Run("frame count capped at 32", func(t *testing.T) {
@@ -159,12 +144,8 @@ func TestStackTraceCapture(t *testing.T) {
 		}
 		w := deepWrap(100)
 		frames := errs.StackOf(w)
-		if len(frames) > 32 {
-			t.Fatalf("expected <=32 frames, got %d", len(frames))
-		}
-		if len(frames) == 0 {
-			t.Fatal("expected at least 1 frame")
-		}
+		assert.True(t, len(frames) <= 32, "expected <=32 frames")
+		assert.True(t, len(frames) > 0, "expected at least 1 frame")
 	})
 
 	t.Run("double WithStackTrace preserves frame count", func(t *testing.T) {
@@ -173,12 +154,8 @@ func TestStackTraceCapture(t *testing.T) {
 		n1 := len(errs.StackOf(w))
 		w2 := w.WithStackTrace()
 		n2 := len(errs.StackOf(w2))
-		if w2 == nil {
-			t.Fatal("expected non-nil after second WithStackTrace")
-		}
-		if n1 != n2 {
-			t.Fatalf("second WithStackTrace changed frame count: before=%d after=%d", n1, n2)
-		}
+		assert.NotNil(t, w2, "expected non-nil after second WithStackTrace")
+		assert.Equal(t, n1, n2)
 	})
 }
 
@@ -215,14 +192,11 @@ func TestStackOfEdgeCases(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			got := errs.StackOf(c.build())
-			if c.wantNil && got != nil {
-				t.Fatalf("expected nil, got %v", got)
-			}
-			if !c.wantNil && got == nil {
-				t.Fatal("expected non-nil frames, got nil")
-			}
-			if !c.wantNil && len(got) == 0 {
-				t.Fatal("expected at least 1 frame")
+			if c.wantNil {
+				assert.Nil(t, got)
+			} else {
+				assert.NotNil(t, got)
+				assert.True(t, len(got) > 0, "expected at least 1 frame")
 			}
 		})
 	}

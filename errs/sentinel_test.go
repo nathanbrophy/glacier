@@ -6,6 +6,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/errs"
 )
 
@@ -63,8 +64,8 @@ func TestSentinelValidCases(t *testing.T) {
 			t.Parallel()
 			var s error
 			mustNotPanic(t, c.name, func() { s = errs.Sentinel(c.text) })
-			if c.wantMsg != "" && s.Error() != c.wantMsg {
-				t.Fatalf("Error() = %q, want %q", s.Error(), c.wantMsg)
+			if c.wantMsg != "" {
+				assert.Equal(t, s.Error(), c.wantMsg)
 			}
 		})
 	}
@@ -102,25 +103,10 @@ func TestSentinelPanicCases(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			msg := mustPanic(t, c.name, func() { _ = errs.Sentinel(c.text) })
-			if msg == "" {
-				t.Fatal("panic message was empty")
-			}
+			assert.True(t, msg != "", "panic message was empty")
 			if c.wantRegisterRef {
-				found := false
-				for _, word := range []string{"register", "Register"} {
-					for i := 0; i+len(word) <= len(msg); i++ {
-						if msg[i:i+len(word)] == word {
-							found = true
-							break
-						}
-					}
-					if found {
-						break
-					}
-				}
-				if !found {
-					t.Fatalf("panic message does not contain 'register': %q", msg)
-				}
+				found := assert.Contains(t, msg, "register") || assert.Contains(t, msg, "Register")
+				assert.True(t, found, "panic message does not contain 'register': "+msg)
 			}
 		})
 	}
@@ -133,9 +119,8 @@ func TestErrorRegisterConformance_errs(t *testing.T) {
 		_ = errs.Sentinel("BAD")
 	})
 	const prefix = "errs:"
-	if len(msg) < len(prefix) || msg[:len(prefix)] != prefix {
-		t.Fatalf("panic message does not start with %q: %q", prefix, msg)
-	}
+	assert.True(t, len(msg) >= len(prefix) && msg[:len(prefix)] == prefix,
+		"panic message does not start with "+prefix+": "+msg)
 }
 
 // TestSentinelConcurrentRegisterValidation: multiple Sentinel calls from

@@ -9,6 +9,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/errs"
 )
 
@@ -63,9 +64,7 @@ func TestRetryable(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			got := errs.Retryable(c.err())
-			if got != c.want {
-				t.Fatalf("Retryable() = %v, want %v", got, c.want)
-			}
+			assert.Equal(t, got, c.want)
 		})
 	}
 }
@@ -73,18 +72,14 @@ func TestRetryable(t *testing.T) {
 // TestMarkRetryableNil: MarkRetryable(nil) == nil.
 func TestMarkRetryableNil(t *testing.T) {
 	t.Parallel()
-	if got := errs.MarkRetryable(nil); got != nil {
-		t.Fatalf("MarkRetryable(nil) = %v, want nil", got)
-	}
+	assert.Nil(t, errs.MarkRetryable(nil))
 }
 
 // TestRetryableMarkPreservesUnwrap: errors.Is(MarkRetryable(io.EOF), io.EOF) == true.
 func TestRetryableMarkPreservesUnwrap(t *testing.T) {
 	t.Parallel()
 	marked := errs.MarkRetryable(io.EOF)
-	if !errors.Is(marked, io.EOF) {
-		t.Fatal("errors.Is(MarkRetryable(io.EOF), io.EOF) = false, want true")
-	}
+	assert.True(t, errors.Is(marked, io.EOF), "errors.Is(MarkRetryable(io.EOF), io.EOF) = false, want true")
 }
 
 // TestRetryableNoRaceConcurrent: 100 goroutines call Retryable(sharedErr) concurrently.

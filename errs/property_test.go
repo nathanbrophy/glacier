@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/errs"
 )
 
@@ -57,9 +58,7 @@ func PropertyChainStartsWithSelf(t *testing.T) {
 		first := true
 		for e := range errs.Chain(err) {
 			if first {
-				if e != err {
-					t.Errorf("Chain(%v): first element = %v, want err itself", err, e)
-				}
+				assert.Equal(t, e, err)
 				first = false
 			}
 			break
@@ -83,7 +82,7 @@ func TestPropertyChainContainsAllUnwrapped(t *testing.T) {
 		}
 		for e := range want {
 			if _, ok := got[e]; !ok {
-				t.Errorf("Chain(%v) missing reachable error %v", root, e)
+				assert.True(t, false, fmt.Sprintf("Chain(%v) missing reachable error %v", root, e))
 			}
 		}
 	}
@@ -114,12 +113,12 @@ func TestPropertyJoinIdempotent(t *testing.T) {
 	s2 := leafErrors(j2)
 	for e := range s1 {
 		if _, ok := s2[e]; !ok {
-			t.Errorf("j2 missing error %v that j1 contains", e)
+			assert.True(t, false, fmt.Sprintf("j2 missing error %v that j1 contains", e))
 		}
 	}
 	for e := range s2 {
 		if _, ok := s1[e]; !ok {
-			t.Errorf("j1 missing error %v that j2 contains", e)
+			assert.True(t, false, fmt.Sprintf("j1 missing error %v that j2 contains", e))
 		}
 	}
 }
@@ -132,9 +131,8 @@ func TestPropertyWrapTransparentToErrorsIs(t *testing.T) {
 	for _, s := range sentinels {
 		for _, p := range prefixes {
 			w := errs.Wrap(s, p)
-			if !errors.Is(w, s) {
-				t.Errorf("errors.Is(Wrap(%v, %q), %v) = false, want true", s, p, s)
-			}
+			assert.True(t, errors.Is(w, s),
+				fmt.Sprintf("errors.Is(Wrap(%v, %q), %v) = false, want true", s, p, s))
 		}
 	}
 }
@@ -145,8 +143,7 @@ func TestPropertyMarkRetryableTransparent(t *testing.T) {
 	errsToTest := []error{io.EOF, fs.ErrNotExist, fmt.Errorf("custom")}
 	for _, e := range errsToTest {
 		marked := errs.MarkRetryable(e)
-		if !errors.Is(marked, e) {
-			t.Errorf("errors.Is(MarkRetryable(%v), %v) = false, want true", e, e)
-		}
+		assert.True(t, errors.Is(marked, e),
+			fmt.Sprintf("errors.Is(MarkRetryable(%v), %v) = false, want true", e, e))
 	}
 }

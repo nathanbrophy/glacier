@@ -8,6 +8,8 @@ import (
 	"io/fs"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/errs"
 )
 
@@ -25,9 +27,7 @@ func TestJoinNilAndEmptyCases(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
-			if got := errs.Join(c.args...); got != nil {
-				t.Fatalf("Join(%v) = %v, want nil", c.args, got)
-			}
+			assert.Nil(t, errs.Join(c.args...))
 		})
 	}
 }
@@ -37,9 +37,7 @@ func TestJoinSingleNonNilCollapses(t *testing.T) {
 	t.Parallel()
 	e := io.EOF
 	got := errs.Join(nil, e, nil)
-	if got != e {
-		t.Fatalf("Join(nil,e,nil) = %v, want identity-equal to e", got)
-	}
+	assert.Equal(t, got, e)
 }
 
 // TestJoinMultipleNonNil covers the two-or-more-error cases: errors.Is semantics
@@ -70,22 +68,14 @@ func TestJoinMultipleNonNil(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			j := errs.Join(c.args...)
-			if j == nil {
-				t.Fatal("Join returned nil for non-nil inputs")
-			}
+			require.NotNil(t, j, "Join returned nil for non-nil inputs")
 			for _, tgt := range c.targets {
-				if !errors.Is(j, tgt) {
-					t.Errorf("errors.Is(j, %v) = false, want true", tgt)
-				}
+				assert.True(t, errors.Is(j, tgt), "expected errors.Is(j, target) == true")
 			}
 			type multiUnwrapper interface{ Unwrap() []error }
 			mu, ok := j.(multiUnwrapper)
-			if !ok {
-				t.Fatal("result does not implement Unwrap() []error")
-			}
-			if got := len(mu.Unwrap()); got != c.wantCount {
-				t.Fatalf("Unwrap() []error len = %d, want %d", got, c.wantCount)
-			}
+			require.True(t, ok, "result does not implement Unwrap() []error")
+			assert.Equal(t, len(mu.Unwrap()), c.wantCount)
 		})
 	}
 }
