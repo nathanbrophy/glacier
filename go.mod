@@ -4,9 +4,13 @@ go 1.25.0
 
 toolchain go1.26.0
 
-require golang.org/x/tools v0.29.0 // cli/gen — build-time only via go/packages; pinned per §23.3
+require (
+	golang.org/x/term v0.28.0 // term/ — terminal raw-mode + isatty; pre-approved per §23.3
+	golang.org/x/tools v0.29.0 // cli/gen — build-time only via go/packages; pinned per §23.3
+)
 
 require (
 	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect; transitive via golang.org/x/term; pre-approved per §23.3
 )
