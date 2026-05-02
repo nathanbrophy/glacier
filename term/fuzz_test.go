@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/term"
 )
 
@@ -26,9 +27,7 @@ func FuzzGlyphRegistration(f *testing.F) {
 		err := term.RegisterGlyph(name, "X", "x")
 		if err != nil {
 			// Verify error format.
-			if !strings.Contains(err.Error(), "term: glyph:") {
-				t.Errorf("error %q must contain 'term: glyph:'", err.Error())
-			}
+			assert.Contains(t, err.Error(), "term: glyph:")
 		}
 	})
 }
@@ -74,9 +73,8 @@ func FuzzHexParsing(f *testing.F) {
 		c, err := term.Hex(input)
 		if err == nil {
 			// Valid color: check field ranges.
-			if c.R > 255 || c.G > 255 || c.B > 255 {
-				t.Errorf("Hex(%q) = %+v with out-of-range fields", input, c)
-			}
+			assert.True(t, c.R <= 255 && c.G <= 255 && c.B <= 255,
+				"Hex("+input+") returned out-of-range fields")
 		}
 	})
 }

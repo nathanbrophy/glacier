@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/term"
 )
 
@@ -25,18 +27,14 @@ func TestBuiltinGlyphsRegistered(t *testing.T) {
 		registered[g.Name] = true
 	}
 	for _, name := range builtins {
-		if !registered[name] {
-			t.Errorf("builtin glyph %q not found in registry", name)
-		}
+		assert.True(t, registered[name], "builtin glyph "+name+" not found in registry")
 	}
 }
 
 func TestGlyphUnknownReturnsEmpty(t *testing.T) {
 	t.Parallel()
 	got := term.Glyph("__nonexistent_glyph_xyz__")
-	if got != "" {
-		t.Errorf("Glyph(unknown) = %q, want empty string", got)
-	}
+	assert.Equal(t, got, "")
 }
 
 func TestRegisterGlyphSuccess(t *testing.T) {
@@ -59,9 +57,7 @@ func TestRegisterGlyphSuccess(t *testing.T) {
 			found = true
 		}
 	}
-	if !found {
-		t.Errorf("registered glyph %q not found in Glyphs()", name)
-	}
+	assert.True(t, found, "registered glyph "+name+" not found in Glyphs()")
 }
 
 func TestRegisterGlyphDuplicate(t *testing.T) {
@@ -70,12 +66,8 @@ func TestRegisterGlyphDuplicate(t *testing.T) {
 	// First registration may or may not succeed (if already registered from prev test run).
 	_ = term.RegisterGlyph(name, "A", "B")
 	err := term.RegisterGlyph(name, "C", "D")
-	if err == nil {
-		t.Fatalf("RegisterGlyph(duplicate %q): expected error, got nil", name)
-	}
-	if !strings.Contains(err.Error(), "term: glyph:") {
-		t.Errorf("error %q must contain 'term: glyph:'", err.Error())
-	}
+	require.Error(t, err, "RegisterGlyph(duplicate "+name+"): expected error")
+	assert.Contains(t, err.Error(), "term: glyph:")
 }
 
 func TestRegisterGlyphInvalidName(t *testing.T) {
@@ -101,16 +93,13 @@ func TestRegisterGlyphInvalidName(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			err := term.RegisterGlyph(tc.glName, tc.utf8, tc.ascii)
-			if tc.wantErr && err == nil {
-				t.Errorf("RegisterGlyph(%q): expected error, got nil", tc.glName)
-			}
-			if !tc.wantErr && err != nil {
-				t.Errorf("RegisterGlyph(%q): unexpected error: %v", tc.glName, err)
+			if tc.wantErr {
+				assert.Error(t, err, "RegisterGlyph("+tc.glName+"): expected error")
+			} else {
+				assert.NoError(t, err, "RegisterGlyph("+tc.glName+"): unexpected error")
 			}
 			if err != nil {
-				if !strings.Contains(err.Error(), "term: glyph:") {
-					t.Errorf("error %q must contain 'term: glyph:'", err.Error())
-				}
+				assert.Contains(t, err.Error(), "term: glyph:")
 			}
 		})
 	}
@@ -121,9 +110,7 @@ func TestGlyphsSnapshotIndependence(t *testing.T) {
 	snap1 := term.Glyphs()
 	snap2 := term.Glyphs()
 	// Both are independent copies of the registry.
-	if &snap1[0] == &snap2[0] {
-		t.Error("Glyphs() returned the same backing array; expected independent snapshots")
-	}
+	assert.True(t, &snap1[0] != &snap2[0], "Glyphs() returned the same backing array; expected independent snapshots")
 }
 
 // TestRegisterGlyphMaxLength verifies the boundary at exactly 64 bytes.
@@ -135,18 +122,13 @@ func TestRegisterGlyphMaxLength(t *testing.T) {
 	err := term.RegisterGlyph(name64, "X", "x")
 	if err != nil {
 		ge, ok := err.(*term.GlyphError)
-		if !ok {
-			t.Fatalf("expected *GlyphError, got %T: %v", err, err)
-		}
-		if !strings.Contains(ge.Cause, "already registered") && !strings.Contains(ge.Cause, "64") {
-			t.Errorf("unexpected GlyphError.Cause: %q", ge.Cause)
-		}
+		require.True(t, ok, "expected *GlyphError")
+		assert.True(t, strings.Contains(ge.Cause, "already registered") || strings.Contains(ge.Cause, "64"),
+			"unexpected GlyphError.Cause: "+ge.Cause)
 	}
 
 	// 65 bytes should always fail with "exceeds 64 bytes".
 	name65 := strings.Repeat("b", 65)
 	err = term.RegisterGlyph(name65, "X", "x")
-	if err == nil {
-		t.Error("expected error for 65-byte name, got nil")
-	}
+	assert.Error(t, err, "expected error for 65-byte name")
 }

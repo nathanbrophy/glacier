@@ -5,15 +5,17 @@ package term_test
 import (
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/term"
 )
 
 func TestRGBConstructor(t *testing.T) {
 	t.Parallel()
 	c := term.RGB(0x22, 0xD3, 0xEE)
-	if c.R != 0x22 || c.G != 0xD3 || c.B != 0xEE {
-		t.Errorf("RGB(0x22,0xD3,0xEE) = %+v, want {R:0x22 G:0xD3 B:0xEE}", c)
-	}
+	assert.Equal(t, c.R, uint8(0x22))
+	assert.Equal(t, c.G, uint8(0xD3))
+	assert.Equal(t, c.B, uint8(0xEE))
 }
 
 func TestHexConstructorValid(t *testing.T) {
@@ -34,12 +36,8 @@ func TestHexConstructorValid(t *testing.T) {
 		t.Run(tc.input, func(t *testing.T) {
 			t.Parallel()
 			got, err := term.Hex(tc.input)
-			if err != nil {
-				t.Fatalf("Hex(%q) error: %v", tc.input, err)
-			}
-			if got != tc.want {
-				t.Errorf("Hex(%q) = %+v, want %+v", tc.input, got, tc.want)
-			}
+			require.NoError(t, err, "Hex("+tc.input+")")
+			assert.Equal(t, got, tc.want)
 		})
 	}
 }
@@ -61,20 +59,15 @@ func TestHexConstructorInvalid(t *testing.T) {
 		t.Run(tc.input, func(t *testing.T) {
 			t.Parallel()
 			_, err := term.Hex(tc.input)
-			if err == nil {
-				t.Fatalf("Hex(%q): expected error, got nil", tc.input)
-			}
+			require.Error(t, err, "Hex("+tc.input+"): expected error")
 			he, ok := err.(*term.HexParseError)
 			if !ok {
 				t.Fatalf("Hex(%q): expected *HexParseError, got %T", tc.input, err)
 			}
-			if he.Input != tc.input {
-				t.Errorf("HexParseError.Input = %q, want %q", he.Input, tc.input)
-			}
+			assert.Equal(t, he.Input, tc.input)
 			// Error must match ^term: hex:
-			if len(err.Error()) < 10 || err.Error()[:9] != "term: hex" {
-				t.Errorf("HexParseError.Error() = %q, must start with 'term: hex:'", err.Error())
-			}
+			assert.True(t, len(err.Error()) >= 10 && err.Error()[:9] == "term: hex",
+				"HexParseError.Error() must start with 'term: hex:'")
 		})
 	}
 }
@@ -111,12 +104,8 @@ func TestNamedColorsMatchSpec0001(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			want, err := term.Hex(tc.hex)
-			if err != nil {
-				t.Fatalf("Hex(%q): %v", tc.hex, err)
-			}
-			if tc.got != want {
-				t.Errorf("%s = %+v, want %+v (from %s)", tc.name, tc.got, want, tc.hex)
-			}
+			require.NoError(t, err, "Hex("+tc.hex+")")
+			assert.Equal(t, tc.got, want)
 		})
 	}
 }
@@ -126,7 +115,5 @@ func TestColorValueType(t *testing.T) {
 	a := term.RGB(1, 2, 3)
 	b := a
 	b.R = 99
-	if a.R == b.R {
-		t.Error("Color is not a value type: modifying copy affected original")
-	}
+	assert.NotEqual(t, a.R, b.R)
 }

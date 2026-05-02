@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/term"
 )
 
@@ -14,15 +16,9 @@ func TestProgressRenderBasic(t *testing.T) {
 	p := term.NewProgress(100)
 	p.Set(50)
 	lines, done := p.Render()
-	if done {
-		t.Error("Progress.Render() done=true before Done() called")
-	}
-	if len(lines) != 1 {
-		t.Fatalf("Progress.Render() returned %d lines, want 1", len(lines))
-	}
-	if !strings.Contains(lines[0], "%") {
-		t.Errorf("Progress.Render() line missing percentage: %q", lines[0])
-	}
+	assert.False(t, done, "Progress.Render() done=true before Done() called")
+	require.Equal(t, len(lines), 1)
+	assert.Contains(t, lines[0], "%")
 }
 
 func TestProgressDone(t *testing.T) {
@@ -30,9 +26,7 @@ func TestProgressDone(t *testing.T) {
 	p := term.NewProgress(100)
 	p.Done()
 	_, done := p.Render()
-	if !done {
-		t.Error("Progress.Render() done=false after Done() called")
-	}
+	assert.True(t, done, "Progress.Render() done=false after Done() called")
 }
 
 func TestProgressIncrement(t *testing.T) {
@@ -41,21 +35,15 @@ func TestProgressIncrement(t *testing.T) {
 	p.Increment(25)
 	p.Increment(25)
 	lines, _ := p.Render()
-	if !strings.Contains(lines[0], "50%") {
-		t.Errorf("Progress.Render() missing '50%%' at 50 of 100: %q", lines[0])
-	}
+	assert.Contains(t, lines[0], "50%")
 }
 
 func TestProgressIndeterminate(t *testing.T) {
 	t.Parallel()
 	p := term.NewProgress(-1)
 	lines, done := p.Render()
-	if done {
-		t.Error("indeterminate Progress.Render() done=true before Done()")
-	}
-	if len(lines) != 1 {
-		t.Fatalf("indeterminate Progress.Render() returned %d lines, want 1", len(lines))
-	}
+	assert.False(t, done, "indeterminate Progress.Render() done=true before Done()")
+	require.Equal(t, len(lines), 1)
 }
 
 func TestProgressSetNegative(t *testing.T) {
@@ -64,9 +52,7 @@ func TestProgressSetNegative(t *testing.T) {
 	p := term.NewProgress(100)
 	p.Set(-50)
 	lines, done := p.Render()
-	if done {
-		t.Error("Progress.Render() done=true unexpectedly")
-	}
+	assert.False(t, done, "Progress.Render() done=true unexpectedly")
 	_ = lines // just verify no panic
 }
 
@@ -81,12 +67,8 @@ func TestProgressWithOptions(t *testing.T) {
 	)
 	p.Set(512 * 1024)
 	lines, _ := p.Render()
-	if len(lines) != 1 {
-		t.Fatalf("NewProgress(opts).Render() = %d lines, want 1", len(lines))
-	}
-	if !strings.Contains(lines[0], "Downloading") {
-		t.Errorf("Progress.Render() missing label: %q", lines[0])
-	}
+	require.Equal(t, len(lines), 1)
+	assert.True(t, strings.Contains(lines[0], "Downloading"), "Progress.Render() missing label: "+lines[0])
 }
 
 func TestProgressZeroTotal(t *testing.T) {
@@ -94,9 +76,7 @@ func TestProgressZeroTotal(t *testing.T) {
 	p := term.NewProgress(0)
 	lines, _ := p.Render()
 	// total=0 means 100% immediately.
-	if !strings.Contains(lines[0], "100%") {
-		t.Errorf("Progress(total=0).Render() missing '100%%': %q", lines[0])
-	}
+	assert.Contains(t, lines[0], "100%")
 }
 
 func TestNewProgressDeterminate(t *testing.T) {
@@ -104,7 +84,5 @@ func TestNewProgressDeterminate(t *testing.T) {
 	p := term.NewProgress(200)
 	p.Set(100)
 	lines, _ := p.Render()
-	if !strings.Contains(lines[0], "50%") {
-		t.Errorf("Progress(200).Set(100).Render() missing '50%%': %q", lines[0])
-	}
+	assert.Contains(t, lines[0], "50%")
 }

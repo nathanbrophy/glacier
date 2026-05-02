@@ -7,6 +7,8 @@ import (
 	"io"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/term"
 )
 
@@ -15,9 +17,7 @@ func TestDownloadProgressRead(t *testing.T) {
 	data := []byte("hello world this is a download")
 	r := bytes.NewReader(data)
 	dp := term.NewDownloadProgress(r, int64(len(data)), "test download")
-	if dp.Source == nil {
-		t.Fatal("DownloadProgress.Source must not be nil")
-	}
+	assert.NotNil(t, dp.Source, "DownloadProgress.Source must not be nil")
 
 	// Read 10 bytes.
 	buf := make([]byte, 10)
@@ -25,17 +25,11 @@ func TestDownloadProgressRead(t *testing.T) {
 	if err != nil && err != io.EOF {
 		t.Fatalf("Read error: %v", err)
 	}
-	if n != 10 {
-		t.Errorf("Read() = %d, want 10", n)
-	}
+	assert.Equal(t, n, 10)
 
 	lines, done := dp.Render()
-	if done {
-		t.Error("DownloadProgress not done after partial read")
-	}
-	if len(lines) == 0 {
-		t.Error("Render() returned empty lines")
-	}
+	assert.False(t, done, "DownloadProgress not done after partial read")
+	assert.True(t, len(lines) > 0, "Render() returned empty lines")
 }
 
 func TestDownloadProgressReadToEOF(t *testing.T) {
@@ -46,14 +40,10 @@ func TestDownloadProgressReadToEOF(t *testing.T) {
 
 	// Read everything.
 	_, err := io.ReadAll(dp)
-	if err != nil {
-		t.Fatalf("ReadAll error: %v", err)
-	}
+	require.NoError(t, err, "ReadAll")
 
 	_, done := dp.Render()
-	if !done {
-		t.Error("DownloadProgress.Render() done=false after full read to EOF")
-	}
+	assert.True(t, done, "DownloadProgress.Render() done=false after full read to EOF")
 }
 
 func TestDownloadProgressIndeterminate(t *testing.T) {
@@ -62,12 +52,8 @@ func TestDownloadProgressIndeterminate(t *testing.T) {
 	r := bytes.NewReader(data)
 	dp := term.NewDownloadProgress(r, -1, "unknown size")
 	lines, done := dp.Render()
-	if done {
-		t.Error("indeterminate DownloadProgress done=true before EOF")
-	}
-	if len(lines) == 0 {
-		t.Error("Render() returned no lines for indeterminate progress")
-	}
+	assert.False(t, done, "indeterminate DownloadProgress done=true before EOF")
+	assert.True(t, len(lines) > 0, "Render() returned no lines for indeterminate progress")
 }
 
 func TestDownloadProgressReadAfterDone(t *testing.T) {
@@ -97,7 +83,5 @@ func TestNewDownloadProgressOptions(t *testing.T) {
 		term.WithProgressShowBytes(),
 	)
 	lines, _ := dp.Render()
-	if len(lines) == 0 {
-		t.Error("Render() returned no lines")
-	}
+	assert.True(t, len(lines) > 0, "Render() returned no lines")
 }

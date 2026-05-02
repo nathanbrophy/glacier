@@ -7,6 +7,8 @@ import (
 	"testing"
 	"unicode/utf8"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/term"
 )
 
@@ -28,9 +30,7 @@ func TestCenterPadsToWidth(t *testing.T) {
 		t.Run(tc.text, func(t *testing.T) {
 			t.Parallel()
 			got := term.Center(tc.text, tc.width)
-			if got != tc.want {
-				t.Errorf("Center(%q, %d) = %q, want %q", tc.text, tc.width, got, tc.want)
-			}
+			assert.Equal(t, got, tc.want)
 		})
 	}
 }
@@ -39,13 +39,9 @@ func TestCenterMultiLine(t *testing.T) {
 	t.Parallel()
 	got := term.Center("ab\ncd", 6)
 	lines := strings.Split(got, "\n")
-	if len(lines) != 2 {
-		t.Fatalf("expected 2 lines, got %d", len(lines))
-	}
+	require.Equal(t, len(lines), 2)
 	for _, l := range lines {
-		if utf8.RuneCountInString(l) != 6 {
-			t.Errorf("line %q is not width 6", l)
-		}
+		assert.Equal(t, utf8.RuneCountInString(l), 6)
 	}
 }
 
@@ -68,9 +64,7 @@ func TestJustify(t *testing.T) {
 			words := strings.Fields(tc.text)
 			if len(words) >= 2 {
 				gotW := utf8.RuneCountInString(got)
-				if gotW != tc.width {
-					t.Errorf("Justify(%q, %d) = %q (width %d), want width %d", tc.text, tc.width, got, gotW, tc.width)
-				}
+				assert.Equal(t, gotW, tc.width)
 			}
 		})
 	}
@@ -94,9 +88,7 @@ func TestPad(t *testing.T) {
 		t.Run(tc.text, func(t *testing.T) {
 			t.Parallel()
 			got := term.Pad(tc.text, tc.left, tc.right)
-			if got != tc.want {
-				t.Errorf("Pad(%q, %d, %d) = %q, want %q", tc.text, tc.left, tc.right, got, tc.want)
-			}
+			assert.Equal(t, got, tc.want)
 		})
 	}
 }
@@ -120,9 +112,7 @@ func TestTruncate(t *testing.T) {
 		t.Run(tc.text, func(t *testing.T) {
 			t.Parallel()
 			got := term.Truncate(tc.text, tc.width, tc.ellipsis)
-			if got != tc.want {
-				t.Errorf("Truncate(%q, %d, %q) = %q, want %q", tc.text, tc.width, tc.ellipsis, got, tc.want)
-			}
+			assert.Equal(t, got, tc.want)
 		})
 	}
 }
@@ -162,15 +152,11 @@ func TestColumns(t *testing.T) {
 		{"Bob", "25", "LA"},
 	}
 	got := term.Columns(rows)
-	if got == "" {
-		t.Error("Columns() returned empty string")
-	}
+	assert.NotEqual(t, got, "")
 	// Must contain all cell values.
 	for _, row := range rows {
 		for _, cell := range row {
-			if !strings.Contains(got, cell) {
-				t.Errorf("Columns() missing cell %q", cell)
-			}
+			assert.Contains(t, got, cell)
 		}
 	}
 }
@@ -187,29 +173,20 @@ func TestColumnsAlignment(t *testing.T) {
 func TestColumnsEmpty(t *testing.T) {
 	t.Parallel()
 	got := term.Columns(nil)
-	if got != "" {
-		t.Errorf("Columns(nil) = %q, want empty string", got)
-	}
+	assert.Equal(t, got, "")
 }
 
 func TestBanner(t *testing.T) {
 	t.Parallel()
 	s := term.New().Bold()
 	got := term.Banner(s, "Line 1", "Line 2")
-	if !strings.Contains(got, "Line 1") || !strings.Contains(got, "Line 2") {
-		t.Errorf("Banner() missing lines: %q", got)
-	}
+	assert.Contains(t, got, "Line 1")
+	assert.Contains(t, got, "Line 2")
 }
 
 func TestAlignmentConstants(t *testing.T) {
 	t.Parallel()
-	if term.AlignLeft != 0 {
-		t.Errorf("AlignLeft = %d, want 0", term.AlignLeft)
-	}
-	if term.AlignCenter != 1 {
-		t.Errorf("AlignCenter = %d, want 1", term.AlignCenter)
-	}
-	if term.AlignRight != 2 {
-		t.Errorf("AlignRight = %d, want 2", term.AlignRight)
-	}
+	assert.Equal(t, int(term.AlignLeft), 0)
+	assert.Equal(t, int(term.AlignCenter), 1)
+	assert.Equal(t, int(term.AlignRight), 2)
 }
