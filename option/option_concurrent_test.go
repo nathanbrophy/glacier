@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
-// Bootstrap discipline: stdlib testing + sync only; no assert/ package.
 // Run with: go test -race ./option/...
 
 package option_test
@@ -9,6 +8,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/option"
 )
 
@@ -39,9 +39,7 @@ func TestApplyConcurrent(t *testing.T) {
 	wg.Wait()
 
 	for i, err := range errs {
-		if err != nil {
-			t.Errorf("goroutine %d: unexpected error: %v", i, err)
-		}
+		assert.NoError(t, err, "goroutine %d", i)
 	}
 }
 
@@ -72,9 +70,7 @@ func TestValidateConcurrent(t *testing.T) {
 	wg.Wait()
 
 	for i, err := range errs {
-		if err != nil {
-			t.Errorf("goroutine %d: unexpected error: %v", i, err)
-		}
+		assert.NoError(t, err, "goroutine %d", i)
 	}
 }
 
@@ -107,8 +103,6 @@ func TestApplyConcurrentSharedOpts(t *testing.T) {
 	wg.Wait()
 
 	for i, err := range errs {
-		if err != nil {
-			t.Errorf("goroutine %d: unexpected error: %v", i, err)
-		}
+		assert.NoError(t, err, "goroutine %d", i)
 	}
 }

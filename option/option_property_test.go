@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
-// Bootstrap discipline: stdlib testing + math/rand only; no assert/ or fixture/ packages.
-
 package option_test
 
 import (
@@ -9,6 +7,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/option"
 )
 
@@ -33,16 +33,10 @@ func PropertyApplyIdempotent(t *testing.T) {
 		y := rng.Intn(1000)
 		opts := []option.Option[cfg]{setX(x), setY(y)}
 		got1, err1 := option.Apply(opts)
-		if err1 != nil {
-			t.Fatalf("iter %d: unexpected error on first Apply: %v", i, err1)
-		}
+		require.NoError(t, err1, "iter %d: unexpected error on first Apply", i)
 		got2, err2 := option.Apply(opts)
-		if err2 != nil {
-			t.Fatalf("iter %d: unexpected error on second Apply: %v", i, err2)
-		}
-		if got1 != got2 {
-			t.Errorf("iter %d: idempotency broken: first=%+v second=%+v", i, got1, got2)
-		}
+		require.NoError(t, err2, "iter %d: unexpected error on second Apply", i)
+		assert.Equal(t, got1, got2)
 	}
 }
 
@@ -59,9 +53,7 @@ func TestPropertyApplyNilSkipPermutation(t *testing.T) {
 
 	base := []option.Option[cfg]{setV(1), setV(2), setV(3)}
 	want, err := option.Apply(base)
-	if err != nil {
-		t.Fatalf("unexpected error on base Apply: %v", err)
-	}
+	require.NoError(t, err, "unexpected error on base Apply")
 
 	rng := rand.New(rand.NewSource(7))
 	for iter := 0; iter < 50; iter++ {
@@ -78,12 +70,8 @@ func TestPropertyApplyNilSkipPermutation(t *testing.T) {
 		}
 
 		got, err := option.Apply(with)
-		if err != nil {
-			t.Fatalf("iter %d: unexpected error: %v", iter, err)
-		}
-		if got != want {
-			t.Errorf("iter %d: nil insertion changed result: want=%+v got=%+v", iter, want, got)
-		}
+		require.NoError(t, err, "iter %d: unexpected error", iter)
+		assert.Equal(t, got, want)
 	}
 }
 
@@ -107,13 +95,9 @@ func TestPropertyApplyLastWins(t *testing.T) {
 			})
 		}
 		got, err := option.Apply(opts)
-		if err != nil {
-			t.Fatalf("iter %d: unexpected error: %v", iter, err)
-		}
+		require.NoError(t, err, "iter %d: unexpected error", iter)
 		want := values[n-1]
-		if got.a != want {
-			t.Errorf("iter %d: expected last-wins %d, got %d", iter, want, got.a)
-		}
+		assert.Equal(t, got.a, want)
 	}
 }
 
@@ -164,8 +148,6 @@ func TestPropertyValidateOrderInvariance(t *testing.T) {
 		for _, e := range got {
 			gotSet[e.Error()] = true
 		}
-		if !reflect.DeepEqual(refSet, gotSet) {
-			t.Errorf("order %d: error sets differ: ref=%v got=%v", i+1, refSet, gotSet)
-		}
+		assert.True(t, reflect.DeepEqual(refSet, gotSet), "order %d: error sets differ: ref=%v got=%v", i+1, refSet, gotSet)
 	}
 }

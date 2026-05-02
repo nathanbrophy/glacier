@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
-// Bootstrap discipline: stdlib testing only.
-
 package option_test
 
 import (
 	"strings"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/option"
 )
 
@@ -33,12 +33,9 @@ func FuzzRequired(f *testing.F) {
 		c := cfg{}
 		vtor := option.Required[cfg](name, func(_ *cfg) any { return nil })
 		err := vtor(&c)
-		if err == nil {
-			t.Fatalf("Required with nil getter result must always return an error (name=%q)", name)
-		}
+		require.Error(t, err, "Required with nil getter result must always return an error (name=%q)", name)
 		const prefix = "option: required: field "
-		if !strings.HasPrefix(err.Error(), prefix) {
-			t.Fatalf("error %q does not start with expected prefix %q", err.Error(), prefix)
-		}
+		assert.True(t, strings.HasPrefix(err.Error(), prefix),
+			"error %q does not start with expected prefix %q", err.Error(), prefix)
 	})
 }

@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
-// Bootstrap discipline: stdlib testing only; no assert/ package.
-
 package option_test
 
 import (
 	"errors"
 	"testing"
 
+	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/option"
 )
 
@@ -35,9 +34,8 @@ func TestApplyZeroAlloc(t *testing.T) {
 	})
 	// Assert at most 1 alloc: T escaping to heap via interface dispatch.
 	// The errs []error slice (the D3 concern) contributes 0 allocs.
-	if allocs > 1 {
-		t.Errorf("BenchmarkApplyZeroAlloc_Happy: expected ≤1 allocs/op (T heap escape), got %v", allocs)
-	}
+	assert.True(t, allocs <= 1,
+		"BenchmarkApplyZeroAlloc_Happy: expected ≤1 allocs/op (T heap escape), got %v", allocs)
 }
 
 func BenchmarkApplyZeroAlloc_Happy(b *testing.B) {
@@ -186,7 +184,6 @@ func TestApplyLargeNilSlice(t *testing.T) {
 	allocs := testing.AllocsPerRun(100, func() {
 		_, _ = option.Apply(opts)
 	})
-	if allocs > 1 {
-		t.Errorf("expected ≤1 allocs for 10k nil-only options (T escape only), got %v", allocs)
-	}
+	assert.True(t, allocs <= 1,
+		"expected ≤1 allocs for 10k nil-only options (T escape only), got %v", allocs)
 }

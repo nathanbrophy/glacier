@@ -1,8 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
-// Bootstrap discipline: this file uses bare-if patterns + stdlib testing only.
-// The assert/ package is not yet built; do not import it here.
-
 package option_test
 
 import (
@@ -14,6 +11,8 @@ import (
 
 	"golang.org/x/tools/go/packages"
 
+	"github.com/nathanbrophy/glacier/assert"
+	"github.com/nathanbrophy/glacier/assert/require"
 	"github.com/nathanbrophy/glacier/option"
 )
 
@@ -114,12 +113,8 @@ func TestApplySuccessCases(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			got, err := option.Apply(c.opts)
-			if err != nil {
-				t.Fatalf("expected nil error, got %v", err)
-			}
-			if got != c.wantCfg {
-				t.Errorf("got %+v; want %+v", got, c.wantCfg)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, got, c.wantCfg)
 		})
 	}
 }
@@ -136,15 +131,9 @@ func TestApplyDefaultShortCircuit(t *testing.T) {
 	})
 	// first option errors; counter is second — should not run.
 	_, err := option.Apply([]option.Option[testConfig]{withErr(errA), counter})
-	if err == nil {
-		t.Fatal("expected error, got nil")
-	}
-	if !errors.Is(err, errA) {
-		t.Errorf("expected errA, got %v", err)
-	}
-	if applied != 0 {
-		t.Errorf("expected 0 options applied after short-circuit, got %d", applied)
-	}
+	require.Error(t, err)
+	assert.ErrorIs(t, err, errA)
+	assert.Equal(t, applied, 0)
 }
 
 // ---- T#5 TestApplyDefaultSecondErrors ----
@@ -158,18 +147,10 @@ func TestApplyDefaultSecondErrors(t *testing.T) {
 		return nil
 	})
 	got, err := option.Apply([]option.Option[testConfig]{withA(7), withErr(errB), third})
-	if err == nil {
-		t.Fatal("expected error, got nil")
-	}
-	if !errors.Is(err, errB) {
-		t.Errorf("expected errB, got %v", err)
-	}
-	if got.a != 7 {
-		t.Errorf("first option should have applied; expected a==7, got %d", got.a)
-	}
-	if thirdRan {
-		t.Error("third option should not have run after second errored")
-	}
+	require.Error(t, err)
+	assert.ErrorIs(t, err, errB)
+	assert.Equal(t, got.a, 7)
+	assert.False(t, thirdRan)
 }
 
 // ---- T#6–T#7, T#11–T#12 TestApplyModes ----
@@ -216,22 +197,18 @@ func TestApplyModes(t *testing.T) {
 			t.Parallel()
 			got, err := option.Apply(c.opts, c.modes...)
 			if c.wantNilEr {
-				if err != nil {
-					t.Fatalf("expected nil error, got %v", err)
-				}
+				require.NoError(t, err)
 			} else {
-				if err == nil {
-					t.Fatal("expected error, got nil")
+				require.Error(t, err)
+				if c.wantErrA {
+					assert.ErrorIs(t, err, errA)
 				}
-				if c.wantErrA && !errors.Is(err, errA) {
-					t.Errorf("expected errA in error, got %v", err)
-				}
-				if c.wantErrB && !errors.Is(err, errB) {
-					t.Errorf("expected errB in error, got %v", err)
+				if c.wantErrB {
+					assert.ErrorIs(t, err, errB)
 				}
 			}
-			if c.wantA != 0 && got.a != c.wantA {
-				t.Errorf("expected a==%d, got %d", c.wantA, got.a)
+			if c.wantA != 0 {
+				assert.Equal(t, got.a, c.wantA)
 			}
 		})
 	}
@@ -248,15 +225,9 @@ func TestApplyZeroModesIsDefault(t *testing.T) {
 		return nil
 	})
 	_, err := option.Apply([]option.Option[testConfig]{withErr(errA), second})
-	if err == nil {
-		t.Fatal("expected error, got nil")
-	}
-	if !errors.Is(err, errA) {
-		t.Errorf("expected errA, got %v", err)
-	}
-	if secondRan {
-		t.Error("second option should not run in default mode after first errors")
-	}
+	require.Error(t, err)
+	assert.ErrorIs(t, err, errA)
+	assert.False(t, secondRan)
 }
 
 // ---- T#13–T#14 TestApplyGenericT ----
@@ -272,12 +243,8 @@ func TestApplyGenericT(t *testing.T) {
 			return nil
 		})
 		got, err := option.Apply[int]([]option.Option[int]{setTo42})
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		if got != 42 {
-			t.Errorf("expected 42, got %d", got)
-		}
+		require.NoError(t, err)
+		assert.Equal(t, got, 42)
 	})
 
 	t.Run("slice of string T", func(t *testing.T) {
@@ -291,12 +258,10 @@ func TestApplyGenericT(t *testing.T) {
 			return nil
 		})
 		got, err := option.Apply[[]string]([]option.Option[[]string]{appendHello, appendWorld})
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		if len(got) != 2 || got[0] != "hello" || got[1] != "world" {
-			t.Errorf("unexpected result: %v", got)
-		}
+		require.NoError(t, err)
+		assert.Len(t, got, 2)
+		assert.Equal(t, got[0], "hello")
+		assert.Equal(t, got[1], "world")
 	})
 }
 
@@ -321,17 +286,11 @@ func TestApplyOptionPanicsPropagates(t *testing.T) {
 func TestApplyOptionMutateThenError(t *testing.T) {
 	t.Parallel()
 	got, err := option.Apply([]option.Option[testConfig]{withMutateThenErr(99, errA)})
-	if err == nil {
-		t.Fatal("expected error, got nil")
-	}
+	require.Error(t, err)
 	// Partial state is visible: a was set before the error was returned.
 	var zero testConfig
-	if got == zero {
-		t.Error("expected partial T != zero (mutation before error should be visible)")
-	}
-	if got.a != 99 {
-		t.Errorf("expected a==99, got %d", got.a)
-	}
+	assert.NotEqual(t, got, zero)
+	assert.Equal(t, got.a, 99)
 }
 
 // ---- T#17 TestOptionFuncSatisfiesOption ----
@@ -368,9 +327,8 @@ func TestStrictReturnsStrictMode(t *testing.T) {
 		[]option.Option[testConfig]{withErr(errA), withErr(errB)},
 		option.Strict(),
 	)
-	if !errors.Is(err, errA) || !errors.Is(err, errB) {
-		t.Errorf("Strict() did not accumulate both errors: %v", err)
-	}
+	assert.ErrorIs(t, err, errA)
+	assert.ErrorIs(t, err, errB)
 }
 
 // ---- T#20–T#26 TestValidateCases ----
@@ -436,22 +394,18 @@ func TestValidateCases(t *testing.T) {
 			t.Parallel()
 			err := option.Validate(c.target, c.validators...)
 			if c.wantNil {
-				if err != nil {
-					t.Fatalf("expected nil, got %v", err)
-				}
+				require.NoError(t, err)
 				return
 			}
-			if err == nil {
-				t.Fatal("expected error, got nil")
+			require.Error(t, err)
+			if c.wantErrMsg != "" {
+				assert.Equal(t, err.Error(), c.wantErrMsg)
 			}
-			if c.wantErrMsg != "" && err.Error() != c.wantErrMsg {
-				t.Errorf("error text = %q; want %q", err.Error(), c.wantErrMsg)
+			if c.wantErrA {
+				assert.ErrorIs(t, err, errA)
 			}
-			if c.wantErrA && !errors.Is(err, errA) {
-				t.Errorf("expected errA in joined error, got %v", err)
-			}
-			if c.wantErrB && !errors.Is(err, errB) {
-				t.Errorf("expected errB in joined error, got %v", err)
+			if c.wantErrB {
+				assert.ErrorIs(t, err, errB)
 			}
 		})
 	}
@@ -532,16 +486,10 @@ func TestRequiredErrorMessages(t *testing.T) {
 			})
 			err := vtor(&target)
 			if c.wantErr {
-				if err == nil {
-					t.Fatal("expected error, got nil")
-				}
-				if err.Error() != c.wantMsg {
-					t.Errorf("error = %q; want %q", err.Error(), c.wantMsg)
-				}
+				require.Error(t, err)
+				assert.Equal(t, err.Error(), c.wantMsg)
 			} else {
-				if err != nil {
-					t.Errorf("expected nil, got %v", err)
-				}
+				assert.NoError(t, err)
 			}
 		})
 	}
@@ -574,17 +522,11 @@ func TestRequiredGenericTLoadBearing(t *testing.T) {
 		return c.handler
 	})
 
-	if err := vtorA(&a); err != nil {
-		t.Errorf("expected no error for populated cfgA.logger, got %v", err)
-	}
-	if err := vtorB(&b); err == nil {
-		t.Error("expected error for nil cfgB.handler, got nil")
-	} else {
-		const want = `option: required: field "handler" not set`
-		if err.Error() != want {
-			t.Errorf("expected %q, got %q", want, err.Error())
-		}
-	}
+	assert.NoError(t, vtorA(&a))
+	err := vtorB(&b)
+	require.Error(t, err)
+	const want = `option: required: field "handler" not set`
+	assert.Equal(t, err.Error(), want)
 }
 
 // ---- T#31 TestErrorRegisterConformanceOption ----
@@ -631,9 +573,7 @@ func TestErrorRegisterConformanceOption(t *testing.T) {
 			t.Errorf("unexpected nil in error list (test setup bug)")
 			continue
 		}
-		if !re.MatchString(e.Error()) {
-			t.Errorf("error string %q does not match register pattern %s", e.Error(), re)
-		}
+		assert.True(t, re.MatchString(e.Error()), "error string %q does not match register pattern %s", e.Error(), re)
 	}
 }
 
@@ -647,12 +587,8 @@ func TestSurfaceClosed_OptionPackage(t *testing.T) {
 		Fset: fset,
 	}
 	pkgs, err := packages.Load(cfg, "github.com/nathanbrophy/glacier/option")
-	if err != nil {
-		t.Fatalf("packages.Load: %v", err)
-	}
-	if len(pkgs) != 1 {
-		t.Fatalf("expected 1 package, got %d", len(pkgs))
-	}
+	require.NoError(t, err, "packages.Load failed")
+	require.Len(t, pkgs, 1)
 	pkg := pkgs[0]
 	if len(pkg.Errors) > 0 {
 		t.Fatalf("package load errors: %v", pkg.Errors)
@@ -662,9 +598,7 @@ func TestSurfaceClosed_OptionPackage(t *testing.T) {
 	names := scope.Names()
 
 	const wantCount = 8
-	if len(names) != wantCount {
-		t.Errorf("expected %d exported symbols, got %d: %v", wantCount, len(names), names)
-	}
+	assert.Len(t, names, wantCount, "exported symbol count mismatch: %v", names)
 
 	want := map[string]bool{
 		"Option":     true,
@@ -677,18 +611,13 @@ func TestSurfaceClosed_OptionPackage(t *testing.T) {
 		"Required":   true,
 	}
 	for _, name := range names {
-		if !want[name] {
-			t.Errorf("unexpected export %q", name)
-		}
+		assert.True(t, want[name], "unexpected export %q", name)
 	}
 	for name := range want {
 		obj := scope.Lookup(name)
-		if obj == nil {
-			t.Errorf("expected export %q not found", name)
-			continue
-		}
-		if !obj.Exported() {
-			t.Errorf("%q is not exported", name)
+		assert.NotNil(t, obj, "expected export %q not found", name)
+		if obj != nil {
+			assert.True(t, obj.Exported(), "%q is not exported", name)
 		}
 	}
 	_ = types.Universe // ensure go/types is referenced
