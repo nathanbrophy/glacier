@@ -1,0 +1,14 @@
+{
+  "stubs": [
+    {
+      "method": "GET",
+      "path": "/x",
+      "unknown_extra_field": "should fail",
+      "respond": {
+        "status": 200,
+        "headers": {},
+        "body": null
+      }
+    }
+  ]
+}
