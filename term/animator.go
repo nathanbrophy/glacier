@@ -367,6 +367,20 @@ func (a *Animator) Run(ctx context.Context) (runErr error) {
 	}
 }
 
+// newInternalLogger returns a *slog.Logger suitable for a self-animating
+// primitive's internal Animator. It prefers slog.Default() when that logger's
+// handler is not already intercepted; otherwise it returns a fresh logger
+// backed by a new slog.TextHandler writing to os.Stderr, avoiding the
+// "handler already intercepted" error when multiple primitives are running
+// concurrently.
+func newInternalLogger() *slog.Logger {
+	def := slog.Default()
+	if _, already := def.Handler().(*interceptHandler); !already {
+		return def
+	}
+	return slog.New(slog.NewTextHandler(os.Stderr, nil))
+}
+
 // flushRecords drains the ring buffer and writes all records to the writer.
 func (a *Animator) flushRecords(ih *interceptHandler) {
 	if ih == nil {
