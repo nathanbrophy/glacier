@@ -1,24 +1,39 @@
 // SPDX-License-Identifier: Apache-2.0
 
-// Command cligen is the Glacier CLI codegen tool. It walks a Go module using
-// go/packages, identifies structs that implement the cli.Command interface,
-// parses +glacier: markers from their doc comments, and emits committed
-// zz_generated_cli.go wiring files. Run via go run ./cmd/cligen or install
-// as a standalone binary.
+// Command cligen is the Glacier CLI code generator. It discovers all types
+// in the target Go module that implement cli.Command (Run(ctx) error), parses
+// their +glacier:* doc-comment markers, and emits zz_generated_cli.go.
 //
 // Usage:
 //
-//	cligen [--check] <pattern>...
-//
-// With --check, cligen verifies that generated files are up to date and exits
-// non-zero if any drift is detected (used by the codegen-drift CI gate).
+//	go run github.com/nathanbrophy/glacier/cmd/cligen [--check] [--lint] [./...]
 package main
 
 import (
-	// TODO: implement; see specs/0011-cli.md
-	_ "github.com/nathanbrophy/glacier/cli/gen"
+	"flag"
+	"log/slog"
+	"os"
+
+	"github.com/nathanbrophy/glacier/cli/gen"
 )
 
 func main() {
-	// TODO: implement; see specs/0011-cli.md
+	check := flag.Bool("check", false, "check mode: detect drift without writing")
+	lint := flag.Bool("lint", false, "upgrade unknown marker warnings to errors")
+	flag.Parse()
+
+	pattern := "./..."
+	if args := flag.Args(); len(args) > 0 {
+		pattern = args[0]
+	}
+
+	if err := gen.Generate(gen.Options{
+		Pattern: pattern,
+		Check:   *check,
+		Lint:    *lint,
+		Logger:  slog.Default(),
+	}); err != nil {
+		slog.Error("cligen failed", "error", err)
+		os.Exit(1)
+	}
 }
