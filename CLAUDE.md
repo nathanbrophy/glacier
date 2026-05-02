@@ -1,8 +1,8 @@
-# Mongoose
+# Glacier
 
 ## Mission
 
-Mongoose is a Go SDK that turns idiomatic handler code into a production-ready application. Developers write the logic that's unique to their problem; mongoose provides the rest — CLI ergonomics, configuration, testing, mocking, sandboxing, and the small primitives that hold it all together. The project's commitments: spec-first development, Go idioms religiously, less code is more, supply-chain minimalism, and an A+ quality bar on every line that ships.
+Glacier is a Go framework that turns idiomatic handler code into a production-ready application. Developers write the logic that's unique to their problem; Glacier provides the rest — CLI ergonomics, configuration, testing, mocking, sandboxing, and the small primitives that hold it all together. The project's commitments: spec-first development, Go idioms religiously, less code is more, supply-chain minimalism, and an A+ quality bar on every line that ships.
 
 ## Core directives
 
@@ -17,7 +17,7 @@ Mongoose is a Go SDK that turns idiomatic handler code into a production-ready a
 ## Repo layout
 
 ```
-mongoose/
+glacier/
 ├── CLAUDE.md                this file
 ├── .claude/agents/          six committed sub-agents (the menagerie)
 └── specs/                   the source of truth for engineering and docs
@@ -27,7 +27,7 @@ mongoose/
     └── superseded/          retired specs preserved by ID
 ```
 
-No `go.mod` yet — it lands with the SDK shape spec (`0002-sdk-shape.md`), where module path and minimum Go version get justified.
+No `go.mod` yet — it lands with the framework shape spec (`specs/0002-framework-shape.md`), where module path and minimum Go version get justified.
 
 ## Spec lifecycle
 
@@ -57,7 +57,7 @@ A spec moves to `accepted` only when every required reviewer has signed off. Ful
 | Spec type | Required reviewers |
 |---|---|
 | Identity / brand / voice | Magpie (owner), Otter |
-| SDK architecture / cross-cutting | Otter (owner), Lynx, Falcon |
+| Framework architecture / cross-cutting | Otter (owner), Lynx, Falcon |
 | Component (CLI, mock, httpmock, sandbox, primitives) | Otter (owner), Lynx, Falcon |
 | Testing infrastructure | Lynx (owner), Otter, Falcon |
 | Process / governance change | Otter (owner), Magpie |

@@ -1,6 +1,6 @@
 # Specs
 
-Specs are mongoose's source of truth. Every code change, identity change, or process change is first a spec. The Docs & Identity agent (Magpie) generates public-site content and reference documentation directly from accepted specs.
+Specs are Glacier's source of truth. Every code change, identity change, or process change is first a spec. The Docs & Identity agent (Magpie) generates public-site content and reference documentation directly from accepted specs.
 
 ## Authoring a spec
 
@@ -43,7 +43,7 @@ Full detail in [`0000-spec-process.md`](0000-spec-process.md).
 | Spec type | Required reviewers |
 |---|---|
 | Identity / brand / voice | Magpie (owner), Otter |
-| SDK architecture / cross-cutting | Otter (owner), Lynx, Falcon |
+| Framework architecture / cross-cutting | Otter (owner), Lynx, Falcon |
 | Component (CLI, mock, httpmock, sandbox, primitives) | Otter (owner), Lynx, Falcon |
 | Testing infrastructure | Lynx (owner), Otter, Falcon |
 | Process / governance change | Otter (owner), Magpie |

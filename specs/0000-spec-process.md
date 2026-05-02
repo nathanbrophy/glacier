@@ -23,7 +23,7 @@ docs-extract:
 
 ## Public Summary
 
-Mongoose is built spec-first. Every change to mongoose — code, identity, or process — begins as a spec in `/specs/`. A spec moves through five statuses: `proposed`, `in-review`, `accepted`, `implemented`, `verified`. Implementation may not begin until the spec reaches `accepted`. Specs are also the single source of truth for mongoose's public documentation: the Docs & Identity agent generates site content by extraction from accepted specs, so engineering and docs cannot drift.
+Glacier is built spec-first. Every change to the framework — code, identity, or process — begins as a spec in `/specs/`. A spec moves through five statuses: `proposed`, `in-review`, `accepted`, `implemented`, `verified`. Implementation may not begin until the spec reaches `accepted`. Specs are also the single source of truth for Glacier's public documentation: the Docs & Identity agent generates site content by extraction from accepted specs, so engineering and docs cannot drift.
 
 ## Mental Model
 
@@ -91,7 +91,7 @@ A spec moves to `accepted` only when every required reviewer for its type has be
 | Spec type | Required reviewers | Optional reviewers (touched-when) |
 |---|---|---|
 | Identity / brand / voice | Magpie (owner), Otter | Octopus (if user research informs it) |
-| SDK architecture / cross-cutting | Otter (owner), Lynx, Falcon | Magpie (if naming or voice changes), Octopus |
+| Framework architecture / cross-cutting | Otter (owner), Lynx, Falcon | Magpie (if naming or voice changes), Octopus |
 | Component (CLI, mock, httpmock, sandbox, primitives) | Otter (owner), Lynx, Falcon | Magpie (if exported names or user-facing strings change), Octopus (if UX-shaped) |
 | Testing infrastructure (mocks, transport, sandbox harness) | Lynx (owner), Otter, Falcon | — |
 | Process / governance change (this category) | Otter (owner), Magpie | All other agents on request |
@@ -153,7 +153,7 @@ N/A. This spec produces no Go API.
 ```sh
 # From the repo root, find the next free ID.
 ls specs/ | grep -E '^[0-9]{4}-' | sort | tail -1
-# Suppose this prints `0002-sdk-shape.md`. Next ID is 0003.
+# Suppose this prints `0002-framework-shape.md`. Next ID is 0003.
 
 # Copy the template.
 cp specs/_template.md specs/0003-config-layering.md
@@ -230,7 +230,7 @@ Author a new spec that lists the old spec ID in `supersedes:`. When the new spec
 
 ## Decisions & Rationale
 
-The decisions codified here trace to mongoose's lifecycle bootstrap (committed alongside this spec). Each is recorded with its rationale.
+The decisions codified here trace to Glacier's lifecycle bootstrap (committed alongside this spec). Each is recorded with its rationale.
 
 - **Spec-first hard gate.** Specs are the design contract; code is execution. Without the gate, the contract drifts and post-hoc design decisions accrete.
 - **Specs as source of truth for docs.** Eliminates engineering/docs drift. Docs become a derived artifact, with the spec as the single authoritative source.
@@ -251,7 +251,7 @@ None. Every question raised during this spec's design has been resolved and fold
 
 The spec process is verified by the bootstrap commit and ongoing operation:
 
-1. **Layout:** `tree mongoose/` shows `CLAUDE.md`, `.claude/agents/{otter,magpie,lynx,gopher,octopus,falcon}.md`, `specs/{README.md,_template.md,0000-spec-process.md,research/,superseded/}`.
+1. **Layout:** `tree glacier/` shows `CLAUDE.md`, `.claude/agents/{otter,magpie,lynx,gopher,octopus,falcon}.md`, `specs/{README.md,_template.md,0000-spec-process.md,research/,superseded/}`.
 2. **Front matter:** This spec's front matter parses as valid YAML; both required reviewers have non-null `signed-off-at`; `## Open Questions` is empty.
 3. **Authoring walkthrough:** A new contributor follows `specs/README.md` and produces a stub spec from `_template.md` without further guidance.
 4. **CLAUDE.md coherence:** A fresh Claude Code session opened in the repo and asked "what are the rules here?" returns a coherent answer derived from `CLAUDE.md`.

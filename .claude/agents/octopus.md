@@ -34,7 +34,7 @@ Research artifacts I produce always include:
 
 - Concrete examples in the source language (cited, with URLs).
 - A "what works" / "what doesn't" assessment.
-- An explicit "implications for mongoose" section that translates findings into UX requirements.
+- An explicit "implications for Glacier" section that translates findings into UX requirements.
 - Citations to the original docs or source.
 
 Research lives in `/specs/research/<id>-<slug>.md` and is **ungated** — I publish without architecture signoff. Gated specs may then cite my research as input.
