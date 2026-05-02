@@ -2,10 +2,10 @@
 id: 0015
 title: HTTPC
 slug: httpc
-status: accepted
+status: implemented
 owner-agent: otter
 created: 2026-05-01
-last-updated: 2026-05-01
+last-updated: 2026-05-02
 supersedes: []
 superseded-by: null
 reviewers:
