@@ -25,6 +25,31 @@ type Animation interface {
 	Render() (lines []string, done bool)
 }
 
+// Clock is the minimal time abstraction the Animator uses for its frame loop.
+// Production code uses the wall clock by default; tests can inject a
+// deterministic implementation (e.g. fixture.NewClock) so time-gated behaviour
+// is fast and reproducible.
+//
+// Implementations must be goroutine-safe. The interface is structurally
+// identical to fixture.Clock so a fixture.FakeClock can be passed directly
+// through WithClock; this keeps term/ kernel-tier-clean (no fixture import).
+type Clock interface {
+	// Now returns the current time.
+	Now() time.Time
+	// Sleep blocks until d has elapsed.
+	Sleep(d time.Duration)
+	// After returns a channel that receives the time after d has elapsed.
+	After(d time.Duration) <-chan time.Time
+}
+
+// realClock is the production wall-clock implementation. Zero-allocation for
+// Now and Sleep; After allocates one timer + channel (stdlib behaviour).
+type realClock struct{}
+
+func (realClock) Now() time.Time                         { return time.Now() }
+func (realClock) Sleep(d time.Duration)                  { time.Sleep(d) }
+func (realClock) After(d time.Duration) <-chan time.Time { return time.After(d) }
+
 // Handle is a cancellation token returned by Animator.Add.
 // Invariant: Cancel is idempotent; calling it after the animation completes naturally is a no-op.
 type Handle struct {
@@ -45,6 +70,7 @@ type animatorConfig struct {
 	refreshRate        time.Duration
 	writer             io.Writer
 	maxBufferedRecords int
+	clock              Clock
 }
 
 // AnimatorOption configures an Animator.
@@ -88,6 +114,20 @@ func WithMaxBufferedRecords(n int) AnimatorOption {
 			return fmt.Errorf("term: WithMaxBufferedRecords: n must be >= 1")
 		}
 		c.maxBufferedRecords = n
+		return nil
+	})
+}
+
+// WithClock injects a Clock for the Animator's frame loop. Defaults to the
+// real wall clock. Pass a fixture.FakeClock (via fixture.NewClock) in tests
+// to drive frame ticks deterministically with FakeClock.Advance.
+// Precondition: c must not be nil.
+func WithClock(c Clock) AnimatorOption {
+	return animatorOptionFunc(func(cfg *animatorConfig) error {
+		if c == nil {
+			return fmt.Errorf("term: WithClock: clock must not be nil")
+		}
+		cfg.clock = c
 		return nil
 	})
 }
@@ -193,12 +233,16 @@ func NewAnimator(logger *slog.Logger, opts ...AnimatorOption) *Animator {
 		refreshRate:        100 * time.Millisecond,
 		writer:             os.Stderr,
 		maxBufferedRecords: 1000,
+		clock:              realClock{},
 	}
 	for _, o := range opts {
 		if o == nil {
 			continue
 		}
 		_ = o.applyAnimator(&cfg)
+	}
+	if cfg.clock == nil {
+		cfg.clock = realClock{}
 	}
 	return &Animator{
 		logger: logger,
@@ -273,8 +317,7 @@ func (a *Animator) Run(ctx context.Context) (runErr error) {
 	w := a.cfg.writer
 	lastLines := 0 // lines rendered in the previous frame
 
-	ticker := time.NewTicker(a.cfg.refreshRate)
-	defer ticker.Stop()
+	clock := a.cfg.clock
 
 	for {
 		select {
@@ -285,7 +328,7 @@ func (a *Animator) Run(ctx context.Context) (runErr error) {
 			}
 			a.flushRecords(ih)
 			return ErrCancelled
-		case <-ticker.C:
+		case <-clock.After(a.cfg.refreshRate):
 			// Check paused state.
 			a.pausedMu.Lock()
 			isPaused := a.paused

@@ -257,3 +257,35 @@ func TestNewClockAdvanceTable(t *testing.T) {
 		})
 	}
 }
+
+// TestBlockUntilTimers waits for goroutines to register timers before
+// advancing — this is the synchronization primitive that lets tests drive
+// the fake clock without racing the goroutine that registers After/Sleep.
+func TestBlockUntilTimers(t *testing.T) {
+	clk := fixture.NewClock(t, start)
+
+	var wg sync.WaitGroup
+	wg.Add(3)
+	for i := 0; i < 3; i++ {
+		go func() {
+			defer wg.Done()
+			<-clk.After(1 * time.Second)
+		}()
+	}
+
+	// Without BlockUntilTimers, we'd race the goroutines; with it, we know
+	// all three timers are pending before we advance.
+	clk.BlockUntilTimers(3)
+	clk.Advance(2 * time.Second)
+	wg.Wait() // all three goroutines should have unblocked
+}
+
+// TestBlockUntilTimers_ImmediateReturn returns immediately when the
+// condition already holds (n existing pending timers).
+func TestBlockUntilTimers_ImmediateReturn(t *testing.T) {
+	clk := fixture.NewClock(t, start)
+	_ = clk.After(1 * time.Second)
+	_ = clk.After(2 * time.Second)
+	clk.BlockUntilTimers(2) // no goroutine; should return at once
+	clk.Advance(3 * time.Second)
+}

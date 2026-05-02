@@ -3,6 +3,7 @@
 package fixture
 
 import (
+	"runtime"
 	"sort"
 	"sync"
 	"time"
@@ -31,6 +32,12 @@ type FakeClock interface {
 	// SetTime moves the fake clock to t (may be before current time).
 	// Timers whose deadline has passed after the jump fire immediately.
 	SetTime(t time.Time)
+	// BlockUntilTimers blocks until at least n timers are registered (via
+	// After or Sleep) and currently pending. Returns immediately if the
+	// condition already holds. Used by tests to synchronize with goroutines
+	// that register timers in the background — without this, an Advance call
+	// can race ahead of timer registration and silently fire nothing.
+	BlockUntilTimers(n int)
 }
 
 // realClock is the production implementation backed by the standard library.
@@ -148,6 +155,24 @@ func (fc *fakeClock) SetTime(t time.Time) {
 	fc.now = t
 	fc.fireExpiredLocked()
 	fc.mu.Unlock()
+}
+
+// BlockUntilTimers blocks until at least n timers are pending.
+// Polls with runtime.Gosched between checks; the loop exits as soon as the
+// condition is satisfied. The intended caller is a test that needs to know a
+// background goroutine has reached its time-blocking point before the test
+// fires Advance — without this, the test can race ahead and Advance does
+// nothing, hanging the goroutine indefinitely.
+func (fc *fakeClock) BlockUntilTimers(n int) {
+	for {
+		fc.mu.Lock()
+		count := len(fc.timers)
+		fc.mu.Unlock()
+		if count >= n {
+			return
+		}
+		runtime.Gosched()
+	}
 }
 
 // fireExpiredLocked fires all pending timers whose deadline <= fc.now.
