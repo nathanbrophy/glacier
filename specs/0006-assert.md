@@ -13,7 +13,7 @@ reviewers:
   - { agent: lynx,   required: true,  signed-off-at: "2026-05-01T00:00:00Z" }
   - { agent: falcon, required: true,  signed-off-at: "2026-05-01T00:00:00Z" }
   - { agent: magpie, required: false, signed-off-at: null }
-implementing-commits: ["TBD"]
+implementing-commits: ["f60ca47"]
 verified-at: null
 docs-extract:
   - public-summary
