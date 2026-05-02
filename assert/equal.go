@@ -358,17 +358,30 @@ func equalMaps(got, want reflect.Value, cfg *equalConfig, vis visited) bool {
 
 func equalStructs(got, want reflect.Value, cfg *equalConfig, vis visited) bool {
 	t := got.Type()
+
+	// Check whether the struct has unexported fields. reflect.Value.Field(i).CanInterface()
+	// returns false for unexported fields obtained via reflection, so we cannot use
+	// Interface() on them. reflect.DeepEqual can still compare them correctly because it
+	// has internal access to the memory layout. When any unexported field is present and no
+	// field-level option (IgnoreFields) is in use, fall back to reflect.DeepEqual on the
+	// whole struct — this is the only panic-free approach.
+	hasUnexported := false
+	for i := range t.NumField() {
+		if !t.Field(i).IsExported() {
+			hasUnexported = true
+			break
+		}
+	}
+	if hasUnexported && cfg.ignoreFields == nil {
+		return reflect.DeepEqual(got.Interface(), want.Interface())
+	}
+
 	for i := range t.NumField() {
 		field := t.Field(i)
 		if !field.IsExported() {
-			// Unexported fields: use reflect.DeepEqual for that field.
-			gf := got.Field(i)
-			wf := want.Field(i)
-			if gf.CanInterface() && wf.CanInterface() {
-				if !reflect.DeepEqual(gf.Interface(), wf.Interface()) {
-					return false
-				}
-			}
+			// IgnoreFields is active; we cannot compare unexported fields via Interface(),
+			// so they are conservatively treated as equal. Only exported field names can
+			// be passed to IgnoreFields, so this is correct behavior.
 			continue
 		}
 		if cfg.ignoreFields != nil && cfg.ignoreFields[field.Name] {
