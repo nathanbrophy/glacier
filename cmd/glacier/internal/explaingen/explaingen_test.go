@@ -20,8 +20,8 @@ const fixtureSpec011 = `
 | Marker | Regex | Max length | Notes |
 |---|---|---|---|
 | ` + "`" + `+glacier:command name=` + "`" + ` | ` + "`" + `^[a-z]` + "`" + ` | 32 chars | Annotates a struct as a CLI command |
-| ` + "`" + `+glacier:root` + "`" + ` | (no payload) | — | Marks a command struct as the root |
-| ` + "`" + `+glacier:mock` + "`" + ` | see spec 0012 | — | Governed by mock spec |
+| ` + "`" + `+glacier:root` + "`" + ` | (no payload) | :  | Marks a command struct as the root |
+| ` + "`" + `+glacier:mock` + "`" + ` | see spec 0012 | :  | Governed by mock spec |
 `
 
 // fixtureSpec032 is a minimal stand-in for specs/0032-sdk.md containing exit

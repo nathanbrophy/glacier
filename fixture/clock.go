@@ -35,7 +35,7 @@ type FakeClock interface {
 	// BlockUntilTimers blocks until at least n timers are registered (via
 	// After or Sleep) and currently pending. Returns immediately if the
 	// condition already holds. Used by tests to synchronize with goroutines
-	// that register timers in the background — without this, an Advance call
+	// that register timers in the background :  without this, an Advance call
 	// can race ahead of timer registration and silently fire nothing.
 	BlockUntilTimers(n int)
 }
@@ -161,7 +161,7 @@ func (fc *fakeClock) SetTime(t time.Time) {
 // Polls with runtime.Gosched between checks; the loop exits as soon as the
 // condition is satisfied. The intended caller is a test that needs to know a
 // background goroutine has reached its time-blocking point before the test
-// fires Advance — without this, the test can race ahead and Advance does
+// fires Advance :  without this, the test can race ahead and Advance does
 // nothing, hanging the goroutine indefinitely.
 func (fc *fakeClock) BlockUntilTimers(n int) {
 	for {
@@ -182,7 +182,7 @@ func (fc *fakeClock) fireExpiredLocked() {
 	remaining := fc.timers[:0]
 	for _, pt := range fc.timers {
 		if !pt.deadline.After(newNow) {
-			// Fire — non-blocking send (channel is buffered with capacity 1).
+			// Fire :  non-blocking send (channel is buffered with capacity 1).
 			select {
 			case pt.ch <- newNow:
 			default:

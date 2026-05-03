@@ -140,7 +140,7 @@ func GuardLeaks(t assert.TB, opts ...LeakOption) {
 		return
 	}
 
-	// Baselines — recorded synchronously at call time.
+	// Baselines :  recorded synchronously at call time.
 	var (
 		baseEnv      map[string]string
 		baseTempDirs map[string]struct{}

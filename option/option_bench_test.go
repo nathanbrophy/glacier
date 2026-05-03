@@ -169,16 +169,16 @@ func BenchmarkRequired(b *testing.B) {
 	}
 }
 
-// ---- L-add-5: 10,000 nil-only options — O(n), no errs-slice allocs ----
+// ---- L-add-5: 10,000 nil-only options :  O(n), no errs-slice allocs ----
 // Verifies the nil-skip path is O(n) and allocates no errs slice.
 // The 1 alloc observed is T escaping to heap due to Go's conservative static
 // escape analysis: the compiler marks &t as escaping because Apply's loop body
-// contains `o.apply(&t)` — even when all runtime values are nil and that path
+// contains `o.apply(&t)` :  even when all runtime values are nil and that path
 // is never executed. This is a compiler limitation, not a spec violation.
 
 func TestApplyLargeNilSlice(t *testing.T) {
 	opts := make([]option.Option[testConfig], 10_000)
-	// All nil — the loop skips every element; errs slice is never allocated.
+	// All nil :  the loop skips every element; errs slice is never allocated.
 	// We expect at most 1 alloc: T heap-escaping due to static escape analysis
 	// (not from errs slice growth). No additional allocs regardless of slice size.
 	allocs := testing.AllocsPerRun(100, func() {

@@ -9,7 +9,7 @@
 // struct tags drive field naming (consumers reuse the tag they already know).
 // v0 reads JSON files only (Falcon's ruling); env vars parsed inline; flag
 // sources via the FlagSource interface that cli later implements. Validation is
-// separate from decode — typo'd JSON or missing required env values surface as
+// separate from decode :  typo'd JSON or missing required env values surface as
 // DecodeErrors during Load; semantic invariants are checked via option.Validate
 // after Load returns successfully.
 package conf

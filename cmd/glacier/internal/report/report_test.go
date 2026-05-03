@@ -71,7 +71,7 @@ func TestStatus_Format(t *testing.T) {
 func TestSetWriter_Nil_RestoresStderr(t *testing.T) {
 	// SetWriter(nil) restores the default (stderr). Must not panic.
 	report.SetWriter(nil)
-	report.Status(report.Calm, "nil writer test — should go to stderr")
+	report.Status(report.Calm, "nil writer test :  should go to stderr")
 	// No assertion; just verify no panic and no nil-write crash.
 }
 

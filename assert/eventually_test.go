@@ -40,7 +40,7 @@ func TestEventuallyHonorsInterval(t *testing.T) {
 	True(t, elapsed >= 20*time.Millisecond, "Eventually: at least one interval elapsed")
 }
 
-// L-add-7: Eventually where fn panics — propagated (not treated as condition-false).
+// L-add-7: Eventually where fn panics :  propagated (not treated as condition-false).
 func TestEventuallyFnPanics(t *testing.T) {
 	mt := &mockTB{}
 	defer func() {

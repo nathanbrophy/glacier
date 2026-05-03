@@ -70,14 +70,14 @@ func TestBodyJSONSmartEqual(t *testing.T) {
 		)).
 		Respond(httpmock.Status(201))
 
-	// Body has a different CreatedAt — should still match because we ignore it.
+	// Body has a different CreatedAt :  should still match because we ignore it.
 	body := `{"name":"Ada","created_at":"2024-01-01T00:00:00Z"}`
 	req := newReqWithBody(t, "POST", "https://example.com/users", body, "application/json")
 	resp, err := rt.RoundTrip(req)
 	assert.NoError(t, err)
 	assert.Equal(t, resp.StatusCode, 201)
 
-	// Different name — should NOT match.
+	// Different name :  should NOT match.
 	body2 := `{"name":"Grace","created_at":"2024-01-01T00:00:00Z"}`
 	req2 := newReqWithBody(t, "POST", "https://example.com/users", body2, "application/json")
 	_, err2 := rt.RoundTrip(req2)

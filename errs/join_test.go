@@ -52,13 +52,13 @@ func TestJoinMultipleNonNil(t *testing.T) {
 	}
 	cases := []tc{
 		{
-			name:      "two non-nil errors — both reachable via errors.Is",
+			name:      "two non-nil errors :  both reachable via errors.Is",
 			args:      []error{io.EOF, fs.ErrNotExist},
 			wantCount: 2,
 			targets:   []error{io.EOF, fs.ErrNotExist},
 		},
 		{
-			name:      "nil dropped before stdlib call — two-error join from three args",
+			name:      "nil dropped before stdlib call :  two-error join from three args",
 			args:      []error{io.EOF, nil, fs.ErrNotExist},
 			wantCount: 2,
 			targets:   []error{io.EOF, fs.ErrNotExist},

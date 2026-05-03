@@ -26,7 +26,7 @@ func checkDrift(path string, generated []byte) error {
 	}
 
 	diff := diffLines(string(onDisk), string(generated))
-	return fmt.Errorf("gen: check: %q is stale — rerun cligen to update:\n%s", path, diff)
+	return fmt.Errorf("gen: check: %q is stale :  rerun cligen to update:\n%s", path, diff)
 }
 
 // diffLines produces a simple line-by-line diff between a and b.

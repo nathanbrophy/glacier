@@ -9,7 +9,7 @@
 //
 // Sources produce an iter.Seq[T] or iter.Seq2[K, V] and do no work until
 // iterated. Transformers wrap a source and return a new sequence; they are
-// lazy — no element passes through until the sink pulls. Sinks consume the
+// lazy :  no element passes through until the sink pulls. Sinks consume the
 // sequence and return a concrete value, triggering all upstream work.
 //
 // The sort family (Sort, SortBy, SortStable, SortDesc) is the only eager
@@ -17,7 +17,7 @@
 // a lazy Seq over the sorted slice.
 //
 // All functions in this package are goroutine-safe by value: each call
-// returns a new closure. Zero external dependencies — stdlib only.
+// returns a new closure. Zero external dependencies :  stdlib only.
 //
 // Spec: 0008-fluent.md
 package fluent

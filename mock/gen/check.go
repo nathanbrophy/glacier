@@ -24,7 +24,7 @@ func checkDrift(path string, generated []byte) error {
 		return nil
 	}
 	diff := diffLines(string(onDisk), string(generated))
-	return fmt.Errorf("mockgen: check: %q is stale — rerun glacier generate to update:\n%s", path, diff)
+	return fmt.Errorf("mockgen: check: %q is stale :  rerun glacier generate to update:\n%s", path, diff)
 }
 
 // diffLines produces a simple line-by-line +/- diff between a and b.

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-// Package obs provides Glacier's OpenTelemetry-based observability — metrics
+// Package obs provides Glacier's OpenTelemetry-based observability :  metrics
 // and traces. Logs stay in log/. Initialize via obs.Init, which configures a
 // shared Provider holding a MeterProvider and TracerProvider with Glacier
 // defaults (resource attributes from build info, configurable sampler and

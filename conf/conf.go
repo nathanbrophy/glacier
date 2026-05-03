@@ -102,7 +102,7 @@ func decodeRegistration(ctx context.Context, cfg loadConfig, reg *registration) 
 		return nil, err
 	}
 
-	// Layer 5: FlagSource — requires the struct type for field enumeration.
+	// Layer 5: FlagSource :  requires the struct type for field enumeration.
 	if cfg.flagSrc != nil {
 		applyFlagSourceToMerged(cfg.flagSrc, reg.path, defType, merged)
 	}

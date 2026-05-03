@@ -84,6 +84,6 @@ func TestCustomLevelLabel(t *testing.T) {
 	// Level -12 is not one of the named constants; slog renders it as DEBUG-8.
 	l.Log(nil, slog.Level(-12), "msg")
 	got := buf.String()
-	// The output should not be empty — the record was emitted.
+	// The output should not be empty :  the record was emitted.
 	assert.True(t, len(got) > 0, "expected non-empty output for custom level")
 }

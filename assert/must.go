@@ -7,7 +7,7 @@ import "fmt"
 // Must returns v if err is nil. If err is non-nil, Must panics with a
 // value that wraps err. Use only for initialization-time invariants:
 // package init, main() setup, test harness setup. Never use in library
-// hot paths — library code must not panic (see CLAUDE.md directive 4).
+// hot paths :  library code must not panic (see CLAUDE.md directive 4).
 //
 // Example:
 //

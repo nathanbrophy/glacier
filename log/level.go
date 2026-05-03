@@ -4,7 +4,7 @@ package log
 
 import "log/slog"
 
-// LevelTrace is below Debug — for very-verbose tracing that is stripped in
+// LevelTrace is below Debug :  for very-verbose tracing that is stripped in
 // production builds. Glacier handlers render this as "TRACE". Stdlib handlers
 // render it as "DEBUG-4".
 const LevelTrace slog.Level = -8
@@ -15,7 +15,7 @@ const LevelDebug slog.Level = slog.LevelDebug
 // LevelInfo mirrors slog.LevelInfo (0). Provided for symmetry.
 const LevelInfo slog.Level = slog.LevelInfo
 
-// LevelNotice is between Info and Warn — for important non-warning events
+// LevelNotice is between Info and Warn :  for important non-warning events
 // (config reloaded, connection established). Glacier handlers render this as
 // "NOTICE". Stdlib handlers render it as "INFO+2".
 const LevelNotice slog.Level = 2

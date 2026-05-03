@@ -282,7 +282,7 @@ func parseFieldLine(fm *FieldMarker, fieldName, line string) error {
 
 	default:
 		if strings.HasPrefix(line, "+glacier:") {
-			// Unknown field-level marker — not an error per spec (warn at caller).
+			// Unknown field-level marker :  not an error per spec (warn at caller).
 		}
 	}
 

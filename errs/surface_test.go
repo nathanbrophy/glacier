@@ -45,7 +45,7 @@ func TestSurfaceClosed_ErrsPackage(t *testing.T) {
 	// Retryable.
 	var _ bool = errs.Retryable(nil)
 
-	// Coded interface — confirm our codedError satisfies it.
+	// Coded interface :  confirm our codedError satisfies it.
 	var _ errs.Coded = &codedError{msg: "x", code: "E_X"}
 
 	// Code.

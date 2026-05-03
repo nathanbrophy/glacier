@@ -162,7 +162,7 @@ func TestMarkerInjectionAttempt_Newlines(t *testing.T) {
 	t.Parallel()
 	_, errs := gen.ParseFieldMarkers("Port", []string{"+glacier:env GLACIER_PORT\nevil()"})
 	// The line with newline: should be parsed as "+glacier:env GLACIER_PORT\nevil()"
-	// The env regex won't match because of the newline content — but the line is
+	// The env regex won't match because of the newline content :  but the line is
 	// passed as-is from the caller. The injection is prevented by the regex.
 	_ = errs
 }
@@ -192,7 +192,7 @@ func TestFieldMarkerHelp_MarkerLinesExcluded(t *testing.T) {
 
 func TestFieldMarkerHelp_Truncation(t *testing.T) {
 	t.Parallel()
-	// "Field" is the leading word (stripped), followed by 200 x's — exceeds 120 chars.
+	// "Field" is the leading word (stripped), followed by 200 x's :  exceeds 120 chars.
 	payload := "Field " + strings.Repeat("x", 200)
 	fm, errs := gen.ParseFieldMarkers("F", []string{payload})
 	assert.Equal(t, 0, len(errs))

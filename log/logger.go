@@ -32,7 +32,7 @@ func SetDefault(l *slog.Logger) {
 //
 // From is the consumer-side accessor used by code that wants the current
 // scoped logger. If no logger has been injected via Inject, the global
-// default is returned — making From safe to call in any context.
+// default is returned :  making From safe to call in any context.
 //
 //	l := log.From(ctx)
 //	l.Info("handler started")
@@ -51,7 +51,7 @@ func From(ctx context.Context) *slog.Logger {
 // lifetime without threading the logger through every function signature.
 //
 // If l is nil, subsequent From calls on the returned context return
-// slog.Default() — nil injection is treated as "remove the injected logger."
+// slog.Default() :  nil injection is treated as "remove the injected logger."
 //
 //	ctx = log.Inject(ctx, log.From(ctx).With("request_id", id))
 func Inject(ctx context.Context, l *slog.Logger) context.Context {

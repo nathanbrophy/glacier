@@ -364,7 +364,7 @@ func equalStructs(got, want reflect.Value, cfg *equalConfig, vis visited) bool {
 	// Interface() on them. reflect.DeepEqual can still compare them correctly because it
 	// has internal access to the memory layout. When any unexported field is present and no
 	// field-level option (IgnoreFields) is in use, fall back to reflect.DeepEqual on the
-	// whole struct — this is the only panic-free approach.
+	// whole struct :  this is the only panic-free approach.
 	hasUnexported := false
 	for i := range t.NumField() {
 		if !t.Field(i).IsExported() {

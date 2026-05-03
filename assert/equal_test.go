@@ -8,7 +8,7 @@ import (
 
 // §21.4 F2, F11; §23.5, §23.13, §23.17
 
-// Bootstrap subset — uses bare-if only. These test Equal before assert can be
+// Bootstrap subset :  uses bare-if only. These test Equal before assert can be
 // used to test itself.
 
 // TestEqual_Bootstrap_PrimitiveInt verifies Equal(5, 5) returns true.
@@ -76,7 +76,7 @@ func TestEqual_Bootstrap_Mismatch(t *testing.T) {
 }
 
 // TestEqual_Bootstrap_TypeMismatchAtTop verifies nil pointers of different types are unequal.
-// §21.4 E3 — via any
+// §21.4 E3 :  via any
 func TestEqual_Bootstrap_TypeMismatchAtTop(t *testing.T) {
 	type A struct{ X int }
 	type B struct{ Y int }
@@ -97,7 +97,7 @@ func TestPrimitiveFastPathTypeNotComparable(t *testing.T) {
 	}
 }
 
-// --- Composition tests — use assert.Equal / assert.True / assert.False ---
+// --- Composition tests :  use assert.Equal / assert.True / assert.False ---
 
 // TestEqualPointerDeref verifies pointer dereferencing.
 // §21.4 F11, E4, E5

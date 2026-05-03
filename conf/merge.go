@@ -21,7 +21,7 @@ import (
 // from the JSON file and to scope env-var and flag lookups. Pass "" to use
 // the entire document.
 func buildMerged(cfg loadConfig, sectionPath string, defaults any) (map[string]any, error) {
-	// Layer 1: struct defaults — marshal the zero/defaults value into a map.
+	// Layer 1: struct defaults :  marshal the zero/defaults value into a map.
 	merged := map[string]any{}
 	if defaults != nil {
 		data, _ := json.Marshal(defaults)
@@ -201,7 +201,7 @@ func loadEnvVars(prefix, sectionPath, _ string) map[string]any {
 		// Attempt JSON parse so numbers, booleans, and arrays round-trip correctly.
 		var parsed any
 		if err := json.Unmarshal([]byte(val), &parsed); err != nil {
-			// Not valid JSON — treat as plain string.
+			// Not valid JSON :  treat as plain string.
 			parsed = val
 		}
 		setNestedKey(result, fieldKey, parsed)

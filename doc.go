@@ -1,4 +1,4 @@
-// Package glacier is the umbrella for the Glacier Go framework — a curated
+// Package glacier is the umbrella for the Glacier Go framework :  a curated
 // suite of consumable libraries that make Go development easy and just work.
 //
 // Glacier ships fourteen packages organized in three tiers (kernel / mid /

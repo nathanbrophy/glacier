@@ -182,7 +182,7 @@ func (s *sentinelError) Error() string { return s.text }
 
 // Sentinel constructs a sentinel error with stable text. The text MUST conform
 // to Glacier's library register (lowercase, contains ':', no trailing period).
-// Misformatted text panics at construction time — sentinels are always declared
+// Misformatted text panics at construction time :  sentinels are always declared
 // at package level, so violations surface immediately in any test that imports
 // the package.
 //

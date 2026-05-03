@@ -150,7 +150,7 @@ func TestStubAtLeast(t *testing.T) {
 	rt := httpmock.New()
 	rt.OnRequest().Path("/x").AtLeast(2).Respond(httpmock.Status(200))
 
-	// Call only once — should fail AtLeast(2).
+	// Call only once :  should fail AtLeast(2).
 	req := newReq(t, "GET", "https://example.com/x", nil)
 	_, _ = rt.RoundTrip(req)
 
@@ -163,7 +163,7 @@ func TestStubAtMost(t *testing.T) {
 	rt := httpmock.New()
 	rt.OnRequest().Path("/x").AtMost(1).Respond(httpmock.Status(200))
 
-	// Call twice — should fail AtMost(1).
+	// Call twice :  should fail AtMost(1).
 	for range 2 {
 		req := newReq(t, "GET", "https://example.com/x", nil)
 		_, _ = rt.RoundTrip(req)
@@ -191,7 +191,7 @@ func TestStubAnyTimes(t *testing.T) {
 	rt := httpmock.New()
 	rt.OnRequest().Path("/x").AnyTimes().Respond(httpmock.Status(200))
 
-	// Not calling it at all — AnyTimes means no failure.
+	// Not calling it at all :  AnyTimes means no failure.
 	rt.Verify(tb)
 	assert.Len(t, tb.errors, 0)
 }
@@ -199,7 +199,7 @@ func TestStubAnyTimes(t *testing.T) {
 func TestStubMissingRespond(t *testing.T) {
 	rt := httpmock.New()
 	// OnRequest appends the stub; we call Respond with nil to finalize but no real responder.
-	// Actually, we'll just not call Respond — the stub has a nil responder.
+	// Actually, we'll just not call Respond :  the stub has a nil responder.
 	rt.OnRequest().Path("/x") // No Respond call.
 
 	req := newReq(t, "GET", "https://example.com/x", nil)
@@ -242,7 +242,7 @@ func TestVerifyAtCleanup_NewWithT(t *testing.T) {
 	tb := &trackingTB{TB: t}
 	rt := httpmock.NewWithT(tb)
 	rt.OnRequest().Path("/check").Times(1).Respond(httpmock.Status(200))
-	// Never call RoundTrip — Verify should run at cleanup and report the unmet expectation.
+	// Never call RoundTrip :  Verify should run at cleanup and report the unmet expectation.
 	// The cleanup is registered on tb.TB (the real t), so it will fire after the sub-test.
 	// We can observe tb.errors after cleanup runs by running in a sub-test.
 	_ = rt

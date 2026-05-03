@@ -89,7 +89,7 @@ func TestSnapshotPrettyPrintLineEndingsLF(t *testing.T) {
 			t.Fatal("snapshot file contains CRLF line endings; expected LF only")
 		}
 	}
-	// If ReadFile fails (file doesn't exist yet — first run), we skip the check.
+	// If ReadFile fails (file doesn't exist yet :  first run), we skip the check.
 }
 
 // TestSnapshotMissingCreates: GLACIER_GOLDEN_UPDATE=1 + missing snapshot →

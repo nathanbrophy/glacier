@@ -35,13 +35,13 @@ var ErrUNC = fmt.Errorf("safefile: UNC path rejected")
 // name must be a relative path: no ".." after Clean, no leading "/",
 // no Windows drive prefix, no UNC.
 func Clean(name string) (string, error) {
-	// Reject UNC paths immediately — before Clean can normalize them.
+	// Reject UNC paths immediately :  before Clean can normalize them.
 	// UNC: \\server\share or \\?\ on Windows.
 	if len(name) >= 2 && name[0] == '\\' && name[1] == '\\' {
 		return "", ErrUNC
 	}
 	if len(name) >= 2 && name[0] == '/' && name[1] == '/' {
-		// Double-slash prefix — treat as UNC-like.
+		// Double-slash prefix :  treat as UNC-like.
 		return "", ErrUNC
 	}
 

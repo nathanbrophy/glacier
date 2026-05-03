@@ -31,12 +31,12 @@ var stops = [6][3]uint8{
 //
 // Indices were selected by visual inspection against the xterm-256 palette.
 var stops256 = [6]uint8{
-	123, // #87ffff — closest xterm-256 to (140,235,255)
-	117, // #87d7ff — closest to (110,225,255)
-	75,  // #5fafff — closest to (80,210,255)
-	69,  // #5f87ff — closest to (60,180,255)
-	63,  // #5f5fff — closest to (90,150,255)
-	69,  // #5f87ff — closest to (120,180,255)
+	123, // #87ffff :  closest xterm-256 to (140,235,255)
+	117, // #87d7ff :  closest to (110,225,255)
+	75,  // #5fafff :  closest to (80,210,255)
+	69,  // #5f87ff :  closest to (60,180,255)
+	63,  // #5f5fff :  closest to (90,150,255)
+	69,  // #5f87ff :  closest to (120,180,255)
 }
 
 // Wordmark returns the "GLACIER" wordmark string with ANSI color escapes applied
@@ -56,7 +56,7 @@ func Wordmark(phase int, color24, color256 bool) string {
 	}
 	var b strings.Builder
 	// Each character gets its own escape + reset pair. A colored 7-char string
-	// carries at most 7*(esc_open + 1 + reset) bytes ≈ 160 bytes — well within
+	// carries at most 7*(esc_open + 1 + reset) bytes ≈ 160 bytes :  well within
 	// a stack-sized buffer on any platform.
 	for i, ch := range wordmark {
 		idx := (phase + i) % 6

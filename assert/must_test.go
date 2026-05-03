@@ -38,7 +38,7 @@ func TestMustPanicsOnError(t *testing.T) {
 	}
 }
 
-// L-add-10: Must with a wrapped error — errors.Is(recover(), originalErr) returns true.
+// L-add-10: Must with a wrapped error :  errors.Is(recover(), originalErr) returns true.
 func TestMustWrappedError(t *testing.T) {
 	original := errors.New("original")
 	var recovered any
@@ -61,7 +61,7 @@ func TestMust2BothValuesReturned(t *testing.T) {
 	Equal(t, b, "hello")
 }
 
-// L-add-11: Must2[int, int] — same type for A and B compiles and works.
+// L-add-11: Must2[int, int] :  same type for A and B compiles and works.
 func TestMust2SameType(t *testing.T) {
 	a, b := Must2(1, 2, nil)
 	Equal(t, a, 1)

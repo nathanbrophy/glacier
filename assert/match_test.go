@@ -62,7 +62,7 @@ func TestMatchSpecialCharsGlob(t *testing.T) {
 	False(t, Match(mt, "axb", "a.b"), "glob: literal dot does not match non-dot char")
 }
 
-// L-add-8: Match("", "") — empty pattern matches empty string in glob mode.
+// L-add-8: Match("", "") :  empty pattern matches empty string in glob mode.
 func TestMatchEmptyPatternEmptyString(t *testing.T) {
 	mt := &mockTB{}
 	True(t, Match(mt, "", ""), "glob: empty pattern matches empty string")

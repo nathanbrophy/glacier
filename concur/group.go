@@ -139,7 +139,7 @@ func (g *Group) TryGo(fn func() error) bool {
 
 // WaitDone waits for all scheduled goroutines to complete (or ctx to cancel).
 // Returns errs.Join over all collected errors (including PanicErrors).
-// After WaitDone returns, the Group is terminal — further Go calls panic.
+// After WaitDone returns, the Group is terminal :  further Go calls panic.
 func (g *Group) WaitDone(ctx context.Context) error {
 	waitDone := make(chan struct{})
 	go func() {

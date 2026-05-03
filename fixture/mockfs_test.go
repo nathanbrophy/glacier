@@ -75,7 +75,7 @@ func TestMockFSConflictPanics(t *testing.T) {
 			t.Fatalf("panic message %q does not contain 'conflict'", msg)
 		}
 	}()
-	// "foo" as a file and "foo/bar" implies "foo" as a directory — conflict.
+	// "foo" as a file and "foo/bar" implies "foo" as a directory :  conflict.
 	fixture.NewFS(map[string][]byte{
 		"foo":     []byte("file"),
 		"foo/bar": []byte("other"),

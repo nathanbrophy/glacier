@@ -50,7 +50,7 @@ func ExampleRegister() {
 func ExampleLoader_Load() {
 	l := conf.NewLoader()
 
-	// Load with no sources — all registered sections keep their defaults.
+	// Load with no sources :  all registered sections keep their defaults.
 	if err := l.Load(context.Background()); err != nil {
 		panic(err)
 	}

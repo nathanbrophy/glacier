@@ -5,7 +5,7 @@ package concur
 import "sync"
 
 // Once[T] memoizes the (T, error) result of the first successful call to Do.
-// A panicking Do does not count as "done" — the next call re-attempts.
+// A panicking Do does not count as "done" :  the next call re-attempts.
 type Once[T any] struct {
 	mu   sync.Mutex
 	done bool

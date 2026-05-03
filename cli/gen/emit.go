@@ -164,7 +164,7 @@ func emitRegistrations(w io.Writer, pkgName string, commands []DiscoveredCommand
 	return err
 }
 
-// quoteRune returns a Go rune literal string like '\'p\''.
+// quoteRune returns a Go rune literal string like '\'p\”.
 func quoteRune(r rune) string {
 	return strconv.QuoteRune(r)
 }

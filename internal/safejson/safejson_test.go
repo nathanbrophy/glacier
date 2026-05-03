@@ -72,7 +72,7 @@ func TestDecode_InvalidJSON(t *testing.T) {
 	var dst map[string]any
 	err := safejson.Decode(strings.NewReader(`{bad}`), &dst)
 	assert.Error(t, err)
-	// Must NOT be a safejson sentinel — it should be a standard json error.
+	// Must NOT be a safejson sentinel :  it should be a standard json error.
 	assert.True(t, !errors.Is(err, safejson.ErrTooLarge))
 	assert.True(t, !errors.Is(err, safejson.ErrDepthExceeded))
 }

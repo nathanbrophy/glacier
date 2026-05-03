@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Package concur is the Glacier answer to "I need a Mutex / errgroup /
-// semaphore / sync.Pool / sync.Once / sync.WaitGroup — but ctx-aware,
+// semaphore / sync.Pool / sync.Once / sync.WaitGroup :  but ctx-aware,
 // observable, and friendly to Glacier's error story." Production builds are
 // byte-equivalent to stdlib equivalents where possible (zero overhead is the
 // rule, not an aspiration). Debug builds (-tags glacier_debug) add

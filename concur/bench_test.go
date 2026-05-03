@@ -29,7 +29,7 @@ func BenchmarkSyncMutexLockUnlock(b *testing.B) {
 	}
 }
 
-// BenchmarkSemaphoreAcquireRelease — fast-path benchmark (should be <= 50 ns/op).
+// BenchmarkSemaphoreAcquireRelease :  fast-path benchmark (should be <= 50 ns/op).
 func BenchmarkSemaphoreAcquireRelease(b *testing.B) {
 	b.ReportAllocs()
 	s, _ := concur.NewSemaphore(1000)

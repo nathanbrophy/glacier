@@ -123,7 +123,7 @@ func TestWrapperUnwrapReturnsInner(t *testing.T) {
 func TestStackTraceCapture(t *testing.T) {
 	t.Parallel()
 
-	t.Run("captures frames — first frame names this test", func(t *testing.T) {
+	t.Run("captures frames :  first frame names this test", func(t *testing.T) {
 		t.Parallel()
 		w := errs.Wrap(io.EOF, "x").WithStackTrace()
 		frames := errs.StackOf(w)
@@ -175,7 +175,7 @@ func TestStackOfEdgeCases(t *testing.T) {
 			wantNil: true,
 		},
 		{
-			name:    "no WithStackTrace in chain — returns nil",
+			name:    "no WithStackTrace in chain :  returns nil",
 			build:   func() error { return errs.Wrap(errs.Wrap(io.EOF, "a"), "b") },
 			wantNil: true,
 		},

@@ -32,7 +32,7 @@ func TestWaitGroup_WaitCtx_ReturnsNilOnCompletion(t *testing.T) {
 func TestWaitGroup_WaitCtx_ReturnsCancelledWhenCtxCancelled(t *testing.T) {
 	t.Parallel()
 	var wg concur.WaitGroup
-	wg.Add(1) // never Done'd — keeps wg from completing
+	wg.Add(1) // never Done'd :  keeps wg from completing
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()

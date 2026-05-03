@@ -259,7 +259,7 @@ func TestNewClockAdvanceTable(t *testing.T) {
 }
 
 // TestBlockUntilTimers waits for goroutines to register timers before
-// advancing — this is the synchronization primitive that lets tests drive
+// advancing :  this is the synchronization primitive that lets tests drive
 // the fake clock without racing the goroutine that registers After/Sleep.
 func TestBlockUntilTimers(t *testing.T) {
 	clk := fixture.NewClock(t, start)

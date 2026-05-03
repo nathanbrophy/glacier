@@ -266,7 +266,7 @@ func (c *Client) doWithRetry(
 
 		if buildBody != nil {
 			// Close the previous attempt's body before invoking the closure again
-			// (required for StreamBody correctness — the caller's ReadCloser must
+			// (required for StreamBody correctness :  the caller's ReadCloser must
 			// be released before a fresh one is created).
 			if prevBody != nil {
 				_ = prevBody.Close()
@@ -328,7 +328,7 @@ func (c *Client) doWithRetry(
 			return nil, ErrMaxAttempts
 		}
 
-		// Return the response — caller (do) handles status check.
+		// Return the response :  caller (do) handles status check.
 		return wrapped, nil
 	}
 

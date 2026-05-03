@@ -25,7 +25,7 @@ func TestPool_Get_WithoutFactory(t *testing.T) {
 	assert.Equal(t, got, "")
 }
 
-// T#C24 Put/Get round-trip: Put returns value; Get retrieves it (eventually — GC may collect).
+// T#C24 Put/Get round-trip: Put returns value; Get retrieves it (eventually :  GC may collect).
 func TestPool_PutGet_RoundTrip(t *testing.T) {
 	t.Parallel()
 	p := concur.NewPool[int](nil)

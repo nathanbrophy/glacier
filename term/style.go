@@ -98,7 +98,7 @@ func (s Style) Render(text string) string {
 }
 
 // Prefix returns the raw ANSI escape sequence that opens this style. Returns
-// "" for the zero Style. No capability detection is performed — the caller
+// "" for the zero Style. No capability detection is performed :  the caller
 // decides whether color should be emitted at all (typically by consulting
 // Capability once and gating subsequent calls on the result).
 //

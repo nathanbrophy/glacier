@@ -37,7 +37,7 @@ func TestTBConcurrentErrorf(t *testing.T) {
 	for range n {
 		go func() {
 			defer wg.Done()
-			// Use a real *testing.T for sub-tests — t.Errorf is goroutine-safe per docs.
+			// Use a real *testing.T for sub-tests :  t.Errorf is goroutine-safe per docs.
 			// We pass the real t and verify no race is detected.
 			Equal(t, 1, 1) // always passes; no Errorf call.
 		}()

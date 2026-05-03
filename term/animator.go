@@ -306,7 +306,7 @@ func (a *Animator) Run(ctx context.Context) (runErr error) {
 	}
 
 	defer func() {
-		// Restore original handler — panic-safe.
+		// Restore original handler :  panic-safe.
 		if isDefault {
 			slog.SetDefault(a.logger) // restore original
 		}

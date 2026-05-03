@@ -52,7 +52,7 @@ func ExampleSemaphore() {
 	}
 	fmt.Println(ok) // true
 
-	// Now at capacity — TryAcquire should fail.
+	// Now at capacity :  TryAcquire should fail.
 	ok2, err := s.TryAcquire(1)
 	if err != nil {
 		panic(err)

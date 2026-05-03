@@ -371,7 +371,7 @@ var markerSpaceRe = regexp.MustCompile(`(//\s*\+glacier:)\s+`)
 
 // fixMarkers normalizes +glacier: comment markers in src by removing extraneous
 // whitespace between the directive prefix and the directive name.
-// For example "// +glacier: command" becomes "// +glacier:command".
+// For example "// +glacier:command" becomes "// +glacier:command".
 // Returns the modified bytes and whether any change was made.
 func fixMarkers(src []byte) ([]byte, bool) {
 	result := markerSpaceRe.ReplaceAll(src, []byte("${1}"))
@@ -580,7 +580,7 @@ func runNonGoEmDash(fix bool) []Finding {
 		lineNum := 0
 		for scanner.Scan() {
 			lineNum++
-			if bytes.ContainsRune(scanner.Bytes(), '—') {
+			if bytes.ContainsRune(scanner.Bytes(), '\u2014') {
 				findings = append(findings, Finding{
 					Rule:     "no-em-dash",
 					File:     path,
@@ -674,7 +674,7 @@ func (l *noEmDashLinter) Check(file string, src []byte) []Finding {
 	lineNum := 0
 	for scanner.Scan() {
 		lineNum++
-		if bytes.ContainsRune(scanner.Bytes(), '—') {
+		if bytes.ContainsRune(scanner.Bytes(), '\u2014') {
 			findings = append(findings, Finding{
 				Rule:     l.Name(),
 				File:     file,

@@ -177,7 +177,7 @@ func TestGuardLeaksGoroutineDrainTimeout(t *testing.T) {
 	m.runCleanups()
 
 	// The goroutine should have drained before the 500ms timeout.
-	// May or may not fail depending on timing — we only verify no panic.
+	// May or may not fail depending on timing :  we only verify no panic.
 	_ = m.Failed() // tolerate either outcome in this timing test
 }
 
@@ -211,11 +211,11 @@ func TestGuardLeaksParallelSubtest(t *testing.T) {
 
 // TestGuardLeaksFDsNoOpOnWindows / TestGuardLeaksFDsCatchesLeak are
 // implemented in platform-specific files:
-//   - guardleaks_fd_test.go (build tag: !windows) — catches leak
-//   - guardleaks_fd_windows_test.go (build tag: windows) — no-op test
+//   - guardleaks_fd_test.go (build tag: !windows) :  catches leak
+//   - guardleaks_fd_windows_test.go (build tag: windows) :  no-op test
 
 // TestGuardLeaksBaselineCleanupRace: Baseline recorded synchronously; no race.
-// (#64) — run with -race.
+// (#64) :  run with -race.
 func TestGuardLeaksBaselineCleanupRace(t *testing.T) {
 	m := newMockTB()
 	// GuardLeaks records baseline synchronously; cleanup runs later.
@@ -246,7 +246,7 @@ func TestGuardLeaksTempDirPrefix(t *testing.T) {
 	m := newMockTB()
 	fixture.GuardLeaks(m, fixture.WatchTempDirs())
 
-	// Create a dir with the glacier- prefix — this simulates a leak.
+	// Create a dir with the glacier- prefix :  this simulates a leak.
 	leakDir, err := os.MkdirTemp("", "glacier-prefix-test-")
 	if err != nil {
 		t.Fatalf("MkdirTemp: %v", err)

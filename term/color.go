@@ -66,7 +66,7 @@ var (
 	Info    Color // #60A5FA
 	Border  Color // #334155
 
-	// Gradient stops (Glacier brand — D42)
+	// Gradient stops (Glacier brand :  D42)
 	Cyan100 Color // #CFFAFE
 	Cyan300 Color // #67E8F9
 	Cyan500 Color // #06B6D4

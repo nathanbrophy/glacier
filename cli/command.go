@@ -6,7 +6,7 @@ import "context"
 
 // command is the unexported interface every CLI command must satisfy.
 // Users implement Run(ctx context.Context) error on their struct.
-// The interface is intentionally unexported — users never reference it by name.
+// The interface is intentionally unexported :  users never reference it by name.
 type command interface {
 	Run(ctx context.Context) error
 }

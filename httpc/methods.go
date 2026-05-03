@@ -108,7 +108,7 @@ func (c *Client) Get(ctx context.Context, rawURL string, opts ...RequestOption) 
 	return resp, err
 }
 
-// GetTyped is a convenience wrapper — external callers use the package-level Get[T].
+// GetTyped is a convenience wrapper :  external callers use the package-level Get[T].
 // Internal use: clientGet[T](c, ctx, url, opts...) directly.
 
 // Head sends an HTTP HEAD request.

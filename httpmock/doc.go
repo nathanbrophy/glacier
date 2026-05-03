@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Package httpmock provides a programmable http.RoundTripper for testing code
-// that uses *http.Client. The transport never makes real network calls — it is
+// that uses *http.Client. The transport never makes real network calls :  it is
 // purely an in-memory mock that intercepts every request and returns a scripted
 // response. Stubs are declared via a chained builder (Method → Path → Header →
 // Respond), typed responses use generic JSON[T any] for compile-time-safe

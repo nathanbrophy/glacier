@@ -98,7 +98,7 @@ func captureStack() string {
 	return string(buf[:n])
 }
 
-// RWMutex in debug build (simplified — same as non-debug for now since hold-timeout on RWMutex adds complexity).
+// RWMutex in debug build (simplified :  same as non-debug for now since hold-timeout on RWMutex adds complexity).
 type RWMutex struct {
 	mu sync.RWMutex
 }

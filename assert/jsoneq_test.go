@@ -56,7 +56,7 @@ func TestJSONEqMalformedWant(t *testing.T) {
 // L-add-13: JSONEq with embedded null values vs missing keys.
 func TestJSONEqNullVsMissingKey(t *testing.T) {
 	mt := &mockTB{}
-	// {"a": null} != {} — they are not equal.
+	// {"a": null} != {} :  they are not equal.
 	False(t, JSONEq(mt, []byte(`{"a":null}`), []byte(`{}`)), "JSONEq: null value != missing key")
 }
 

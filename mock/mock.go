@@ -143,7 +143,7 @@ func (m *Mock[T]) buildInterfaceValue(ifaceType reflect.Type) T {
 
 // dispatch is called by every synthesized method implementation. It acquires
 // the write lock, finds the first matching expectation, increments its counter,
-// captures the return values, and returns them — all under a single critical
+// captures the return values, and returns them :  all under a single critical
 // section (§23.14).
 func (m *Mock[T]) dispatch(methodName string, args []reflect.Value) []reflect.Value {
 	s := m.state
@@ -246,7 +246,7 @@ func formatLogValue(v any) string {
 	if v == nil {
 		return "<nil>"
 	}
-	// slog.Value from slog.LogValuer — check both the direct interface and
+	// slog.Value from slog.LogValuer :  check both the direct interface and
 	// a fallback string rendering.
 	type logValuerWithAny interface {
 		LogValue() interface{ Any() any }

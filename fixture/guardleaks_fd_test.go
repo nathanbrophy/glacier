@@ -12,7 +12,7 @@ import (
 )
 
 // TestGuardLeaksFDsCatchesLeak: Open file without close → cleanup reports.
-// (#58 — Linux/macOS only)
+// (#58 :  Linux/macOS only)
 func TestGuardLeaksFDsCatchesLeak(t *testing.T) {
 	// Create a temp file to open.
 	f, err := os.CreateTemp("", "glacier-fd-leak-test-")
@@ -24,7 +24,7 @@ func TestGuardLeaksFDsCatchesLeak(t *testing.T) {
 	m := newMockTB()
 	fixture.GuardLeaks(m, fixture.WatchFDs())
 
-	// Intentionally do NOT close f — simulates an FD leak.
+	// Intentionally do NOT close f :  simulates an FD leak.
 	// (The file is removed by defer, but the fd remains open until f.Close().)
 	_ = f // keep fd open through cleanup
 

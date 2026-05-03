@@ -19,7 +19,7 @@ func FuzzFixture(f *testing.F) {
 	f.Fuzz(func(t *testing.T, name string) {
 		tb := &silentTB{t: t}
 		rt := httpmock.New()
-		// LoadFixtures must not panic for any input — it must always return
+		// LoadFixtures must not panic for any input :  it must always return
 		// a typed error and call tb.Errorf.
 		_ = rt.LoadFixtures(tb, name)
 	})

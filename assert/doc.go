@@ -14,12 +14,12 @@
 // comparable and got == want by ==.
 //
 // Arguments that may contain secrets (tokens, passwords, private keys)
-// should be wrapped with log.RedactValue before passing to assertions —
+// should be wrapped with log.RedactValue before passing to assertions :
 // the diff renderer calls LogValue() on slog.LogValuer values, rendering
 // them as [REDACTED] instead of the raw secret.
 //
 // Runtime Must helpers (Must, Must2, Mustf) panic on violation and are
 // intended only for initialization-time invariants in package init,
 // main() setup, and test harness setup. Never use Must in library hot
-// paths — library code must not panic (see CLAUDE.md directive 4).
+// paths :  library code must not panic (see CLAUDE.md directive 4).
 package assert

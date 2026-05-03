@@ -11,7 +11,7 @@ import "log/slog"
 //	slog.Info("auth", "token", log.Redact(token))
 //
 // The redaction is implemented via the stdlib slog.LogValuer interface, so it
-// works with every handler — including third-party handlers that call
+// works with every handler :  including third-party handlers that call
 // LogValue() on attribute values before formatting.
 //
 // Preconditions: none. Redact(nil) returns a value that still formats as

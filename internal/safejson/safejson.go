@@ -79,7 +79,7 @@ func checkDepth(data []byte) error {
 	for {
 		tok, err := dec.Token()
 		if err != nil {
-			// io.EOF or any scan error — stop; let Unmarshal report parse errors.
+			// io.EOF or any scan error :  stop; let Unmarshal report parse errors.
 			break
 		}
 		switch tok {

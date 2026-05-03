@@ -61,7 +61,7 @@ func TestMaxResponseBytesCustom(t *testing.T) {
 
 func TestWithUnboundedResponse(t *testing.T) {
 	t.Parallel()
-	// Serve 33 MiB with unbounded option — should succeed (up to JSON decode limit).
+	// Serve 33 MiB with unbounded option :  should succeed (up to JSON decode limit).
 	// Use a valid JSON object so parse succeeds.
 	bodyJSON := fmt.Sprintf(`{"data":"%s"}`, strings.Repeat("a", 1024))
 	rt := roundTripFunc(func(r *http.Request) (*http.Response, error) {

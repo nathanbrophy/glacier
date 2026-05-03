@@ -63,7 +63,7 @@ func TestChainYieldCount(t *testing.T) {
 			wantFirst: a,
 		},
 		{
-			name:    "linear Wrap — Wrap(Wrap(e,a),b) yields 3",
+			name:    "linear Wrap :  Wrap(Wrap(e,a),b) yields 3",
 			err:     outer,
 			wantLen: 3,
 			wantElems: []struct {
@@ -81,7 +81,7 @@ func TestChainYieldCount(t *testing.T) {
 			}{{0, joinABC}, {1, a}, {2, b}, {3, c}},
 		},
 		{
-			name:    "nested Join DFS — outer,a,inner,b,c",
+			name:    "nested Join DFS :  outer,a,inner,b,c",
 			err:     outerJoin,
 			wantLen: 5,
 			wantElems: []struct {

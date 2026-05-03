@@ -22,7 +22,7 @@ const (
 // attrs are appended to the record automatically.
 //
 // Multiple With calls accumulate: each call's attrs are appended to the
-// previous set. Order is preserved. The accumulation is an immutable append —
+// previous set. Order is preserved. The accumulation is an immutable append :
 // no caller's context is mutated.
 //
 //	ctx = log.With(ctx, slog.String("request_id", id))

@@ -46,21 +46,21 @@ func TestParse_Empty(t *testing.T) {
 func TestCompare_NoRegression(t *testing.T) {
 	t.Parallel()
 	baseline := []benchcmp.BenchEntry{{Name: "BenchmarkFoo-8", NsPerOp: 100}}
-	current := []benchcmp.BenchEntry{{Name: "BenchmarkFoo-8", NsPerOp: 104}} // 4% — within threshold
+	current := []benchcmp.BenchEntry{{Name: "BenchmarkFoo-8", NsPerOp: 104}} // 4% :  within threshold
 	assert.Equal(t, len(benchcmp.Compare(baseline, current)), 0)
 }
 
 func TestCompare_AtThreshold(t *testing.T) {
 	t.Parallel()
 	baseline := []benchcmp.BenchEntry{{Name: "BenchmarkFoo-8", NsPerOp: 100}}
-	current := []benchcmp.BenchEntry{{Name: "BenchmarkFoo-8", NsPerOp: 105}} // exactly 5% — not over
+	current := []benchcmp.BenchEntry{{Name: "BenchmarkFoo-8", NsPerOp: 105}} // exactly 5% :  not over
 	assert.Equal(t, len(benchcmp.Compare(baseline, current)), 0)
 }
 
 func TestCompare_OverThreshold(t *testing.T) {
 	t.Parallel()
 	baseline := []benchcmp.BenchEntry{{Name: "BenchmarkFoo-8", NsPerOp: 100}}
-	current := []benchcmp.BenchEntry{{Name: "BenchmarkFoo-8", NsPerOp: 106}} // 6% — regression
+	current := []benchcmp.BenchEntry{{Name: "BenchmarkFoo-8", NsPerOp: 106}} // 6% :  regression
 	regressions := benchcmp.Compare(baseline, current)
 	assert.Equal(t, len(regressions), 1)
 	assert.Equal(t, regressions[0].Name, "BenchmarkFoo-8")
@@ -93,7 +93,7 @@ func TestCompare_MultipleRegressions(t *testing.T) {
 	}
 	current := []benchcmp.BenchEntry{
 		{Name: "BenchmarkA-8", NsPerOp: 120}, // 20% regression
-		{Name: "BenchmarkB-8", NsPerOp: 202}, // 1% — ok
+		{Name: "BenchmarkB-8", NsPerOp: 202}, // 1% :  ok
 		{Name: "BenchmarkC-8", NsPerOp: 60},  // 20% regression
 	}
 	regressions := benchcmp.Compare(baseline, current)

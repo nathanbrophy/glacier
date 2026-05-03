@@ -35,7 +35,7 @@ func (m *mockAnimation) Render() ([]string, bool) {
 	return []string{string(rune('A' + int(n)%26))}, false
 }
 
-// neverDoneAnimation never reports done — used with ctx cancellation.
+// neverDoneAnimation never reports done :  used with ctx cancellation.
 type neverDoneAnimation struct{}
 
 func (n *neverDoneAnimation) Render() ([]string, bool) {
@@ -308,6 +308,6 @@ func TestAnimatorAddMultiple(t *testing.T) {
 		"m1 should have rendered ≥ 2 frames")
 }
 
-// Ensure fixture's FakeClock structurally satisfies term.Clock — the whole
+// Ensure fixture's FakeClock structurally satisfies term.Clock :  the whole
 // dogfooding story rests on this. Compile-time assertion only.
 var _ term.Clock = (fixture.FakeClock)(nil)
