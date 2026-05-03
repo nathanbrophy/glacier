@@ -20,3 +20,9 @@ Thumbs.db
 /dist/
 /build/
 .tmp/
+
+.claude/worktrees
+.claude/worktrees/
+.claude/prompts
+.claude/scheduled_tasks.lock
+.claire/
