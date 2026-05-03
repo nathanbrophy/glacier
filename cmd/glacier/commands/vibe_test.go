@@ -160,4 +160,3 @@ func TestVibeRenderWordmarkWidth(t *testing.T) {
 		}
 	}
 }
-

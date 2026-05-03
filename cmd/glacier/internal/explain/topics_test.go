@@ -121,11 +121,11 @@ func TestDidYouMean_NearMatch(t *testing.T) {
 		input string
 		want  string
 	}{
-		{"exit:6", "exit:0"}, // distance 1 from "exit:0", 1 from "exit:1", etc. — any close exit code
-		{"exit:666", "exit:66"},  // distance 1
-		{"xit:66", "exit:66"},    // distance 1 (missing 'e')
+		{"exit:6", "exit:0"},                         // distance 1 from "exit:0", 1 from "exit:1", etc. :  any close exit code
+		{"exit:666", "exit:66"},                      // distance 1
+		{"xit:66", "exit:66"},                        // distance 1 (missing 'e')
 		{"config:github_repo", "config:github.repo"}, // distance 1 (_ vs .)
-		{"+glacier:comand", "+glacier:command"},       // distance 1 (missing 'm')
+		{"+glacier:comand", "+glacier:command"},      // distance 1 (missing 'm')
 	}
 
 	for _, tc := range cases {

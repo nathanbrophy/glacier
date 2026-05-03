@@ -39,7 +39,7 @@ docs-extract:
 
 <!-- **Public.** One paragraph in end-user voice. The canonical description for the site and README. -->
 
-The Glacier public site at `https://nathanbrophy.github.io/glacier/` is a static site built with VitePress that combines a marketing surface and a reference documentation surface. It reuses the canonical brand identity from spec 0001 — polar-bear mascot, ANSI Shadow wordmark with the 6-stop ice gradient, "Less plumbing. More Go." tagline — and presents the framework shape from spec 0002 as a navigable, dev-first experience. Marketing pages explain what Glacier is, why a Go developer would reach for it, and how the 14-package suite interlocks. Documentation pages walk concrete tasks ("Build a CLI", "Write tests", "Mock HTTP", etc.) and resolve to per-package reference pages whose content is anchored to the accepted spec for that package via a content-extraction contract.
+The Glacier public site at `https://nathanbrophy.github.io/glacier/` is a static site built with VitePress that combines a marketing surface and a reference documentation surface. It reuses the canonical brand identity from spec 0001 :  polar-bear mascot, ANSI Shadow wordmark with the 6-stop ice gradient, "Less plumbing. More Go." tagline :  and presents the framework shape from spec 0002 as a navigable, dev-first experience. Marketing pages explain what Glacier is, why a Go developer would reach for it, and how the 14-package suite interlocks. Documentation pages walk concrete tasks ("Build a CLI", "Write tests", "Mock HTTP", etc.) and resolve to per-package reference pages whose content is anchored to the accepted spec for that package via a content-extraction contract.
 
 ## Mental Model
 
@@ -54,13 +54,13 @@ flowchart LR
     W[/why/]
     F[/features/]
     E[/examples/]
-    S[/sdk — placeholder/]
+    S[/sdk :  placeholder/]
   end
   subgraph C[Concepts]
     CP[/concepts/]
   end
   subgraph D[Documentation surface]
-    DI[/docs index — task grid/]
+    DI[/docs index :  task grid/]
     DT[/docs/<task>/]
     DP[/docs/packages/<name>/]
   end
@@ -76,20 +76,20 @@ flowchart LR
 
 A visitor who arrives via the landing page can scroll the marketing density (hero → install → 4 pillars → Promise → 14-package grid → before/after code → mini-FAQ → footer) without ever leaving `/`. A visitor looking for reference lands on `/docs` (the task grid), picks a task page, and threads through to the relevant package page; from there the spec source for that package is one click away. `/concepts` introduces the kernel/mid/leaves mental model from spec 0002 *before* a visitor encounters a "Tier 0" badge with no priors. The same nav and the same chrome serve both audiences.
 
-The site is dark-only by design — Glacier's brand is dark-first per spec 0001 D6. Light-mode tokens are deferred until a future spec amendment.
+The site is dark-only by design :  Glacier's brand is dark-first per spec 0001 D6. Light-mode tokens are deferred until a future spec amendment.
 
 ## Goals
 
 <!-- **Internal.** Bulleted list. -->
 
 - Stand up the public face of Glacier on GitHub Pages with a build that succeeds locally and in CI.
-- Reuse the canonical brand assets from spec 0001 (banner, wordmark, mascot, palette, tagline, voice) — the site does not redefine them.
+- Reuse the canonical brand assets from spec 0001 (banner, wordmark, mascot, palette, tagline, voice) :  the site does not redefine them.
 - Present the framework shape from spec 0002 (14 packages, three tiers) as a navigable suite, with `/concepts` introducing the mental model.
 - Surface spec 0001's four-statement Promise on the site so it is testable per spec 0001 §Test Matrix row "Promise satisfaction."
 - Author the content extraction contract that lets Magpie generate per-package reference pages from accepted spec sections (`Public Summary`, `Mental Model`, `API`, `Examples`, `FAQ`) without hand-duplication, with a SHA-256 checksum mechanism for drift detection.
 - Lock the multi-page IA, dense-but-disciplined landing, task-organized docs (only for workflows composing 2+ packages), dark-first dark-only theme, aurora atmospheric backdrop, SVG wordmark with embedded ice gradient, kaomoji-canonical mascot with a small illustrated companion sprite.
 - Lock the deploy pipeline (GitHub Actions → official Pages action, SHA-pinned, scoped tokens, `pull_request`-only PR-checks) and the test matrix Lynx signs off on.
-- Amend spec 0001 to admit a single new asset class — the small illustrated companion sprite — under tightly scoped, enumerated placement and size constraints.
+- Amend spec 0001 to admit a single new asset class :  the small illustrated companion sprite :  under tightly scoped, enumerated placement and size constraints.
 - Justify each direct site dependency. Per project rule (memory: supply-chain minimalism scope is Go-only), npm dependency *minimization* is not a goal; license/lockfile/SHA/no-CDN/no-telemetry guarantees are.
 
 ## Non-Goals
@@ -120,7 +120,7 @@ The site is dark-only by design — Glacier's brand is dark-first per spec 0001 
 
 | URL | File | Surface | Role |
 |---|---|---|---|
-| `/` | `site/index.md` | Marketing | Landing — hero, install, 4 pillars, Promise (with `#promise` anchor), 14-package grid, code-compare, mini-FAQ, footer |
+| `/` | `site/index.md` | Marketing | Landing :  hero, install, 4 pillars, Promise (with `#promise` anchor), 14-package grid, code-compare, mini-FAQ, footer |
 | `/why` | `site/why.md` | Marketing | Each of the four pillars exploded into a section with diagrams and Go snippets |
 | `/features` | `site/features.md` | Marketing | The 14-package suite as a feature index, one card per package, headline + teaser snippet |
 | `/examples` | `site/examples.md` | Marketing | 6–8 marquee recipes; each card links to a `/docs/<task>` page |
@@ -138,7 +138,7 @@ The site is dark-only by design — Glacier's brand is dark-first per spec 0001 
 
 **Task page rule (binding for v1):** a task page exists only for a workflow that composes **two or more** packages. Workflows that map to a single package live on the package page only. This eliminates duplicate surfaces (e.g. `/docs/functional-options` would have paraphrased `/docs/packages/option`). Adding a single-package task page is forbidden without a spec amendment lifting this rule.
 
-**Sidebar grouping** — task pages live under "Tasks" (capability-ordered: build → test → integrate → run); package pages live under "Packages" with three tier sub-groups (Kernel / Mid / Leaves) that mirror spec 0002.
+**Sidebar grouping** :  task pages live under "Tasks" (capability-ordered: build → test → integrate → run); package pages live under "Packages" with three tier sub-groups (Kernel / Mid / Leaves) that mirror spec 0002.
 
 **Sidebar cross-reference shape (binding):**
 - Every task page renders a "**Packages used:**" badge row immediately under its title, listing each linked package by name with its tier color.
@@ -238,7 +238,7 @@ The top nav holds: `Why`, `Features`, `Examples`, `Concepts`, `Docs`, `SDK`, Git
 
 - **Theme:** dark-only. No light-mode toggle. Tokens come from spec 0001's palette table; `tokens.css` exposes them as CSS custom properties (`--mg-bg`, `--mg-surface`, `--mg-text`, `--mg-cyan`, etc.). Gradient stops (`--mg-cyan-100`, `--mg-cyan-700`, `--mg-teal-700`) are used only inside the wordmark SVG and the aurora backdrop.
 - **Typography:** Inter (body), Space Grotesk (display), JetBrains Mono (code). All three vendored as WOFF2 from `/site/.vitepress/public/fonts/`. Each font's `OFL.txt` is committed alongside the WOFF2 file *and* the build copies the OFL texts into `dist/fonts/` so the SIL OFL 1.1 license travels with every distributed font binary. `@font-face` rules use `font-display: swap` so users see fallback text immediately rather than FOIT.
-- **Wordmark rendering:** the block-character wordmark from spec 0001 D40 is rendered as SVG. Each block character maps to a vector `<path>`; the gradient lives once in `<defs><linearGradient id="ice">` with the six stops from spec 0001 D41. The plain-text source in `assets/logo/wordmark.txt` remains the canonical bytes per spec 0001 — the SVG is a render derivative, not a replacement.
+- **Wordmark rendering:** the block-character wordmark from spec 0001 D40 is rendered as SVG. Each block character maps to a vector `<path>`; the gradient lives once in `<defs><linearGradient id="ice">` with the six stops from spec 0001 D41. The plain-text source in `assets/logo/wordmark.txt` remains the canonical bytes per spec 0001 :  the SVG is a render derivative, not a replacement.
 - **Mascot:**
   - **Kaomoji-canonical** at hero scale (≈`clamp(64px, 8vw, 120px)` font-size, monospace). State shifts driven by an event prop, mapped one-to-one to spec 0001 D45: `calm → confident → thinking → alarmed → error`. Component sets a per-state `aria-label` (e.g. `aria-label="Glacier mascot, calm"`) and marks the raw kaomoji span `aria-hidden="true"` so screen readers announce the human label rather than mangle the kaomoji codepoints.
   - **Companion sprite** (small, illustrated, three states: `idle`, `wave`, `thinking`) used **only** in: (1) page footer, (2) 404 page, (3) docs sidebar empty states, (4) the scroll-to-top button. Never replaces the kaomoji at hero scale. Each SVG ≤ 4 KB gzipped. See `Migration & Compatibility` for the spec 0001 amendment that admits this asset class. Each companion SVG sets `aria-label` and `role="img"`.
@@ -250,10 +250,10 @@ The top nav holds: `Why`, `Features`, `Examples`, `Concepts`, `Docs`, `SDK`, Git
 Per `## API` below, package reference pages do not duplicate spec content; they alias it. Each `/docs/packages/<name>` page consists of:
 
 1. A page header: package name, the `<TierBadge>`, `<UsedInTasksBadges>` row, and a "View source spec →" link to the spec ID.
-2. Five `<!-- magpie:extract source=specs/<NNNN-name>.md section=<id> source-checksum=<sha256> -->` directive blocks — one for each section in `docs-extract`. The `source-checksum` is the SHA-256 of the source spec section's contents at extraction time. v1 hand-authors the content inside each directive block; future tooling (Magpie auto-gen) replaces the contents mechanically by reading the source spec.
+2. Five `<!-- magpie:extract source=specs/<NNNN-name>.md section=<id> source-checksum=<sha256> -->` directive blocks :  one for each section in `docs-extract`. The `source-checksum` is the SHA-256 of the source spec section's contents at extraction time. v1 hand-authors the content inside each directive block; future tooling (Magpie auto-gen) replaces the contents mechanically by reading the source spec.
 3. The CI script `check-extraction-directives.sh` recomputes the SHA-256 of each cited source section and fails the build on mismatch, surfacing drift between hand-authored copy and the spec. Reviewer-checklist drift detection is human and rots; the checksum is mechanical and doesn't.
 
-**`docs-extract` enforcement:** any spec referenced by a `/docs/packages/<name>` page MUST list all five sections (`public-summary`, `mental-model`, `api`, `examples`, `faq`) in its `docs-extract` frontmatter array. `check-extraction-directives.sh` enforces this. If a section is genuinely empty in source (e.g. `## API` for a no-API spec like 0001), the spec must contain the section with a one-line placeholder ("N/A — this spec introduces no Go API."); the package page then renders the section with a "section not yet documented" stub linking to the source spec.
+**`docs-extract` enforcement:** any spec referenced by a `/docs/packages/<name>` page MUST list all five sections (`public-summary`, `mental-model`, `api`, `examples`, `faq`) in its `docs-extract` frontmatter array. `check-extraction-directives.sh` enforces this. If a section is genuinely empty in source (e.g. `## API` for a no-API spec like 0001), the spec must contain the section with a one-line placeholder ("N/A :  this spec introduces no Go API."); the package page then renders the section with a "section not yet documented" stub linking to the source spec.
 
 ### Build & deploy
 
@@ -269,12 +269,12 @@ Per `## API` below, package reference pages do not duplicate spec content; they 
   5. `actions/upload-pages-artifact@<SHA>` on `site/.vitepress/dist`.
   6. `actions/deploy-pages@<SHA>` to the `github-pages` environment.
   - `permissions:` block scopes only `id-token: write` and `pages: write`; no `contents: write`, no `repo`-wide token.
-- PR checks: `.github/workflows/site-pr-checks.yml` runs on `pull_request` (NOT `pull_request_target` — that variant grants fork PRs access to repo secrets and is forbidden here). The PR-checks workflow's `permissions:` block is `contents: read` only, and no secrets are passed to PR-check jobs. Steps: `npm ci --ignore-scripts && npm run build`, then `linkinator` link check on built HTML, `axe-core` accessibility scan via Playwright across every route, and `lighthouse-ci` with thresholds asserted. After install/build, the orchestrator `bash scripts/check-site.sh` runs every static check (sprite budget, sprite placement, voice, action pins, base path, no-CDN, no-telemetry, SVG safety, spec links, extraction directives + checksums) and fails the build on any non-zero exit.
+- PR checks: `.github/workflows/site-pr-checks.yml` runs on `pull_request` (NOT `pull_request_target` :  that variant grants fork PRs access to repo secrets and is forbidden here). The PR-checks workflow's `permissions:` block is `contents: read` only, and no secrets are passed to PR-check jobs. Steps: `npm ci --ignore-scripts && npm run build`, then `linkinator` link check on built HTML, `axe-core` accessibility scan via Playwright across every route, and `lighthouse-ci` with thresholds asserted. After install/build, the orchestrator `bash scripts/check-site.sh` runs every static check (sprite budget, sprite placement, voice, action pins, base path, no-CDN, no-telemetry, SVG safety, spec links, extraction directives + checksums) and fails the build on any non-zero exit.
 
 ### Lifecycle
 
 - **Local dev:** `cd site && npm install && npm run dev` boots VitePress at `http://localhost:5173/glacier/` with HMR.
-- **Local static preview:** `npm run build && npx serve site/.vitepress/dist` — serves the deployed artifact identically to GH Pages.
+- **Local static preview:** `npm run build && npx serve site/.vitepress/dist` :  serves the deployed artifact identically to GH Pages.
 - **CI preview:** PR-checks workflow uploads the artifact; reviewers download and `serve` locally for visual sign-off.
 - **Production:** push to `main` → workflow → `https://nathanbrophy.github.io/glacier/` within ~3 minutes.
 
@@ -426,7 +426,7 @@ The site introduces no Go API; "examples" here are concrete content sketches the
 │  ## Mini-FAQ           ## Get started           ## Specs                   │
 │                                                                            │
 │  [MascotSprite idle]                                                        │
-│  Glacier — Apache-2.0  ·  github.com/nathanbrophy/glacier                  │
+│  Glacier :  Apache-2.0  ·  github.com/nathanbrophy/glacier                  │
 └────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -464,11 +464,11 @@ invalid combinations; `Required` fails fast on omission.
 <!-- /magpie:extract -->
 ```
 
-### Companion sprite — three states (descriptive brief)
+### Companion sprite :  three states (descriptive brief)
 
 | State | Use | Brief |
 |---|---|---|
-| `idle` | Footer; sidebar empty state | Standing polar bear, three-quarter view, calm expression. Block-character aesthetic — orthogonal SVG paths, no curves. ≤ 4 KB gzipped. |
+| `idle` | Footer; sidebar empty state | Standing polar bear, three-quarter view, calm expression. Block-character aesthetic :  orthogonal SVG paths, no curves. ≤ 4 KB gzipped. |
 | `wave` | 404 page | Same bear, one paw raised. ≤ 4 KB gzipped. |
 | `thinking` | "Coming soon" placeholders (`/sdk`); scroll-to-top button | Same bear, head tilted, one paw at chin. ≤ 4 KB gzipped. |
 
@@ -515,7 +515,7 @@ Every row's `Covered by` cell names a specific test file, test name, or CI scrip
 | No-telemetry regression | Grep built `dist/` for tracker identifiers | Zero matches for `sendBeacon`, `gtag(`, `_gaq`, `_ga(`, `fbq(`, `googletagmanager`, `mixpanel`, `amplitude`, `segment.com`, `hotjar`, `clarity.ms`, `posthog`, `plausible`, `fathom-client`, `cookieStore`, `dataLayer.push` | `scripts/check-no-telemetry.sh` |
 | Banned-superlative sweep | `grep -rEi 'blazing\|revolutionary\|best-in-class\|amazing\|seamless'` across `site/**` (`*.md`, `*.vue`, `*.ts`) | Zero matches | `scripts/check-voice.sh` |
 | Dead-link sweep | `linkinator dist/` after build | Zero broken internal or external links | `site-pr-checks.yml` (linkinator step) |
-| Accessibility (axe) — every route | `axe-core` via Playwright on `/`, `/why`, `/features`, `/examples`, `/sdk`, `/concepts`, `/docs`, every `/docs/<task>`, every `/docs/packages/<name>`, `/404` | Zero `serious` or `critical` violations on any route | `tests/e2e/a11y.spec.ts > sweep-all-routes` |
+| Accessibility (axe) :  every route | `axe-core` via Playwright on `/`, `/why`, `/features`, `/examples`, `/sdk`, `/concepts`, `/docs`, every `/docs/<task>`, every `/docs/packages/<name>`, `/404` | Zero `serious` or `critical` violations on any route | `tests/e2e/a11y.spec.ts > sweep-all-routes` |
 | Lighthouse thresholds | `lighthouse-ci` against `/`, `/why`, `/concepts`, `/docs`, `/docs/packages/option` | Performance ≥ 95, Accessibility ≥ 95, Best Practices ≥ 95, SEO ≥ 95 | `site-pr-checks.yml` (lighthouse-ci step) |
 | WCAG contrast (AAA on text) | Computed contrast for `--mg-text` on `--mg-bg`, `--mg-cyan` on `--mg-bg` | ≥ 7:1 (AAA) | `tests/unit/contrast.spec.ts > aa-and-aaa` (re-verifies spec 0001 contrast claims) |
 | Spec traceability | Every `/docs/packages/<name>` page links to `specs/<NNNN-name>.md` | All 14 pages have a `View source spec →` link with the correct spec ID | `scripts/check-spec-links.sh` |
@@ -565,8 +565,8 @@ Per project rule (memory: supply-chain minimalism scope is Go-only), npm dep min
 Each font's `OFL.txt` is committed alongside the WOFF2 file AND the build copies the OFL texts into `dist/fonts/` so SIL OFL 1.1's "the license must accompany the font in all distributions" requirement is mechanically satisfied. Total vendored font weight ~180 KB; no network requests for fonts at runtime.
 
 **Vulnerability scan:**
-- `npm audit --audit-level=high` — covers all dependencies, runtime AND dev. (Earlier draft used `--omit=dev`; that excluded CI tooling like Playwright/lighthouse-ci that runs against built artifacts. A compromised devDep with high-severity RCE in CI is a real threat; auditing dev deps is mandatory.)
-- `osv-scanner --lockfile site/package-lock.json` — explicit lockfile target; covers full transitive set including dev deps.
+- `npm audit --audit-level=high` :  covers all dependencies, runtime AND dev. (Earlier draft used `--omit=dev`; that excluded CI tooling like Playwright/lighthouse-ci that runs against built artifacts. A compromised devDep with high-severity RCE in CI is a real threat; auditing dev deps is mandatory.)
+- `osv-scanner --lockfile site/package-lock.json` :  explicit lockfile target; covers full transitive set including dev deps.
 - Both gates fail the build on high-severity findings.
 
 **License scan:** every transitive dep's license must be in the allowlist (MIT, BSD-2-Clause, BSD-3-Clause, Apache-2.0, ISC, SIL OFL 1.1, CC0-1.0). Falcon's `license-checker` runs in CI; non-allowlisted licenses fail the build.
@@ -581,8 +581,8 @@ Each font's `OFL.txt` is committed alongside the WOFF2 file AND the build copies
 - **Telemetry regression guard:** `scripts/check-no-telemetry.sh` greps for `sendBeacon`, `gtag(`, `_gaq`, `_ga(`, `fbq(`, `googletagmanager`, `mixpanel`, `amplitude`, `segment.com`, `hotjar`, `clarity.ms`, `posthog`, `plausible`, `fathom-client`, `cookieStore`, `dataLayer.push` and fails the build on any match. This catches future contributors slipping in trackers.
 - **SVG asset safety:** `scripts/check-svg-safety.sh` greps every committed `.svg` for `<script`, `<foreignObject`, `xlink:href.*http`, `href="http` and fails on any match. Defends against XSS injection through the wordmark or companion sprite SVGs.
 - **GitHub Actions hardening:** every `uses:` reference in `.github/workflows/site-*.yml` is pinned by 40-char SHA, never by tag. `scripts/check-action-pins.sh` enforces both the positive (every `uses:` has a SHA) and the negative (zero `@v`-style tag pins survive).
-- **Workflow triggers:** `site-deploy.yml` triggers on `push` to `main`. `site-pr-checks.yml` triggers on `pull_request` ONLY — never `pull_request_target`, which grants fork PRs access to repo secrets even with SHA-pinned actions. `scripts/check-action-pins.sh > pr-trigger-safe` enforces.
-- **Token scope:** deploy workflow uses `permissions: { id-token: write, pages: write }` only — no `contents: write`, no `repo`-wide token. PR-checks workflow uses `permissions: { contents: read }` only and receives no secrets.
+- **Workflow triggers:** `site-deploy.yml` triggers on `push` to `main`. `site-pr-checks.yml` triggers on `pull_request` ONLY :  never `pull_request_target`, which grants fork PRs access to repo secrets even with SHA-pinned actions. `scripts/check-action-pins.sh > pr-trigger-safe` enforces.
+- **Token scope:** deploy workflow uses `permissions: { id-token: write, pages: write }` only :  no `contents: write`, no `repo`-wide token. PR-checks workflow uses `permissions: { contents: read }` only and receives no secrets.
 - **Lockfile + registry + scripts discipline:** `package-lock.json` committed; `.npmrc` pins `registry=https://registry.npmjs.org/` and `ignore-scripts=true`; CI runs `npm ci --ignore-scripts`. Defends against (a) lockfile drift, (b) dependency confusion via misresolved registries, (c) post-install script execution by malicious deps.
 - **Vulnerability gating:** `npm audit --audit-level=high` AND `osv-scanner --lockfile site/package-lock.json` block PRs on high-severity findings. Both cover full transitive set including dev deps.
 - **License gating:** allowlist enforced by `license-checker`; transitive licenses outside the allowlist block the build. SIL OFL 1.1 license texts travel with the font binaries into `dist/fonts/`.
@@ -596,7 +596,7 @@ Each font's `OFL.txt` is committed alongside the WOFF2 file AND the build copies
 
 This spec amends the **verified** spec 0001 (Brand Identity) in two narrow ways. Per spec-process governance, an amendment to a verified spec requires the original owner's sign-off (Magpie) plus the same set of required reviewers as the original (Otter). Both are in this spec's reviewers list.
 
-### Amendment A — admit a "companion sprite" asset class (tightly enumerated)
+### Amendment A :  admit a "companion sprite" asset class (tightly enumerated)
 
 **Affected sentence in spec 0001 §Non-Goals (line 75):**
 
@@ -604,11 +604,11 @@ This spec amends the **verified** spec 0001 (Brand Identity) in two narrow ways.
 
 **Amended reading (binding from this spec's `accepted` date):**
 
-> "Branded merchandise, social-media cards, or external assets beyond the repo. Out of scope, with the single exception of the **companion sprite** asset class as enumerated in spec 0031 §Architecture / Visual system / Mascot — three SVG states (`idle`, `wave`, `thinking`), ≤ 4 KB gzipped each, used only in the four placements listed (footer, 404 page, sidebar empty states, scroll-to-top button), committed in-repo at `/site/.vitepress/public/mascot/`, and never replacing the kaomoji at hero scale. Any extension of this asset class — different states, different placements, social-media cards, merchandise — is itself a spec amendment requiring Magpie + Otter sign-off."
+> "Branded merchandise, social-media cards, or external assets beyond the repo. Out of scope, with the single exception of the **companion sprite** asset class as enumerated in spec 0031 §Architecture / Visual system / Mascot :  three SVG states (`idle`, `wave`, `thinking`), ≤ 4 KB gzipped each, used only in the four placements listed (footer, 404 page, sidebar empty states, scroll-to-top button), committed in-repo at `/site/.vitepress/public/mascot/`, and never replacing the kaomoji at hero scale. Any extension of this asset class :  different states, different placements, social-media cards, merchandise :  is itself a spec amendment requiring Magpie + Otter sign-off."
 
 The kaomoji forms (D43, D45) and the block-character banner mascot (D44) remain the canonical mascot.
 
-### Amendment B — Voice grep audit scope expansion
+### Amendment B :  Voice grep audit scope expansion
 
 **Affected step in spec 0001 §Verification step 5:**
 
@@ -622,9 +622,9 @@ The kaomoji forms (D43, D45) and the block-character banner mascot (D44) remain 
 
 ### Mechanical follow-up
 
-When this spec moves to `accepted`, Magpie opens a one-line PR amending spec 0001's frontmatter `last-updated` to a date `>= 2026-05-02` and adding a footnote in spec 0001 §Decisions referencing "see spec 0031 amendments A & B." That PR is review-only by Magpie and Otter — no full re-acceptance cycle, since the binding-amendment text lives here in spec 0031, which reviewers cite going forward.
+When this spec moves to `accepted`, Magpie opens a one-line PR amending spec 0001's frontmatter `last-updated` to a date `>= 2026-05-02` and adding a footnote in spec 0001 §Decisions referencing "see spec 0031 amendments A & B." That PR is review-only by Magpie and Otter :  no full re-acceptance cycle, since the binding-amendment text lives here in spec 0031, which reviewers cite going forward.
 
-No code or content change in the existing repo is required by these amendments — they only constrain future writing.
+No code or content change in the existing repo is required by these amendments :  they only constrain future writing.
 
 ### Amendment log: inbound from spec 0032 (SDK)
 
@@ -635,13 +635,13 @@ Spec 0032 (Glacier SDK CLI binary; accepted 2026-05-03) extends this spec's `mag
 <!-- **Public.** ... -->
 
 **Why VitePress and not Astro Starlight?**
-VitePress's authoring model is Vue-in-Markdown, which matches the user's expressed preference and lets us write `<HeroTerminal>`, `<MascotKaomoji>`, and `<AuroraBackdrop>` as first-class Vue components. Starlight is excellent — Bun, Astro itself, and Cloudflare use it — but its component model is Astro/MDX, an additional framework to learn for a one-site project.
+VitePress's authoring model is Vue-in-Markdown, which matches the user's expressed preference and lets us write `<HeroTerminal>`, `<MascotKaomoji>`, and `<AuroraBackdrop>` as first-class Vue components. Starlight is excellent :  Bun, Astro itself, and Cloudflare use it :  but its component model is Astro/MDX, an additional framework to learn for a one-site project.
 
 **Why is the site dark-only?**
-Glacier brand is dark-first per spec 0001 D6. A light-mode pass is a separate spec amendment because every token in spec 0001 §Color Palette is bound to a dark-canvas role. Adding light tokens means re-running color theory across the whole palette and re-validating WCAG contrast — that's a spec, not a config flag.
+Glacier brand is dark-first per spec 0001 D6. A light-mode pass is a separate spec amendment because every token in spec 0001 §Color Palette is bound to a dark-canvas role. Adding light tokens means re-running color theory across the whole palette and re-validating WCAG contrast :  that's a spec, not a config flag.
 
 **Why kaomoji *and* an illustrated companion?**
-The kaomoji is the canonical mascot — it ships in the CLI binary, in commit messages, in agent prose. It's terminal-native by design. The companion sprite is a small, rich illustration that gives the *web surface* a friendlier secondary motif without supplanting the kaomoji. They live in different surfaces (kaomoji ↔ terminal; companion ↔ web margins) and never compete for the same role.
+The kaomoji is the canonical mascot :  it ships in the CLI binary, in commit messages, in agent prose. It's terminal-native by design. The companion sprite is a small, rich illustration that gives the *web surface* a friendlier secondary motif without supplanting the kaomoji. They live in different surfaces (kaomoji ↔ terminal; companion ↔ web margins) and never compete for the same role.
 
 **How will per-package docs stay in sync with specs?**
 v1 hand-authors each package page with `magpie:extract` directive blocks committed in place. Each directive carries a `source-checksum` (SHA-256 of the cited spec section); CI recomputes the checksum and fails the build on drift. Future tooling will replace the inside of each block mechanically; the checksum is also the migration target.
@@ -659,7 +659,7 @@ No. v1 ships zero telemetry, zero cookies, zero analytics, zero fingerprinting. 
 Slower motion reads as ambient rather than performative. 30 seconds is long enough that a visitor's eye tracks the gradient as a slow drift, not a UI element competing for attention. Reduced-motion freezes it entirely.
 
 **Why doesn't the site have an `/install`, `/contributing`, or `/security` page?**
-Install instructions live in the landing hero and the README — splitting them across a second page would dilute discovery. Contributor guidance and vulnerability reporting live in repo-root `CONTRIBUTING.md` and `SECURITY.md` per GitHub conventions and are linked from the footer; that is the path GitHub's UI surfaces directly.
+Install instructions live in the landing hero and the README :  splitting them across a second page would dilute discovery. Contributor guidance and vulnerability reporting live in repo-root `CONTRIBUTING.md` and `SECURITY.md` per GitHub conventions and are linked from the footer; that is the path GitHub's UI surfaces directly.
 
 ## Decisions & Rationale
 
@@ -667,36 +667,36 @@ Install instructions live in the landing hero and the README — splitting them 
 
 This spec is authored from a fully-resolved interview captured in [`~/.claude/plans/i-would-like-to-imperative-lovelace.md`](../.claude/plans/i-would-like-to-imperative-lovelace.md). Each decision is recorded with its rationale.
 
-- **D-S1 — Reference mood: Tailwind/Vercel density + Antigravity atmosphere.** Dev-first, info-rich landing with cinematic ambient backdrop.
-- **D-S2 — Dark-first, dark-only.** Single mode, no toggle. Aligns with spec 0001 D6.
-- **D-S3 — Hero is an animated terminal demo with the mascot reacting to it.** Reactivity is mediated by the `mascotState` field on each terminal line; the kaomoji state shift is one-to-one with spec 0001 D45.
-- **D-S4 — Voice holds spec 0001 D11 line, with one negotiated bolder hero phrase.** The phrase is reviewed by Magpie + Otter at content time, must contain zero banned words, and lives only in the landing hero. (Spec 0001 D11 is the voice/superlative-ban decision; D38 in spec 0001 is the project-name decision and is unrelated to voice.)
-- **D-S5 — Multi-page marketing IA.** `/`, `/why`, `/features`, `/examples`, `/sdk`, `/concepts` give each marketing surface its own URL.
-- **D-S6 — Dense landing.** Hero → install → 4 pillars → Promise → 14-package grid → before/after → mini-FAQ → footer.
-- **D-S7 — All four pillars carry equal weight.** "Less plumbing, more Go" is the headline; "Curated suite," "Generics-first," "Test-first dogfooded helpers" are equal-weight supporting pillars.
-- **D-S8 — Docs organized by task with package as secondary cross-reference.** Newcomers find tasks faster; the tier mental model lives on each package page as a `<TierBadge>` linking to `/concepts#tier-<tier>`.
-- **D-S9 — Banner is pre-rendered SVG with embedded `<linearGradient>`.** Sharper than `<pre>` text, no per-resize gradient remapping.
-- **D-S10 — Mascot is kaomoji-canonical at hero scale plus a small illustrated companion sprite.** The kaomoji rules at the loud surfaces; the companion rules at the quiet ones.
-- **D-S11 — Aurora backdrop, 30s loop, reduced-motion safe.** Slow motion = ambient. Reduced motion freezes the field.
-- **D-S12 — VitePress.** Vue-in-Markdown matches the user's framework preference; static export is the deploy target.
-- **D-S13 — `/site` (top-level) for site source.** No conflict with `/specs`; clean separation.
-- **D-S14 — GitHub Actions → `actions/deploy-pages@<SHA>`.** Modern Pages deploy without `gh-pages` branch noise. SHA-pinned per Falcon's hardening rules.
-- **D-S15 — `nathanbrophy.github.io/glacier` for v1; custom domain deferred.**
-- **D-S16 — Single new spec containing the spec 0001 amendments.** Folding the amendment into this spec's §Migration & Compatibility is cleaner than two parallel specs.
-- **D-S17 — Magpie extraction directive committed today, tooling deferred — but with a SHA-256 source-checksum attribute now.** v1 hand-authors content inside the directive blocks; the future tooling is a mechanical replacement. The checksum gives drift detection for the v1 hand-authored period — not a reviewer-checklist promise that rots, a CI script that doesn't.
-- **D-S18 — Spec number 0031.** Reserved by spec 0002 §Non-Goals and spec 0016 §Non-Goals as "the public-site spec (0031)."
-- **D-S19 — No analytics in v1.** Privacy-preserving analytics is a future spec amendment.
-- **D-S20 — `/concepts` page introduces the tier mental model before any package page.** A visitor who lands directly on `/docs/packages/option` should not have to guess what `[KERNEL · Tier 0]` means; the tier badge links to `/concepts#tier-kernel`. The Promise lives at `/why#promise` so spec 0001's "Promise satisfaction" test row has a committed home.
-- **D-S21 — Route stability deferred to v1.0.0.** Pre-v1 site versions may rename routes. Promising URL stability before package APIs are stable would be a process trap. From v1.0.0 onward, route renames require a redirect entry and a release-note callout.
-- **D-S22 — Task pages exist only for workflows composing 2+ packages.** Single-package "task pages" (`/docs/functional-options`, `/docs/error-stories`, `/docs/lazy-pipelines`, `/docs/terminal-output`) were dropped; their content lives on the package page only. Adding a single-package task page in the future requires lifting this rule via spec amendment.
-- **D-S23 — `npm audit` covers full deps including dev.** Earlier draft used `--omit=dev`; that excluded CI tooling that runs against built artifacts. A compromised devDep with high-severity RCE in CI is a real threat; auditing dev deps is mandatory.
-- **D-S24 — `.npmrc` pins registry and disables post-install scripts.** Defenses against dependency confusion and post-install code execution; one file, two lines, no runtime cost.
-- **D-S25 — PR-checks workflow uses `pull_request`, never `pull_request_target`.** The latter grants fork PRs access to repo secrets even with SHA-pinned actions; `pull_request` runs in a sandboxed context. CI script enforces.
-- **D-S26 — SVG safety check is committed as CI, not a one-time review.** `<script>`, `<foreignObject>`, and external `xlink:href`/`href` patterns are forbidden in any committed SVG. A regression after launch is caught mechanically.
-- **D-S27 — No-telemetry regression guard is committed as CI.** Same logic as D-S26 — a future contributor slipping a tracker into the build is caught mechanically.
-- **D-S28 — Performance threshold raised from 90 to 95.** This is a fully static site with vendored fonts and CSS-only animation; 90 leaves slack with no documented reason. 95 is achievable and forces honesty.
-- **D-S29 — `linkinator` over `lychee` for link-checking.** `linkinator` is npm-native; `lychee` requires a Rust toolchain in CI. The site is otherwise a pure npm project; the npm-native tool wins.
-- **D-S30 — Wordmark visual regression uses path-count + gradient-stop content checks, not pixel diff.** Pixel diff is viewport/font-rendering/platform-sensitive and flakes on cross-OS CI runners. The SVG is deterministic; assert SVG structure.
+- **D-S1 :  Reference mood: Tailwind/Vercel density + Antigravity atmosphere.** Dev-first, info-rich landing with cinematic ambient backdrop.
+- **D-S2 :  Dark-first, dark-only.** Single mode, no toggle. Aligns with spec 0001 D6.
+- **D-S3 :  Hero is an animated terminal demo with the mascot reacting to it.** Reactivity is mediated by the `mascotState` field on each terminal line; the kaomoji state shift is one-to-one with spec 0001 D45.
+- **D-S4 :  Voice holds spec 0001 D11 line, with one negotiated bolder hero phrase.** The phrase is reviewed by Magpie + Otter at content time, must contain zero banned words, and lives only in the landing hero. (Spec 0001 D11 is the voice/superlative-ban decision; D38 in spec 0001 is the project-name decision and is unrelated to voice.)
+- **D-S5 :  Multi-page marketing IA.** `/`, `/why`, `/features`, `/examples`, `/sdk`, `/concepts` give each marketing surface its own URL.
+- **D-S6 :  Dense landing.** Hero → install → 4 pillars → Promise → 14-package grid → before/after → mini-FAQ → footer.
+- **D-S7 :  All four pillars carry equal weight.** "Less plumbing, more Go" is the headline; "Curated suite," "Generics-first," "Test-first dogfooded helpers" are equal-weight supporting pillars.
+- **D-S8 :  Docs organized by task with package as secondary cross-reference.** Newcomers find tasks faster; the tier mental model lives on each package page as a `<TierBadge>` linking to `/concepts#tier-<tier>`.
+- **D-S9 :  Banner is pre-rendered SVG with embedded `<linearGradient>`.** Sharper than `<pre>` text, no per-resize gradient remapping.
+- **D-S10 :  Mascot is kaomoji-canonical at hero scale plus a small illustrated companion sprite.** The kaomoji rules at the loud surfaces; the companion rules at the quiet ones.
+- **D-S11 :  Aurora backdrop, 30s loop, reduced-motion safe.** Slow motion = ambient. Reduced motion freezes the field.
+- **D-S12 :  VitePress.** Vue-in-Markdown matches the user's framework preference; static export is the deploy target.
+- **D-S13 :  `/site` (top-level) for site source.** No conflict with `/specs`; clean separation.
+- **D-S14 :  GitHub Actions → `actions/deploy-pages@<SHA>`.** Modern Pages deploy without `gh-pages` branch noise. SHA-pinned per Falcon's hardening rules.
+- **D-S15 :  `nathanbrophy.github.io/glacier` for v1; custom domain deferred.**
+- **D-S16 :  Single new spec containing the spec 0001 amendments.** Folding the amendment into this spec's §Migration & Compatibility is cleaner than two parallel specs.
+- **D-S17 :  Magpie extraction directive committed today, tooling deferred :  but with a SHA-256 source-checksum attribute now.** v1 hand-authors content inside the directive blocks; the future tooling is a mechanical replacement. The checksum gives drift detection for the v1 hand-authored period :  not a reviewer-checklist promise that rots, a CI script that doesn't.
+- **D-S18 :  Spec number 0031.** Reserved by spec 0002 §Non-Goals and spec 0016 §Non-Goals as "the public-site spec (0031)."
+- **D-S19 :  No analytics in v1.** Privacy-preserving analytics is a future spec amendment.
+- **D-S20 :  `/concepts` page introduces the tier mental model before any package page.** A visitor who lands directly on `/docs/packages/option` should not have to guess what `[KERNEL · Tier 0]` means; the tier badge links to `/concepts#tier-kernel`. The Promise lives at `/why#promise` so spec 0001's "Promise satisfaction" test row has a committed home.
+- **D-S21 :  Route stability deferred to v1.0.0.** Pre-v1 site versions may rename routes. Promising URL stability before package APIs are stable would be a process trap. From v1.0.0 onward, route renames require a redirect entry and a release-note callout.
+- **D-S22 :  Task pages exist only for workflows composing 2+ packages.** Single-package "task pages" (`/docs/functional-options`, `/docs/error-stories`, `/docs/lazy-pipelines`, `/docs/terminal-output`) were dropped; their content lives on the package page only. Adding a single-package task page in the future requires lifting this rule via spec amendment.
+- **D-S23 :  `npm audit` covers full deps including dev.** Earlier draft used `--omit=dev`; that excluded CI tooling that runs against built artifacts. A compromised devDep with high-severity RCE in CI is a real threat; auditing dev deps is mandatory.
+- **D-S24 :  `.npmrc` pins registry and disables post-install scripts.** Defenses against dependency confusion and post-install code execution; one file, two lines, no runtime cost.
+- **D-S25 :  PR-checks workflow uses `pull_request`, never `pull_request_target`.** The latter grants fork PRs access to repo secrets even with SHA-pinned actions; `pull_request` runs in a sandboxed context. CI script enforces.
+- **D-S26 :  SVG safety check is committed as CI, not a one-time review.** `<script>`, `<foreignObject>`, and external `xlink:href`/`href` patterns are forbidden in any committed SVG. A regression after launch is caught mechanically.
+- **D-S27 :  No-telemetry regression guard is committed as CI.** Same logic as D-S26 :  a future contributor slipping a tracker into the build is caught mechanically.
+- **D-S28 :  Performance threshold raised from 90 to 95.** This is a fully static site with vendored fonts and CSS-only animation; 90 leaves slack with no documented reason. 95 is achievable and forces honesty.
+- **D-S29 :  `linkinator` over `lychee` for link-checking.** `linkinator` is npm-native; `lychee` requires a Rust toolchain in CI. The site is otherwise a pure npm project; the npm-native tool wins.
+- **D-S30 :  Wordmark visual regression uses path-count + gradient-stop content checks, not pixel diff.** Pixel diff is viewport/font-rendering/platform-sensitive and flakes on cross-OS CI runners. The SVG is deterministic; assert SVG structure.
 
 ## Open Questions
 
@@ -717,18 +717,18 @@ Run, in order:
    done
    ```
    Each output line ≤ 4096.
-2. `cd site && npm install && npm run dev` — the site loads at `http://localhost:5173/glacier/`. Visit every nav route; the e2e `routes.spec.ts > parity-with-dev` test asserts zero `console.error` events.
-3. Hero check — terminal animates, kaomoji shifts state in sync with the typed lines (`calm → confident`), aurora drifts, the negotiated bolder hero phrase contains zero banned words (`scripts/check-voice.sh` confirms).
+2. `cd site && npm install && npm run dev` :  the site loads at `http://localhost:5173/glacier/`. Visit every nav route; the e2e `routes.spec.ts > parity-with-dev` test asserts zero `console.error` events.
+3. Hero check :  terminal animates, kaomoji shifts state in sync with the typed lines (`calm → confident`), aurora drifts, the negotiated bolder hero phrase contains zero banned words (`scripts/check-voice.sh` confirms).
 4. Toggle OS reduced-motion preference. Reload. `tests/e2e/reduced-motion.spec.ts` asserts the terminal renders at end-state without animation and the aurora's `animationName` computed style is `none`.
-5. `npm run build` — completes with no warnings.
-6. `npx serve site/.vitepress/dist` — open every nav route.
+5. `npm run build` :  completes with no warnings.
+6. `npx serve site/.vitepress/dist` :  open every nav route.
 7. Run all CI checks via the orchestrator: `bash scripts/check-site.sh`. Every sub-check exits 0 (sprite budget, sprite placement, voice, action pins + tag-survival, base path, no-CDN, no-telemetry, SVG safety, spec links, extraction directives + checksums, `docs-extract` exhaustive, `.npmrc` pin, OFL traveled, font-display swap, PR-trigger safety).
 8. `npm test` runs Vitest unit suites: `mascot-kaomoji.spec.ts`, `hero-terminal.spec.ts`, `wordmark-svg.spec.ts`, `packages-manifest.spec.ts`, `contrast.spec.ts`. All green.
 9. `npx playwright test` runs e2e suites: `routes.spec.ts`, `404.spec.ts`, `og-meta.spec.ts`, `reduced-motion.spec.ts`, `scroll-to-top.spec.ts`, `sidebar.spec.ts`, `a11y.spec.ts`, `mobile.spec.ts`. All green.
-10. `npx linkinator site/.vitepress/dist` — zero broken links.
-11. `npx lhci collect && npx lhci assert` — Performance ≥ 95, Accessibility ≥ 95, Best Practices ≥ 95, SEO ≥ 95 on `/`, `/why`, `/concepts`, `/docs`, `/docs/packages/option`.
-12. `npm audit --audit-level=high` — zero high-severity findings.
-13. `npx osv-scanner --lockfile site/package-lock.json` — zero high-severity findings.
+10. `npx linkinator site/.vitepress/dist` :  zero broken links.
+11. `npx lhci collect && npx lhci assert` :  Performance ≥ 95, Accessibility ≥ 95, Best Practices ≥ 95, SEO ≥ 95 on `/`, `/why`, `/concepts`, `/docs`, `/docs/packages/option`.
+12. `npm audit --audit-level=high` :  zero high-severity findings.
+13. `npx osv-scanner --lockfile site/package-lock.json` :  zero high-severity findings.
 14. Push to a feature branch; the PR-checks workflow passes; download the artifact and `serve` locally; visual diff matches local dev.
 15. Merge to `main`; the deploy workflow ships to `https://nathanbrophy.github.io/glacier/` within 3 minutes.
 16. Confirm spec 0001 frontmatter `last-updated` is `>= 2026-05-02` AND a `[^spec0031]` footnote exists in spec 0001 §Decisions referencing this spec's amendments A & B (the mechanical follow-up per §Migration & Compatibility).

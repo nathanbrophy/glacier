@@ -62,7 +62,7 @@ flowchart LR
 Key invariants:
 
 - Options are **stateless functions** (`OptionFunc[T]` is `func(*T) error`). Concurrent calls to `Apply` over the same `[]Option[T]` slice are safe without any locking.
-- `nil` options in the slice are skipped silently — so conditional option patterns require no special handling.
+- `nil` options in the slice are skipped silently :  so conditional option patterns require no special handling.
 - Duplicate `With*` calls follow **last-wins** semantics by virtue of in-order application.
 - `Apply` never panics on a nil `Option[T]` interface value; it panics only if the underlying `OptionFunc` is nil (a misuse the caller owns).
 
@@ -92,7 +92,7 @@ Key invariants:
 
 <!-- **Internal.** Mermaid diagram + prose. Package layout, data flow, lifecycle. -->
 
-`option` is a Tier-0 kernel package (spec 0002 §Architecture — Three-tier DAG). It has no Glacier dependencies: F1 of spec 0002 forbids any import of `github.com/nathanbrophy/glacier/...` from this package. It imports only `errors` and `fmt` from the stdlib.
+`option` is a Tier-0 kernel package (spec 0002 §Architecture :  Three-tier DAG). It has no Glacier dependencies: F1 of spec 0002 forbids any import of `github.com/nathanbrophy/glacier/...` from this package. It imports only `errors` and `fmt` from the stdlib.
 
 The package's role in the broader framework is established in spec 0002 §7.1 (Functional options). This spec is the canonical reference for the `option` package itself; spec 0002 §7.1 defines the call convention every consuming package follows.
 
@@ -463,7 +463,7 @@ var DevPreset = []option.Option[config]{
 }
 
 cfg, _ := option.Apply(append(DevPreset, WithDefaultStatus(500)))
-// cfg.defaultStatus == 500 — the override wins
+// cfg.defaultStatus == 500 :  the override wins
 ```
 
 ## Test Matrix
@@ -475,12 +475,12 @@ cfg, _ := option.Apply(append(DevPreset, WithDefaultStatus(500)))
 
 ### Test files
 
-- `option/option_test.go` — unit tests (Apply, Validate, Required, OptionFunc, Mode/Strict)
-- `option/option_bench_test.go` — benchmarks for the recalibrated D35 targets and the NF1 zero-alloc claim
-- `option/option_fuzz_test.go` — fuzz `Required`'s `name` argument round-trip in error formatting
-- `option/option_property_test.go` — algebraic-property tests (idempotency, last-wins, nil-skip)
-- `option/option_concurrent_test.go` — race-detector tests for stateless concurrency claim (NF2)
-- `option/example_test.go` — runnable `Example*` functions per NF7
+- `option/option_test.go` :  unit tests (Apply, Validate, Required, OptionFunc, Mode/Strict)
+- `option/option_bench_test.go` :  benchmarks for the recalibrated D35 targets and the NF1 zero-alloc claim
+- `option/option_fuzz_test.go` :  fuzz `Required`'s `name` argument round-trip in error formatting
+- `option/option_property_test.go` :  algebraic-property tests (idempotency, last-wins, nil-skip)
+- `option/option_concurrent_test.go` :  race-detector tests for stateless concurrency claim (NF2)
+- `option/example_test.go` :  runnable `Example*` functions per NF7
 
 ### Test matrix
 
@@ -502,8 +502,8 @@ cfg, _ := option.Apply(append(DevPreset, WithDefaultStatus(500)))
 | 14 | TestApplyOnNonStructT | §21.1 E12 | unit | T is a `[]string` slice; option appends. | `assert.Equal` |
 | 15 | TestApplyOptionPanicsPropagates | §21.1 E10 | unit | An option that calls `panic("x")` → Apply does not recover; panic visible. | `assert.Panics` (via runtime helper, see Bootstrap subset note below) |
 | 16 | TestApplyOptionMutateThenError | §21.1 E9 | unit | Documented behavior: option mutates state then errors → partial state visible (transactional violation accepted). | `assert.NotEqual` (T != zero) |
-| 17 | TestOptionFuncSatisfiesOption | §21.1 F2 | unit | `var _ Option[T] = OptionFunc[T](nil)` — interface conformance. | bare type assertion |
-| 18 | TestOptionFuncTypedNilApplyPanics | §21.1 F2 | unit | Calling `apply` on a `OptionFunc` whose underlying func is nil panics. (Edge — added by Lynx.) | `assert.Panics` |
+| 17 | TestOptionFuncSatisfiesOption | §21.1 F2 | unit | `var _ Option[T] = OptionFunc[T](nil)` :  interface conformance. | bare type assertion |
+| 18 | TestOptionFuncTypedNilApplyPanics | §21.1 F2 | unit | Calling `apply` on a `OptionFunc` whose underlying func is nil panics. (Edge :  added by Lynx.) | `assert.Panics` |
 | 19 | TestStrictReturnsStrictMode | §21.1 F5 | unit | `Strict().strict == true` (verified indirectly via Apply behavior since field unexported). | composition with TestApplyStrictMultipleErrors |
 | 20 | TestValidateNoValidators | §21.1 F7 | unit | `Validate(&t)` with empty validators → nil. | `assert.NoError` |
 | 21 | TestValidateAllPass | §21.1 F7 | unit | Three validators all return nil → nil. | `assert.NoError` |
@@ -524,7 +524,7 @@ cfg, _ := option.Apply(append(DevPreset, WithDefaultStatus(500)))
 | 36 | BenchmarkApplyStrictWithFailures | §21.1 F5 | bench | Strict 10 options, 5 fail; allocates the join + errs slice. Documented expected number. | `testing.B` |
 | 37 | BenchmarkValidate | §21.1 F7 | bench | 5 validators, all pass; per-op ns. | `testing.B` |
 | 38 | BenchmarkRequired | §21.1 F8 | bench | Required validator hot path. | `testing.B` |
-| 39 | TestApplyConcurrent | §21.1 NF2 | race | 100 goroutines call `Apply(samepts)` against local T each; runs under `-race`. | `concur.WaitGroup` is leaf-tier — use stdlib `sync.WaitGroup`; `assert.NoError` |
+| 39 | TestApplyConcurrent | §21.1 NF2 | race | 100 goroutines call `Apply(samepts)` against local T each; runs under `-race`. | `concur.WaitGroup` is leaf-tier :  use stdlib `sync.WaitGroup`; `assert.NoError` |
 | 40 | TestValidateConcurrent | §21.1 NF2 | race | 100 goroutines call `Validate(&t, vs...)` on independent t. | stdlib `sync.WaitGroup`, `assert.NoError` |
 | 41 | PropertyApplyIdempotent | §21.1 F11 | property | For any list of pure idempotent options, `Apply(opts).Apply(opts)` == `Apply(opts)`. (Generative table-driven.) | `fixture/random` (kernel-allowed seedable rand), `assert.Equal` |
 | 42 | PropertyApplyNilSkipPermutation | §21.1 F9 | property | Inserting nils anywhere in opts produces same result as opts without nils. | `assert.Equal` over permutations |
@@ -540,7 +540,7 @@ cfg, _ := option.Apply(append(DevPreset, WithDefaultStatus(500)))
 `option` does not depend on `assert`, but its tests will use `assert`. Since `assert` (in turn) imports `option` for its `EqualOption` types, **we have a circular `_test` problem**: `assert`'s tests should not depend on `option`-with-assert-tests being green. The resolution:
 
 - `option`'s tests use `assert` freely. The cycle is broken at the **`_test.go` boundary**: `assert/equal_test.go` does NOT import `option/` for setup of its own correctness; it uses bare `if` for the bootstrap.
-- For `TestApplyOptionPanicsPropagates` (T#15) and similar panic checks, `assert.Panics` is itself in the bootstrap subset — but those tests can be written with bare `defer func() { if r := recover(); r == nil { t.Fatal("expected panic") } }()`.
+- For `TestApplyOptionPanicsPropagates` (T#15) and similar panic checks, `assert.Panics` is itself in the bootstrap subset :  but those tests can be written with bare `defer func() { if r := recover(); r == nil { t.Fatal("expected panic") } }()`.
 
 ### Coverage target
 
@@ -555,8 +555,8 @@ cfg, _ := option.Apply(append(DevPreset, WithDefaultStatus(500)))
 - **L-add-2:** `Apply` with options that close over a goroutine-shared variable, racing under `-race` → covered by T#39, but with a write-then-read variant inside the option to catch any unintended sharing in the implementation.
 - **L-add-3:** `Validate` on a target whose pointer changes mid-validation (validator that swaps `*t` to a new value) → documented as "validator should not mutate t"; assert it does not crash even if violated.
 - **L-add-4:** `Required` with `name == ""` → produces `option: required: field "" not set`. Allowed; documented; tested.
-- **L-add-5:** `Apply` with 10,000 nil-only options — should remain O(n) and not allocate (NF1).
-- **L-add-6:** Memory: `Apply`'s `errs` slice in default mode should remain `nil` (never allocated) when no error occurs — verified by `AllocsPerRun == 0`.
+- **L-add-5:** `Apply` with 10,000 nil-only options :  should remain O(n) and not allocate (NF1).
+- **L-add-6:** Memory: `Apply`'s `errs` slice in default mode should remain `nil` (never allocated) when no error occurs :  verified by `AllocsPerRun == 0`.
 
 ## Dependency Justification
 
@@ -567,7 +567,7 @@ cfg, _ := option.Apply(append(DevPreset, WithDefaultStatus(500)))
 
 | Module | Version | License | Last release | Maintainers | Alternatives considered | Why we can't roll our own |
 |--------|---------|---------|--------------|-------------|------------------------|--------------------------|
-| _(none)_ | — | — | — | — | — | — |
+| _(none)_ | :  | :  | :  | :  | :  | :  |
 
 `option` imports only `errors` and `fmt` from the Go standard library. No external or third-party dependencies. NF6 (spec ref §21.1) hard-requires this.
 
@@ -583,7 +583,7 @@ The unexported `apply` method on `Option[T]` prevents out-of-module interface im
 
 ## Migration & Compatibility
 
-<!-- **Internal.** N/A — first release. -->
+<!-- **Internal.** N/A :  first release. -->
 
 Not applicable. This is the first release of the `option` package. There is no prior public API to migrate from.
 
@@ -593,7 +593,7 @@ Not applicable. This is the first release of the `option` package. There is no p
 
 **Why does Apply return an error instead of panicking?**
 
-Options can fail for legitimate reasons: a nil logger, an out-of-range port number, a missing required value. Panicking on bad input is appropriate for programming errors (wrong type, nil receiver on unexported method). Option errors are runtime conditions — the caller's configuration is wrong, not the program itself. Returning an error lets constructors surface the problem cleanly and lets callers decide how to handle it (log and exit, accumulate, retry with different options).
+Options can fail for legitimate reasons: a nil logger, an out-of-range port number, a missing required value. Panicking on bad input is appropriate for programming errors (wrong type, nil receiver on unexported method). Option errors are runtime conditions :  the caller's configuration is wrong, not the program itself. Returning an error lets constructors surface the problem cleanly and lets callers decide how to handle it (log and exit, accumulate, retry with different options).
 
 **Why is there a separate Mode type instead of a boolean parameter?**
 
@@ -605,45 +605,45 @@ Go's idiomatic pattern for construction is `New(opts ...Option[T])` with a funct
 
 **Why does option.Option[T] stutter at the call site?**
 
-`option.Option[config]` is idiomatic. Go has many precedents: `errors.New` returns an `error`, `time.Time` is a `time.Time`, `context.Context` is a `context.Context`. The stutter communicates "this is the canonical thing from the option package" — which is exactly right. Renaming it `option.Type[T]` or `option.Opt[T]` would be non-standard and confusing. Magpie reviewed this decision and signed off (spec 0001 naming conventions, §21.1 Naming and conventions).
+`option.Option[config]` is idiomatic. Go has many precedents: `errors.New` returns an `error`, `time.Time` is a `time.Time`, `context.Context` is a `context.Context`. The stutter communicates "this is the canonical thing from the option package" :  which is exactly right. Renaming it `option.Type[T]` or `option.Opt[T]` would be non-standard and confusing. Magpie reviewed this decision and signed off (spec 0001 naming conventions, §21.1 Naming and conventions).
 
 **Why does Required use `getter func(*T) any` instead of `check func(*T) bool`?**
 
-The `bool` predicate form (original §21.1 design) makes T ceremonial — the compiler cannot verify that the check function actually navigates `*T`. The `any` getter form (§23.17 amendment) makes T load-bearing: the getter is typed to `*T`, giving compile-time safety that the getter navigates the correct config type. The nil check on the returned `any` covers pointer fields (`c.logger`) and interface fields. For value-type fields that have no natural nil representation, authors should write a custom `Validator[T]` instead of using `Required`.
+The `bool` predicate form (original §21.1 design) makes T ceremonial :  the compiler cannot verify that the check function actually navigates `*T`. The `any` getter form (§23.17 amendment) makes T load-bearing: the getter is typed to `*T`, giving compile-time safety that the getter navigates the correct config type. The nil check on the returned `any` covers pointer fields (`c.logger`) and interface fields. For value-type fields that have no natural nil representation, authors should write a custom `Validator[T]` instead of using `Required`.
 
 **What happens when an option mutates the config and then returns an error?**
 
-The mutation is visible in the returned partial T. `Apply` does not attempt transactional rollback — that is the option author's responsibility. The spec documents this explicitly (E9): "Caller's bug. Spec recommends but does not enforce that options be transactional." In practice, most `With*` constructors validate before mutating: check the incoming value, then set the field. This makes them naturally transactional.
+The mutation is visible in the returned partial T. `Apply` does not attempt transactional rollback :  that is the option author's responsibility. The spec documents this explicitly (E9): "Caller's bug. Spec recommends but does not enforce that options be transactional." In practice, most `With*` constructors validate before mutating: check the incoming value, then set the field. This makes them naturally transactional.
 
 ## Decisions & Rationale
 
 <!-- **Internal.** Why-this-and-not-that for non-obvious choices. Folded-in ADR. -->
 
-### D1 — Unexported `apply` method on `Option[T]`
+### D1 :  Unexported `apply` method on `Option[T]`
 
 Prevents out-of-module interface implementation. Consumers must use `OptionFunc[T]`, which is the right constraint: it forces every option to be a plain function, which makes the type stateless by construction and guarantees the concurrency safety claim (NF2). If `apply` were exported, a consumer could implement `Option[T]` as a struct with mutable state, breaking the goroutine-safety guarantee without the package being able to detect it.
 
-### D2 — `Apply[T]` signature: `(opts []Option[T], mode ...Mode) (T, error)` (§23.4 canonical form)
+### D2 :  `Apply[T]` signature: `(opts []Option[T], mode ...Mode) (T, error)` (§23.4 canonical form)
 
 The variadic `mode ...Mode` form allows callers to omit mode entirely for the common case. The last-wins rule for multiple modes keeps the contract simple. This signature was locked in §23.4 of the framework-shape plan. The earlier sketch in spec 0002 §7.1 used `opts ...Option[T]`; §23.4 changed `opts` to `[]Option[T]` to force explicit slice construction at call sites, which makes preset + override patterns natural (`append(DevPreset, overrides...)`).
 
-### D3 — Zero allocation on the happy path (NF1)
+### D3 :  Zero allocation on the happy path (NF1)
 
 The `errs []error` slice inside `Apply` is declared as a nil slice and is only initialized on the first error. This is a standard Go pattern: `var errs []error` is zero bytes; `append(nil, err)` allocates. The happy path (no errors) never reaches the append and never allocates. Strict mode with no errors is also zero-alloc: no errors means the append never fires. This is verified by `BenchmarkApplyZeroAlloc_Happy` (T#32) and its companion unit test.
 
-### D4 — `Strict()` as a constructor, not a boolean flag
+### D4 :  `Strict()` as a constructor, not a boolean flag
 
-See FAQ "Why is there a separate Mode type". Additionally: the `Mode` struct is extensible — future modes (if any) can be added as new exported constructors without changing the `Apply` signature. No such modes are planned for v0; the surface is closed (NF8), so any new mode is a spec amendment.
+See FAQ "Why is there a separate Mode type". Additionally: the `Mode` struct is extensible :  future modes (if any) can be added as new exported constructors without changing the `Apply` signature. No such modes are planned for v0; the surface is closed (NF8), so any new mode is a spec amendment.
 
-### D5 — `Required[T any](name string, getter func(*T) any) Validator[T]` (§23.17 amendment)
+### D5 :  `Required[T any](name string, getter func(*T) any) Validator[T]` (§23.17 amendment)
 
-Original design (§21.1) used `check func(*T) bool`. The §23.17 amendment changes the predicate to `getter func(*T) any` to make T load-bearing. With the bool form, `Required[config]("logger", func(_ *config) bool { return true })` compiles even if the getter navigates a different type by accident — the type parameter is not in the predicate signature in any meaningful way. With the `any` getter form, the type parameter flows into the getter argument: `func(c *config) any` — if the caller passes a function with the wrong receiver type, the compiler rejects it. The nil check on the returned `any` handles the common pointer/interface field case. For value-type required fields (e.g., a string that must be non-empty), callers write a custom `Validator[T]`.
+Original design (§21.1) used `check func(*T) bool`. The §23.17 amendment changes the predicate to `getter func(*T) any` to make T load-bearing. With the bool form, `Required[config]("logger", func(_ *config) bool { return true })` compiles even if the getter navigates a different type by accident :  the type parameter is not in the predicate signature in any meaningful way. With the `any` getter form, the type parameter flows into the getter argument: `func(c *config) any` :  if the caller passes a function with the wrong receiver type, the compiler rejects it. The nil check on the returned `any` handles the common pointer/interface field case. For value-type required fields (e.g., a string that must be non-empty), callers write a custom `Validator[T]`.
 
-### D6 — Eight exports, surface closed at v0 (NF8)
+### D6 :  Eight exports, surface closed at v0 (NF8)
 
 Fewer exports is more. Each new export is API surface the framework must maintain forever. The eight exports cover every need identified in the v0 package roster. The closed surface is verified by `TestSurfaceClosed_OptionPackage` (T#48) using `go/types` to snapshot the export list and a golden file to detect unintended additions.
 
-### D7 — `Validate` always joins all validator errors
+### D7 :  `Validate` always joins all validator errors
 
 Unlike `Apply`'s configurable short-circuit vs. Strict behavior, `Validate` always runs every validator and joins all errors. The rationale: validators run post-Apply on a fully-constructed T; they are cheap checks (field-not-nil, range check). Stopping at the first validator error means the user fixes one required field, re-runs, discovers another. Showing all validation failures at once is always the better UX for construction-time validation. `Apply`'s short-circuit default exists because options may have side effects and short-circuiting avoids applying undefined state; validators are pure reads with no side effects.
 
@@ -660,13 +660,13 @@ _(none)_
 
 <!-- **Internal.** Concrete steps to prove the change works end-to-end. Run when the spec moves to `verified`. -->
 
-1. `gofmt -l option/` — exits 0, no output.
-2. `go vet ./option/...` — exits 0, no diagnostics.
-3. `staticcheck ./option/...` — exits 0, no diagnostics.
-4. `go test -race ./option/...` — exits 0; all 48 test cases pass; race detector reports no violations.
-5. `go test -run TestApplyZeroAlloc ./option/...` — passes; `testing.AllocsPerRun` returns 0.
-6. `go test -bench=BenchmarkApplyZeroAlloc_Happy -benchmem ./option/...` — reports `0 allocs/op`.
-7. `go test -fuzz=FuzzRequired -fuzztime=30s ./option/...` — no failures.
-8. `go test -run TestSurfaceClosed_OptionPackage ./option/...` — golden file matches exactly 8 exports.
-9. `go test -run TestErrorRegisterConformanceOption ./option/...` — all error strings match `^option: [a-z][^A-Z.]*$`.
+1. `gofmt -l option/` :  exits 0, no output.
+2. `go vet ./option/...` :  exits 0, no diagnostics.
+3. `staticcheck ./option/...` :  exits 0, no diagnostics.
+4. `go test -race ./option/...` :  exits 0; all 48 test cases pass; race detector reports no violations.
+5. `go test -run TestApplyZeroAlloc ./option/...` :  passes; `testing.AllocsPerRun` returns 0.
+6. `go test -bench=BenchmarkApplyZeroAlloc_Happy -benchmem ./option/...` :  reports `0 allocs/op`.
+7. `go test -fuzz=FuzzRequired -fuzztime=30s ./option/...` :  no failures.
+8. `go test -run TestSurfaceClosed_OptionPackage ./option/...` :  golden file matches exactly 8 exports.
+9. `go test -run TestErrorRegisterConformanceOption ./option/...` :  all error strings match `^option: [a-z][^A-Z.]*$`.
 10. Confirm `go mod graph | grep option` shows no outbound edges to any non-stdlib module.

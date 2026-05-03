@@ -104,11 +104,11 @@ func defaultPlanSink(p *RequestPlan) {
 
 // sensitiveHeaderNames lists exact canonical header names to redact.
 var sensitiveHeaderNames = map[string]bool{
-	"Authorization":     true,
-	"Cookie":            true,
-	"Set-Cookie":        true,
-	"X-Api-Key":         true,
-	"X-Auth-Token":      true,
+	"Authorization":       true,
+	"Cookie":              true,
+	"Set-Cookie":          true,
+	"X-Api-Key":           true,
+	"X-Auth-Token":        true,
 	"Proxy-Authorization": true,
 }
 

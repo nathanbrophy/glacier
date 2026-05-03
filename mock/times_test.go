@@ -164,7 +164,7 @@ func TestAtLeastZeroRejectsPanic(t *testing.T) {
 }
 
 // TestTimes1RaceFix verifies that Times(1) under concurrent load matches
-// exactly once — the match-AND-increment-AND-respond is a single critical
+// exactly once :  the match-AND-increment-AND-respond is a single critical
 // section per §23.14.
 func TestTimes1RaceFix(t *testing.T) {
 	const goroutines = 100

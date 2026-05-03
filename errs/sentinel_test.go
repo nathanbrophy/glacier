@@ -53,7 +53,7 @@ func TestSentinelValidCases(t *testing.T) {
 			wantMsg: "pkg: cause",
 		},
 		{
-			name: "trailing empty action — just colon is valid",
+			name: "trailing empty action :  just colon is valid",
 			text: "pkg:",
 		},
 		{

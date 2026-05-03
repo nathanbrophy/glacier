@@ -28,7 +28,7 @@ func TestNewWithT_RegistersCleanup(t *testing.T) {
 		inner := &trackingTB{TB: t}
 		rt := httpmock.NewWithT(inner)
 		_ = rt
-		// Register a Times(1) stub that will never be called — should cause
+		// Register a Times(1) stub that will never be called :  should cause
 		// Verify to call Errorf. We check the cleanup ran by observing it.
 		rt.OnRequest().Path("/x").Times(1).Respond(httpmock.Status(200))
 		verified = true

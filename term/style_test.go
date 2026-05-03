@@ -34,7 +34,7 @@ func TestStyleImmutability(t *testing.T) {
 	s2 := s.Italic()
 	// s must not have italic.
 	// We can verify by checking that s and s2 are different via rendered ANSI.
-	// On a non-TTY, both render plain — verify at struct level via Sprint.
+	// On a non-TTY, both render plain :  verify at struct level via Sprint.
 	// Check by rendering with a forced-color writer (bytes.Buffer → no color, so just verify they differ in non-color environments by checking the struct isn't the same reference via Sprint).
 	_ = s
 	_ = s2
@@ -51,7 +51,7 @@ func TestStyleRenderNoColorWriter(t *testing.T) {
 	t.Parallel()
 	text := "hello world"
 	s := term.New().Foreground(term.Cyan).Bold()
-	// Fprint to a bytes.Buffer — no TTY → no ANSI.
+	// Fprint to a bytes.Buffer :  no TTY → no ANSI.
 	var buf bytes.Buffer
 	term.Fprint(&buf, s, text)
 	got := buf.String()

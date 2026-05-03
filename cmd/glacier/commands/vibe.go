@@ -92,7 +92,7 @@ func (c *VibeCmd) Run(ctx context.Context) error {
 	}
 
 	err = animator.Run(runCtx)
-	// ErrCancelled means the user pressed a key or context was cancelled — that's fine.
+	// ErrCancelled means the user pressed a key or context was cancelled :  that's fine.
 	if err != nil && err.Error() != "term: animator: cancelled" {
 		// Unwrap to check for the known cancellation sentinel.
 		if !isCancelledErr(err) {

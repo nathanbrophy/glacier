@@ -1,0 +1,65 @@
+name: cross-compile
+
+# Verification gates 1 and 2 from specs/0032-sdk.md:
+#   Gate 1: go build ./cmd/glacier succeeds on all 5 target platforms.
+#   Gate 2: go test ./... passes on ubuntu-latest, macos-latest, windows-latest.
+#
+# Cross-compilation runs on ubuntu-latest with GOOS/GOARCH overrides; the
+# resulting binaries cannot be executed on the runner, so the smoke-test step
+# is omitted for cross-compiled targets. Actual runtime smoke tests are covered
+# by the per-OS test matrix in the test job and by the existing ci.yml test job.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+env:
+  GOTOOLCHAIN: go1.26.0
+  CGO_ENABLED: "0"
+
+jobs:
+  build:
+    name: build ${{ matrix.goos }}/${{ matrix.goarch }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.0"
+      - name: Build glacier binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: go build ./cmd/glacier
+
+  test:
+    name: test ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.0"
+      - name: Run tests
+        run: go test ./...

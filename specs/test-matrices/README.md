@@ -14,12 +14,12 @@
 
 ## How these matrices were produced
 
-Three Lynx instances reviewed the framework-shape plan ([`mongoose-spec-0002-framework-shape.md`](../../../../.claude/plans/mongoose-spec-0002-framework-shape.md)) in parallel — one per tier — and produced exhaustive test matrices satisfying the test-first commitment from spec 0002 §25. Each matrix was built from:
+Three Lynx instances reviewed the framework-shape plan ([`mongoose-spec-0002-framework-shape.md`](../../../../.claude/plans/mongoose-spec-0002-framework-shape.md)) in parallel :  one per tier :  and produced exhaustive test matrices satisfying the test-first commitment from spec 0002 §25. Each matrix was built from:
 
 - The package's interview content (§21.X subsections of the framework plan).
-- The post-review amendments (§23 of the plan) — recalibrated performance targets, locked concurrency behaviors, generics fixes, lifecycle Close additions, naming disambiguations.
+- The post-review amendments (§23 of the plan) :  recalibrated performance targets, locked concurrency behaviors, generics fixes, lifecycle Close additions, naming disambiguations.
 - The cross-cutting test-discipline rules (§25 of the plan).
-- Lynx's own charter — the sharp-eyed defect hunter who sees failure modes other agents glance past.
+- Lynx's own charter :  the sharp-eyed defect hunter who sees failure modes other agents glance past.
 
 The matrices are **persisted as agent-output artifacts** in the framework's session cache:
 
@@ -63,9 +63,9 @@ Each matrix covers, for every package in scope:
 - **Cross-platform tests** where platform behavior matters.
 - **Lifecycle tests** for Close idempotency and multi-resource cleanup.
 - **Generics-fix verification** per §23.17.
-- **Spec traceability** — every test references its spec section.
+- **Spec traceability** :  every test references its spec section.
 
-Plus the cross-package **integration tests** that exercise the framework's composition story (5+ packages together) — captured in spec 0002 §25.9.
+Plus the cross-package **integration tests** that exercise the framework's composition story (5+ packages together) :  captured in spec 0002 §25.9.
 
 ## Test-helper dogfooding
 

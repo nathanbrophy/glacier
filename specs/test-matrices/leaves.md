@@ -12,35 +12,35 @@
 ### Test files
 
 Runtime:
-- `cli/cli_test.go` — App/New/Register/Lookup/Close
-- `cli/run_test.go` — Run/Main/dispatch/argv
-- `cli/flags_test.go` — flag parsing, defaults, env, short, deprecated, choices, required, validate
-- `cli/help_test.go` — help page rendering, doc-from-godoc
-- `cli/banner_test.go` — banner ANSI, NO_COLOR/GLACIER_NO_COLOR, TTY detection
-- `cli/register_test.go` — programmatic registration, alias, parent
-- `cli/options_test.go` — every Option family (incl. §23.6 additions)
-- `cli/error_test.go` — typed errors, FlagParseError (per §23.15 rename), ErrUnknownCommand/Flag/Cancelled/Panic
-- `cli/concurrency_test.go` — concurrent `Run` (-race)
-- `cli/signal_test.go` — SIGINT/SIGTERM (Unix), CTRL_BREAK_EVENT (Windows; build-tagged)
-- `cli/lifecycle_test.go` — App.Close idempotency (§23.16)
-- `cli/import_audit_test.go` — package import surface assertion
-- `cli/example_test.go` — godoc Example_ functions for headline use cases
-- `cli/cli_fuzz_test.go` — `FuzzArgvParse`
-- `cli/cli_bench_test.go` — `BenchmarkRunSimpleCommand`, `BenchmarkRunSubcommand5Levels`, `BenchmarkParseFlags20`
+- `cli/cli_test.go` :  App/New/Register/Lookup/Close
+- `cli/run_test.go` :  Run/Main/dispatch/argv
+- `cli/flags_test.go` :  flag parsing, defaults, env, short, deprecated, choices, required, validate
+- `cli/help_test.go` :  help page rendering, doc-from-godoc
+- `cli/banner_test.go` :  banner ANSI, NO_COLOR/GLACIER_NO_COLOR, TTY detection
+- `cli/register_test.go` :  programmatic registration, alias, parent
+- `cli/options_test.go` :  every Option family (incl. §23.6 additions)
+- `cli/error_test.go` :  typed errors, FlagParseError (per §23.15 rename), ErrUnknownCommand/Flag/Cancelled/Panic
+- `cli/concurrency_test.go` :  concurrent `Run` (-race)
+- `cli/signal_test.go` :  SIGINT/SIGTERM (Unix), CTRL_BREAK_EVENT (Windows; build-tagged)
+- `cli/lifecycle_test.go` :  App.Close idempotency (§23.16)
+- `cli/import_audit_test.go` :  package import surface assertion
+- `cli/example_test.go` :  godoc Example_ functions for headline use cases
+- `cli/cli_fuzz_test.go` :  `FuzzArgvParse`
+- `cli/cli_bench_test.go` :  `BenchmarkRunSimpleCommand`, `BenchmarkRunSubcommand5Levels`, `BenchmarkParseFlags20`
 
 Codegen (`cli/gen/`):
-- `cli/gen/markers_test.go` — every marker type's grammar regex (§23.8)
-- `cli/gen/discover_test.go` — interface discovery via `go/packages`
-- `cli/gen/emit_test.go` — generated Go file emission (golden-file)
-- `cli/gen/parse_test.go` — doc-comment parsing, help-text extraction
-- `cli/gen/check_test.go` — `--check` drift detection
-- `cli/gen/safety_test.go` — `strconv.Quote` invariant, identifier validation, output path canonicalization
-- `cli/gen/generate_test.go` — `Generate(opts)` end-to-end on testdata modules
-- `cli/gen/concurrency_test.go` — concurrent `Generate` invocations
-- `cli/gen/property_test.go` — idempotency, determinism property tests
-- `cli/gen/marker_fuzz_test.go` — `FuzzMarkerParse` (per §23.10)
-- `cli/gen/testdata/...` — golden modules (simple, nested, multi-root-error, cycle-error, all-markers, mock-marker)
-- `cli/gen/golden/...` — expected `zz_generated_*.go` outputs
+- `cli/gen/markers_test.go` :  every marker type's grammar regex (§23.8)
+- `cli/gen/discover_test.go` :  interface discovery via `go/packages`
+- `cli/gen/emit_test.go` :  generated Go file emission (golden-file)
+- `cli/gen/parse_test.go` :  doc-comment parsing, help-text extraction
+- `cli/gen/check_test.go` :  `--check` drift detection
+- `cli/gen/safety_test.go` :  `strconv.Quote` invariant, identifier validation, output path canonicalization
+- `cli/gen/generate_test.go` :  `Generate(opts)` end-to-end on testdata modules
+- `cli/gen/concurrency_test.go` :  concurrent `Generate` invocations
+- `cli/gen/property_test.go` :  idempotency, determinism property tests
+- `cli/gen/marker_fuzz_test.go` :  `FuzzMarkerParse` (per §23.10)
+- `cli/gen/testdata/...` :  golden modules (simple, nested, multi-root-error, cycle-error, all-markers, mock-marker)
+- `cli/gen/golden/...` :  expected `zz_generated_*.go` outputs
 
 ### Test matrix
 
@@ -194,16 +194,16 @@ Codegen (`cli/gen/`):
 ### Coverage target
 
 - **Line coverage:** 90% minimum on `cli/`, 92% minimum on `cli/gen/` (more branchy paths).
-- **Public API coverage:** 100% — every exported symbol (App, Command, New, Register, Run, Main, Lookup, Close, every `With*` option, every error type, Generate, Options) has at least one happy-path test plus one edge-case test.
+- **Public API coverage:** 100% :  every exported symbol (App, Command, New, Register, Run, Main, Lookup, Close, every `With*` option, every error type, Generate, Options) has at least one happy-path test plus one edge-case test.
 
 ### Edge cases not in spec
 
 - **Argv with `--` separator** (POSIX double-dash for "end of options"). Spec doesn't say; behavior should be: everything after `--` is positional. Add `TestArgvDoubleDashSeparator`.
-- **Empty argv** (`Run(ctx, []string{})`) — spec doesn't say; treat as bare invocation (banner). Add `TestRunEmptyArgv`.
-- **Argv with embedded `=`** in flag (`--port=8080` vs `--port 8080`) — both should work. Add `TestFlagEqualsAndSpaceForms`.
-- **godoc with markers but no prose** — what becomes the help text? (Empty string vs default-derived). Add `TestHelpFromCommentEmpty`.
-- **Marker on embedded struct field** — does it cascade? Spec is silent. Add `TestMarkerOnEmbeddedField` (recommend: not supported, typed error).
-- **Multiple `//go:embed` content failures at startup** — surface to consumer? Recommend: `init()`-time panic in CLI register.
+- **Empty argv** (`Run(ctx, []string{})`) :  spec doesn't say; treat as bare invocation (banner). Add `TestRunEmptyArgv`.
+- **Argv with embedded `=`** in flag (`--port=8080` vs `--port 8080`) :  both should work. Add `TestFlagEqualsAndSpaceForms`.
+- **godoc with markers but no prose** :  what becomes the help text? (Empty string vs default-derived). Add `TestHelpFromCommentEmpty`.
+- **Marker on embedded struct field** :  does it cascade? Spec is silent. Add `TestMarkerOnEmbeddedField` (recommend: not supported, typed error).
+- **Multiple `//go:embed` content failures at startup** :  surface to consumer? Recommend: `init()`-time panic in CLI register.
 
 ### Special concerns
 
@@ -217,21 +217,21 @@ Codegen (`cli/gen/`):
 
 ### Test files
 
-- `mock/of_test.go` — `Of[T]`, panics on non-interface, type caching
-- `mock/mock_test.go` — Mock[T] methods, Interface(), Close (alias for Verify per §23.16)
-- `mock/expect_test.go` — Expectation builder fluent chain
-- `mock/matchers_test.go` — every Matcher constructor (now `Matcher[T]` per §23.17)
-- `mock/return_test.go` — Return / ReturnSeq / Do
-- `mock/times_test.go` — Times / AtLeast / AtMost / AnyTimes / Never
-- `mock/strict_test.go` — Strict / StrictFatal / Lenient (per §23.15 naming)
-- `mock/concurrency_test.go` — concurrent calls (-race), Times(1) race per §23.14
-- `mock/lifecycle_test.go` — Cleanup auto-Verify, Close idempotency
-- `mock/dispatch_test.go` — reflect-based MakeFunc dispatch correctness
-- `mock/bench_test.go` — benchmarks
-- `mock/property_test.go` — property tests
-- `mock/example_test.go` — godoc examples
-- `mock/safety_test.go` — no `unsafe` audit, no on-disk emission audit
-- `mock/codegen_integration_test.go` — uses cli/gen test harness for `+glacier:mock` markers (or links to cli/gen/testdata mock golden cases)
+- `mock/of_test.go` :  `Of[T]`, panics on non-interface, type caching
+- `mock/mock_test.go` :  Mock[T] methods, Interface(), Close (alias for Verify per §23.16)
+- `mock/expect_test.go` :  Expectation builder fluent chain
+- `mock/matchers_test.go` :  every Matcher constructor (now `Matcher[T]` per §23.17)
+- `mock/return_test.go` :  Return / ReturnSeq / Do
+- `mock/times_test.go` :  Times / AtLeast / AtMost / AnyTimes / Never
+- `mock/strict_test.go` :  Strict / StrictFatal / Lenient (per §23.15 naming)
+- `mock/concurrency_test.go` :  concurrent calls (-race), Times(1) race per §23.14
+- `mock/lifecycle_test.go` :  Cleanup auto-Verify, Close idempotency
+- `mock/dispatch_test.go` :  reflect-based MakeFunc dispatch correctness
+- `mock/bench_test.go` :  benchmarks
+- `mock/property_test.go` :  property tests
+- `mock/example_test.go` :  godoc examples
+- `mock/safety_test.go` :  no `unsafe` audit, no on-disk emission audit
+- `mock/codegen_integration_test.go` :  uses cli/gen test harness for `+glacier:mock` markers (or links to cli/gen/testdata mock golden cases)
 
 ### Test matrix
 
@@ -310,21 +310,21 @@ Codegen (`cli/gen/`):
 ### Coverage target
 
 - **Line coverage:** 92% minimum (mock has many tightly-coupled paths and reflect dispatch should be exhaustively tested).
-- **Public API coverage:** 100% — every exported symbol including all matcher constructors, all option constructors, all expectation methods.
+- **Public API coverage:** 100% :  every exported symbol including all matcher constructors, all option constructors, all expectation methods.
 
 ### Edge cases not in spec
 
-- **Generic interface (e.g., `Repo[T any]`)** as T — spec is silent. Recommend test `TestOfGenericInterface` (likely works; verify).
-- **Method with named return values** — does reflect see them? Add `TestNamedReturns`.
-- **Variadic method** (`func(args ...string) error`) — how is variadic arg matched? Add `TestVariadicMethod`.
-- **Method returning a function type** — Return value of function-type field. Add `TestReturnFunctionType`.
-- **Concurrent expectation registration during dispatch** — should panic per §23.14 (mirrors WaitGroup.Add-after-Wait). Add `TestRegisterDuringDispatchPanics`.
-- **Nil interface T** at compile-time impossible, but `Of[any]()` — should panic (any is not an interface in the satisfiable sense). Add `TestOfAnyType`.
+- **Generic interface (e.g., `Repo[T any]`)** as T :  spec is silent. Recommend test `TestOfGenericInterface` (likely works; verify).
+- **Method with named return values** :  does reflect see them? Add `TestNamedReturns`.
+- **Variadic method** (`func(args ...string) error`) :  how is variadic arg matched? Add `TestVariadicMethod`.
+- **Method returning a function type** :  Return value of function-type field. Add `TestReturnFunctionType`.
+- **Concurrent expectation registration during dispatch** :  should panic per §23.14 (mirrors WaitGroup.Add-after-Wait). Add `TestRegisterDuringDispatchPanics`.
+- **Nil interface T** at compile-time impossible, but `Of[any]()` :  should panic (any is not an interface in the satisfiable sense). Add `TestOfAnyType`.
 
 ### Special concerns
 
 - **§NF7 concurrency** is the §23.14 lock-in: the `Times(1)` race fix requires one critical section. Test 47 above is the explicit guard.
-- **§NF1 alloc target** relaxed to 6 per §23.13 — tests must not regress to 2; if optimization gets us to 4, that's fine but not enforced.
+- **§NF1 alloc target** relaxed to 6 per §23.13 :  tests must not regress to 2; if optimization gets us to 4, that's fine but not enforced.
 - **Reflect type cache** must not leak across processes (tests call `mock.resetTypeCacheForTest()` build-tagged helper to isolate).
 
 ---
@@ -333,20 +333,20 @@ Codegen (`cli/gen/`):
 
 ### Test files
 
-- `httpmock/transport_test.go` — Transport, RoundTrip, OnRequest, recording
-- `httpmock/stub_test.go` — Stub fluent chain (Method/Path/PathPrefix/Regex/Query/Header/Body)
-- `httpmock/responders_test.go` — every responder constructor
-- `httpmock/sequence_test.go` — Sequence / SequenceCycle / SequenceExhaust
-- `httpmock/body_matchers_test.go` — BodyExact/BodyJSON[T]/BodyContains/BodyMatchFn
-- `httpmock/fixtures_test.go` — LoadFixtures, schema validation, size cap, path traversal
-- `httpmock/concurrency_test.go` — concurrent RoundTrip (-race), Times(1) race
-- `httpmock/lifecycle_test.go` — Close idempotency, NewWithT cleanup
-- `httpmock/import_audit_test.go` — no `net.Dial` / no `http.DefaultTransport` import
-- `httpmock/property_test.go` — property tests
-- `httpmock/fuzz_test.go` — `FuzzFixture`
-- `httpmock/bench_test.go` — benchmarks
-- `httpmock/example_test.go` — godoc examples
-- `httpmock/testdata/fixtures/` — golden fixture JSONs + malformed/oversize variants
+- `httpmock/transport_test.go` :  Transport, RoundTrip, OnRequest, recording
+- `httpmock/stub_test.go` :  Stub fluent chain (Method/Path/PathPrefix/Regex/Query/Header/Body)
+- `httpmock/responders_test.go` :  every responder constructor
+- `httpmock/sequence_test.go` :  Sequence / SequenceCycle / SequenceExhaust
+- `httpmock/body_matchers_test.go` :  BodyExact/BodyJSON[T]/BodyContains/BodyMatchFn
+- `httpmock/fixtures_test.go` :  LoadFixtures, schema validation, size cap, path traversal
+- `httpmock/concurrency_test.go` :  concurrent RoundTrip (-race), Times(1) race
+- `httpmock/lifecycle_test.go` :  Close idempotency, NewWithT cleanup
+- `httpmock/import_audit_test.go` :  no `net.Dial` / no `http.DefaultTransport` import
+- `httpmock/property_test.go` :  property tests
+- `httpmock/fuzz_test.go` :  `FuzzFixture`
+- `httpmock/bench_test.go` :  benchmarks
+- `httpmock/example_test.go` :  godoc examples
+- `httpmock/testdata/fixtures/` :  golden fixture JSONs + malformed/oversize variants
 
 ### Test matrix
 
@@ -425,22 +425,22 @@ Codegen (`cli/gen/`):
 
 ### Coverage target
 
-- **Line coverage:** 95% minimum — httpmock is small, behavior-rich, and trivially testable.
+- **Line coverage:** 95% minimum :  httpmock is small, behavior-rich, and trivially testable.
 - **Public API coverage:** 100%.
 
 ### Edge cases not in spec
 
-- **Empty stub** (no matchers) — does it match every request? Spec implies yes; add `TestEmptyStubMatchesAll`.
-- **Stub with conflicting matchers** (Path AND PathPrefix on same stub) — spec only says PathPrefix vs Regex are exclusive. Add `TestPathAndPathPrefixCoexist` (recommend: AND-match).
-- **Request with no Body** under BodyContains matcher — should match `BodyContains("")` only. Add `TestEmptyBodyMatcherSemantics`.
-- **Sequence with one element + cycle** — single-element infinite cycle. Add `TestSequenceSingleElementCycles`.
-- **Stub registered after first RoundTrip** — should the post-RoundTrip stub apply to subsequent requests? Recommend: yes (documented). Add `TestLateRegistrationApplies`.
-- **`http.Client` `Timeout` interaction** — if client sets timeout, does Transport respect it? Recommend: yes (transport doesn't override). Add `TestClientTimeoutHonored`.
+- **Empty stub** (no matchers) :  does it match every request? Spec implies yes; add `TestEmptyStubMatchesAll`.
+- **Stub with conflicting matchers** (Path AND PathPrefix on same stub) :  spec only says PathPrefix vs Regex are exclusive. Add `TestPathAndPathPrefixCoexist` (recommend: AND-match).
+- **Request with no Body** under BodyContains matcher :  should match `BodyContains("")` only. Add `TestEmptyBodyMatcherSemantics`.
+- **Sequence with one element + cycle** :  single-element infinite cycle. Add `TestSequenceSingleElementCycles`.
+- **Stub registered after first RoundTrip** :  should the post-RoundTrip stub apply to subsequent requests? Recommend: yes (documented). Add `TestLateRegistrationApplies`.
+- **`http.Client` `Timeout` interaction** :  if client sets timeout, does Transport respect it? Recommend: yes (transport doesn't override). Add `TestClientTimeoutHonored`.
 
 ### Special concerns
 
 - **§NF3 "never makes a real network call"** is verified two ways: (1) package-import audit (test 57); (2) integration test that runs in a `iptables`-blocked or DNS-disabled fixture (best-effort, build-tagged Linux).
-- **Falcon §1.13 disciplines** for `LoadFixtures` carry through (size cap 16 MiB, DisallowUnknownFields, depth, UTF-8) — tests 48–56.
+- **Falcon §1.13 disciplines** for `LoadFixtures` carry through (size cap 16 MiB, DisallowUnknownFields, depth, UTF-8) :  tests 48–56.
 
 ---
 
@@ -448,22 +448,22 @@ Codegen (`cli/gen/`):
 
 ### Test files
 
-- `httpc/client_test.go` — New, Default, Client options
-- `httpc/methods_test.go` — Get/Post/Put/Patch/Delete/Head/Do (all generic)
-- `httpc/body_test.go` — JSONBody[T] (per §23.17) / MultipartBody / RawBody / StreamBody / FormBody / WithRequestHeaders
-- `httpc/retry_test.go` — every retry option, MaxAttempts, MaxElapsed, RetryOn, RetryIf
-- `httpc/dryrun_test.go` — WithDryRun, WithPlanSink, WithDryRunErrors, IsDryRun
-- `httpc/response_test.go` — Response wrapper, Body, Elapsed, Drain
-- `httpc/errors_test.go` — StatusError, BodyParseError (per §23.15 rename), ErrDryRun, ErrMaxAttempts, ErrMaxElapsed
-- `httpc/limits_test.go` — WithMaxResponseBytes / WithUnboundedResponse (§23.7)
-- `httpc/redaction_test.go` — header redaction in plan, body omission in errors (§23.11)
-- `httpc/concurrency_test.go` — concurrent Get/Post (-race)
-- `httpc/lifecycle_test.go` — Client.Close (§23.16)
-- `httpc/property_test.go` — property tests
-- `httpc/fuzz_test.go` — `FuzzResponseBody`
-- `httpc/bench_test.go` — benchmarks
-- `httpc/example_test.go` — godoc examples
-- `httpc/testdata/...` — golden plans, attacker-shaped JSON, oversized bodies
+- `httpc/client_test.go` :  New, Default, Client options
+- `httpc/methods_test.go` :  Get/Post/Put/Patch/Delete/Head/Do (all generic)
+- `httpc/body_test.go` :  JSONBody[T] (per §23.17) / MultipartBody / RawBody / StreamBody / FormBody / WithRequestHeaders
+- `httpc/retry_test.go` :  every retry option, MaxAttempts, MaxElapsed, RetryOn, RetryIf
+- `httpc/dryrun_test.go` :  WithDryRun, WithPlanSink, WithDryRunErrors, IsDryRun
+- `httpc/response_test.go` :  Response wrapper, Body, Elapsed, Drain
+- `httpc/errors_test.go` :  StatusError, BodyParseError (per §23.15 rename), ErrDryRun, ErrMaxAttempts, ErrMaxElapsed
+- `httpc/limits_test.go` :  WithMaxResponseBytes / WithUnboundedResponse (§23.7)
+- `httpc/redaction_test.go` :  header redaction in plan, body omission in errors (§23.11)
+- `httpc/concurrency_test.go` :  concurrent Get/Post (-race)
+- `httpc/lifecycle_test.go` :  Client.Close (§23.16)
+- `httpc/property_test.go` :  property tests
+- `httpc/fuzz_test.go` :  `FuzzResponseBody`
+- `httpc/bench_test.go` :  benchmarks
+- `httpc/example_test.go` :  godoc examples
+- `httpc/testdata/...` :  golden plans, attacker-shaped JSON, oversized bodies
 
 ### Test matrix
 
@@ -571,20 +571,20 @@ Codegen (`cli/gen/`):
 ### Coverage target
 
 - **Line coverage:** 92% minimum.
-- **Public API coverage:** 100% — every Get/Head/Post/Put/Patch/Delete/Do, every body builder, every retry option, every dry-run helper, every error type, every Client option.
+- **Public API coverage:** 100% :  every Get/Head/Post/Put/Patch/Delete/Do, every body builder, every retry option, every dry-run helper, every error type, every Client option.
 
 ### Edge cases not in spec
 
-- **`Get[T]` where T is a pointer type** (`*User`) — spec implies value-type. Add `TestGetPointerT`.
-- **`Get[T]` where T is `any`** — should it special-case to map[string]any? Spec is silent. Add `TestGetAnyT` (recommend: unmarshal as `any`, common JSON shape).
-- **Retry on transport-level error (not status)** — RetryIf can detect, but RetryOn is status-only. Add `TestRetryOnTransportError`.
-- **`MaxAttempts(0)` and `MaxAttempts(1)`** — both should mean "no retry". Add `TestMaxAttemptsZero`.
-- **Negative MaxAttempts** — should panic. Add `TestMaxAttemptsNegative`.
-- **`WithBaseURL` plus absolute URL in call** — absolute wins. Add `TestAbsoluteURLOverridesBase`.
-- **Dry-run + retry** — does dry-run skip the retry loop entirely? Recommend: yes, plan emitted once. Add `TestDryRunSkipsRetryLoop`.
-- **Multipart body builder with closure that returns error** — error surfaced; not sent. Add `TestMultipartBodyClosureError`.
-- **Streaming response (chunked) under MaxResponseBytes** — partial read up to cap, then ErrBodyTooLarge. Add `TestStreamingResponseCapped`.
-- **Empty body on 200** — `Get[User]` on empty body → BodyParseError? or zero-T-no-error? Recommend: BodyParseError (explicit). Add `TestEmptyBody200ParseError`.
+- **`Get[T]` where T is a pointer type** (`*User`) :  spec implies value-type. Add `TestGetPointerT`.
+- **`Get[T]` where T is `any`** :  should it special-case to map[string]any? Spec is silent. Add `TestGetAnyT` (recommend: unmarshal as `any`, common JSON shape).
+- **Retry on transport-level error (not status)** :  RetryIf can detect, but RetryOn is status-only. Add `TestRetryOnTransportError`.
+- **`MaxAttempts(0)` and `MaxAttempts(1)`** :  both should mean "no retry". Add `TestMaxAttemptsZero`.
+- **Negative MaxAttempts** :  should panic. Add `TestMaxAttemptsNegative`.
+- **`WithBaseURL` plus absolute URL in call** :  absolute wins. Add `TestAbsoluteURLOverridesBase`.
+- **Dry-run + retry** :  does dry-run skip the retry loop entirely? Recommend: yes, plan emitted once. Add `TestDryRunSkipsRetryLoop`.
+- **Multipart body builder with closure that returns error** :  error surfaced; not sent. Add `TestMultipartBodyClosureError`.
+- **Streaming response (chunked) under MaxResponseBytes** :  partial read up to cap, then ErrBodyTooLarge. Add `TestStreamingResponseCapped`.
+- **Empty body on 200** :  `Get[User]` on empty body → BodyParseError? or zero-T-no-error? Recommend: BodyParseError (explicit). Add `TestEmptyBody200ParseError`.
 
 ### Special concerns
 
@@ -647,7 +647,7 @@ These are the highest-confidence "release gate" checks; they are subset of integ
 | E6 | TestSmoke_BenchAllTargetsHit | All §23.13-recalibrated targets hit on the OS-baseline runner; benchstat <5% regression vs main |
 | E7 | TestSmoke_PublicAPISignaturesUnchanged | Use `golang.org/x/exp/apidiff` (or hand-rolled) to detect public-API drift vs spec-locked surface |
 | E8 | TestSmoke_NoUnsafeAcrossLeaves | All four leaf packages contain zero `unsafe` imports |
-| E9 | TestSmoke_GenericsCompileChecks | Compile-only file `tests/compile/generics_check.go` that exercises every generic surface (Mock[T], Matcher[T], JSONBody[T], BodyJSON[T], Get[T], Post[T], etc.) — verifies §23.17 fixes hold at the type level |
+| E9 | TestSmoke_GenericsCompileChecks | Compile-only file `tests/compile/generics_check.go` that exercises every generic surface (Mock[T], Matcher[T], JSONBody[T], BodyJSON[T], Get[T], Post[T], etc.) :  verifies §23.17 fixes hold at the type level |
 
 ---
 
@@ -674,7 +674,7 @@ Lynx will not sign off on `cli/`, `mock/`, `httpmock/`, or `httpc/` reaching `ac
 
 ---
 
-### Appendix A — test count summary
+### Appendix A :  test count summary
 
 | Package | Unit | Codegen | Property | Bench | Fuzz | Concurrency / lifecycle / audit / X-plat | Total in matrix |
 |---|---|---|---|---|---|---|---|
@@ -683,16 +683,16 @@ Lynx will not sign off on `cli/`, `mock/`, `httpmock/`, or `httpc/` reaching `ac
 | mock | 49 | 1 (59) | 3 (60, 61, 62) | 5 | 0 | 11 (3 race, 3 lifecycle, 2 audit, 3 misc) | 69 |
 | httpmock | 51 | 0 | 1 (31) | 4 | 1 | 13 (2 race, 2 lifecycle, 4 audit, 5 X-plat/security) | 70 |
 | httpc | 73 | 0 | 2 (49, 88) | 4 | 1 | 18 (2 race, 2 lifecycle, 1 audit, 3 X-plat, 10 security/cap/redaction) | 98 |
-| **Cross-leaf** | — | — | — | — | — | 13 | 13 |
-| **E2E smoke** | — | — | — | — | — | 9 | 9 |
+| **Cross-leaf** | :  | :  | :  | :  | :  | 13 | 13 |
+| **E2E smoke** | :  | :  | :  | :  | :  | 9 | 9 |
 | **TOTAL** | | | | | | | **~390** |
 
 Comfortably above the assignment's "230+ across the four leaves" floor; the inflation is largely §23.7/§23.9/§23.11 security cap + redaction tests on httpc and the codegen safety surface in cli/gen, both of which are non-negotiable per Falcon's lock-ins.
 
-### Appendix B — files this review will *not* allow to ship without addition
+### Appendix B :  files this review will *not* allow to ship without addition
 
-- `cli/gen/safety_test.go` — must contain tests 94–99 verbatim; cli/gen will not be accepted without strconv.Quote invariant proven.
-- `httpc/redaction_test.go` — must contain tests 57–64 verbatim; httpc will not be accepted with default plan-sink leaking auth headers.
-- `httpc/limits_test.go` — must contain tests 65–75; the 32 MiB cap is a Falcon §1 invariant.
-- `httpc/lifecycle_test.go` and the parallel `mock/lifecycle_test.go`, `httpmock/lifecycle_test.go`, `cli/lifecycle_test.go` — §23.16 Close audit is gating.
-- `tests/integration/leaves/composition_test.go` — must contain I8 (the five-package composition); without it, the dogfooding claim is unverified.
+- `cli/gen/safety_test.go` :  must contain tests 94–99 verbatim; cli/gen will not be accepted without strconv.Quote invariant proven.
+- `httpc/redaction_test.go` :  must contain tests 57–64 verbatim; httpc will not be accepted with default plan-sink leaking auth headers.
+- `httpc/limits_test.go` :  must contain tests 65–75; the 32 MiB cap is a Falcon §1 invariant.
+- `httpc/lifecycle_test.go` and the parallel `mock/lifecycle_test.go`, `httpmock/lifecycle_test.go`, `cli/lifecycle_test.go` :  §23.16 Close audit is gating.
+- `tests/integration/leaves/composition_test.go` :  must contain I8 (the five-package composition); without it, the dogfooding claim is unverified.

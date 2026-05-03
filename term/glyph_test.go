@@ -43,7 +43,7 @@ func TestRegisterGlyphSuccess(t *testing.T) {
 	name := "reg_success_01"
 	err := term.RegisterGlyph(name, "🎯", "[*]")
 	if err != nil {
-		// Accept "already registered" on repeated runs (count>1) — the registry
+		// Accept "already registered" on repeated runs (count>1) :  the registry
 		// persists for the lifetime of the test binary.
 		ge, ok := err.(*term.GlyphError)
 		if !ok || !strings.Contains(ge.Cause, "already registered") {
@@ -51,7 +51,7 @@ func TestRegisterGlyphSuccess(t *testing.T) {
 		}
 		t.Logf("glyph %q already registered from a previous iteration; verifying lookup", name)
 	}
-	// Verify lookup exists in Glyphs() — must be present regardless.
+	// Verify lookup exists in Glyphs() :  must be present regardless.
 	found := false
 	for _, g := range term.Glyphs() {
 		if g.Name == name {

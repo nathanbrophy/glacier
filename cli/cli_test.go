@@ -88,7 +88,7 @@ func TestNewWithoutBanner(t *testing.T) {
 	var buf bytes.Buffer
 	app := cli.New(cli.WithStdout(&buf), cli.WithStderr(&buf), cli.WithoutBanner())
 	assert.NoError(t, app.Register(&serveCmd{}, cli.WithName("serve"), cli.WithRoot()))
-	// Bare invocation — banner should not appear.
+	// Bare invocation :  banner should not appear.
 	_ = app.Run(context.Background(), []string{"serve"})
 	// The banner text should not be in the output.
 	assert.False(t, strings.Contains(buf.String(), "GLACIER"), "banner appeared despite WithoutBanner()")
@@ -289,7 +289,7 @@ func TestWithFlagShortRejectsMultiByte(t *testing.T) {
 }
 
 func TestWithFlagEnv(t *testing.T) {
-	// no t.Parallel() — t.Setenv requires sequential execution
+	// no t.Parallel() :  t.Setenv requires sequential execution
 	t.Setenv("TEST_GLACIER_PORT", "7777")
 	app := cli.New(cli.WithoutBanner())
 	assert.NoError(t, app.Register(&serveCmd{},

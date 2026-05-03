@@ -22,11 +22,11 @@ func TestLatest(t *testing.T) {
 	t.Parallel()
 
 	type row struct {
-		name       string
-		responder  httpmock.Responder
-		wantTag    string
-		wantErrIs  error // checked with errors.Is when non-nil
-		wantErrAs  any   // pointer to target for errors.As when non-nil
+		name      string
+		responder httpmock.Responder
+		wantTag   string
+		wantErrIs error // checked with errors.Is when non-nil
+		wantErrAs any   // pointer to target for errors.As when non-nil
 	}
 
 	rows := []row{

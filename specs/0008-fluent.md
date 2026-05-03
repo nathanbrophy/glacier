@@ -38,7 +38,7 @@ docs-extract:
 
 <!-- **Public.** One paragraph in end-user voice. The canonical description for the site and README. -->
 
-`fluent` is Glacier's answer to LINQ: a suite of chainable, lazy, composable operators over Go 1.23+ iterators (`iter.Seq[T]` and `iter.Seq2[K, V]`). Write your logic as top-level function calls — source builders like `From`, `Lines`, and `Generate`; transformers like `Map`, `Filter`, `Take`, `Window`, and `GroupBy`; set operations like `Union`, `Intersect`, and `Except`; joins, sorting, fallible mapping, and a full set of aggregation sinks — and Glacier's pipeline evaluates lazily, allocating only what the terminal sink requires. No method-chaining wrappers, no generated code, no external dependencies. Pure idiomatic Go with generics.
+`fluent` is Glacier's answer to LINQ: a suite of chainable, lazy, composable operators over Go 1.23+ iterators (`iter.Seq[T]` and `iter.Seq2[K, V]`). Write your logic as top-level function calls :  source builders like `From`, `Lines`, and `Generate`; transformers like `Map`, `Filter`, `Take`, `Window`, and `GroupBy`; set operations like `Union`, `Intersect`, and `Except`; joins, sorting, fallible mapping, and a full set of aggregation sinks :  and Glacier's pipeline evaluates lazily, allocating only what the terminal sink requires. No method-chaining wrappers, no generated code, no external dependencies. Pure idiomatic Go with generics.
 
 ## Mental Model
 
@@ -52,7 +52,7 @@ Source → Transformers → Sink
 
 **Sources** produce an `iter.Seq[T]` or `iter.Seq2[K, V]`. They do no work until iterated. Examples: `From(slice)`, `Lines(reader)`, `Range(0, 100, 1)`, `Generate(fn)`.
 
-**Transformers** wrap a source and return a new sequence. They are lazy: no element passes through until the sink pulls. Examples: `Map`, `Filter`, `Take`, `Drop`, `Window`, `Chunk`, `Distinct`, `GroupBy`, `Join`, `LeftJoin`, `Union`, `Intersect`, `Except`, `Zip`. Seq2 transformers: `Map2`, `Filter2`, `KeysOf`, `ValuesOf`, `Entries`. Sorting transformers (`Sort`, `SortBy`, `SortStable`, `SortDesc`) are eager — they materialize the sequence into a slice once, sort it, then yield lazily.
+**Transformers** wrap a source and return a new sequence. They are lazy: no element passes through until the sink pulls. Examples: `Map`, `Filter`, `Take`, `Drop`, `Window`, `Chunk`, `Distinct`, `GroupBy`, `Join`, `LeftJoin`, `Union`, `Intersect`, `Except`, `Zip`. Seq2 transformers: `Map2`, `Filter2`, `KeysOf`, `ValuesOf`, `Entries`. Sorting transformers (`Sort`, `SortBy`, `SortStable`, `SortDesc`) are eager :  they materialize the sequence into a slice once, sort it, then yield lazily.
 
 **Sinks** consume the sequence and return a concrete value. They trigger all upstream work. Examples: `ToSlice`, `ToMap`, `Reduce`, `Count`, `First`, `Last`, `Any`, `All`, `Sum`, `Avg`, `Min`, `Max`, `MinBy`, `MaxBy`.
 
@@ -99,7 +99,7 @@ flowchart LR
 
 ### Tier placement
 
-`fluent` is Tier 1 (mid). It may import `option`, `errs`, `log`, and `internal/*` from Glacier; it may not import any other Glacier package. In practice, `fluent` imports no Glacier packages at v0 — only stdlib — which is explicitly allowed (Glacier's forbidden-edge rules permit mid packages to be stdlib-only; the rule prohibits mid→mid imports, not mid→nothing).
+`fluent` is Tier 1 (mid). It may import `option`, `errs`, `log`, and `internal/*` from Glacier; it may not import any other Glacier package. In practice, `fluent` imports no Glacier packages at v0 :  only stdlib :  which is explicitly allowed (Glacier's forbidden-edge rules permit mid packages to be stdlib-only; the rule prohibits mid→mid imports, not mid→nothing).
 
 ### DAG edges
 
@@ -681,7 +681,7 @@ func ExampleGroupBy_top3PerDept() {
         {"Frank", "eng", 50, false},
     }
 
-    // named-step form — readable in isolation
+    // named-step form :  readable in isolation
     active  := fluent.Filter(fluent.From(users), func(u User) bool { return u.Active })
     byDept  := fluent.GroupBy(active, func(u User) string { return u.Dept })
     top3    := fluent.Map2(byDept, func(dept string, members []User) (string, []User) {
@@ -970,7 +970,7 @@ Full matrix is authored by Lynx; the rows below are drawn from `specs/test-matri
 | 91 | TestNumberConstraintAccepted | F51 | Unit (compile-time) | All numeric kinds satisfy Number; non-numeric does not (negative-compile via build constraint). | compile-only |
 | 92 | TestLazyNoSideEffectsBeforeIteration | NF1 | Unit (positive) | Build pipeline; never iterate; assert side-effecting predicate call count == 0. | `assert.Equal` (counter) |
 | 93 | TestSortMaterializesOnce | NF3 | Unit (positive) | Sort consumes seq exactly once (count source pulls). | `assert.Equal` |
-| 94 | TestDistinctAllocatesHashSet | NF4 | Unit (alloc-aware) | Distinct allocates O(unique) — bench captures number. | `testing.AllocsPerRun` |
+| 94 | TestDistinctAllocatesHashSet | NF4 | Unit (alloc-aware) | Distinct allocates O(unique) :  bench captures number. | `testing.AllocsPerRun` |
 | 95 | TestSortPanicsOnNonOrdered | E19 | Unit (compile-time) | Sort over `[]struct{}` is a compile error (constraint violation). | compile-only |
 | 96 | PropertyMapFilterDistributivity | algebra | Property | `fluent.Map(Filter(s, p), f)` consistent with filter-then-map semantics for invertible f; randomized inputs. | `assert.Equal`, randomized generator |
 | 97 | PropertyMapFilterReducibleEqual | algebra | Property | `Reduce(Map(s, f), zero, ⊕)` produces consistent result for associative ⊕. | `assert.Equal` |
@@ -990,13 +990,13 @@ Full matrix is authored by Lynx; the rows below are drawn from `specs/test-matri
 
 ### Edge cases not in spec (Lynx adds)
 
-- **EX1**: `Map(seq, f)` where `f` panics — panic propagates at iteration time (no recovery).
-- **EX2**: `Window` with overlapping windows — each window is a fresh slice copy; mutations do not bleed.
-- **EX3**: `Chunk` on infinite `Generate` seq with `Take` — lazy composition produces finite result.
-- **EX4**: `Distinct` over NaN floats — NaN != NaN, so each NaN is yielded (Go map equality semantics).
-- **EX5**: `Zip` where one source panics mid-iteration — panic propagates; other source is not consumed further.
-- **EX6**: `MapErr` where caller `continue`s after error — off-by-one impossibility guaranteed by range semantics.
-- **EX7**: `ToMap` on Seq2 with zero elements — returns non-nil empty map.
+- **EX1**: `Map(seq, f)` where `f` panics :  panic propagates at iteration time (no recovery).
+- **EX2**: `Window` with overlapping windows :  each window is a fresh slice copy; mutations do not bleed.
+- **EX3**: `Chunk` on infinite `Generate` seq with `Take` :  lazy composition produces finite result.
+- **EX4**: `Distinct` over NaN floats :  NaN != NaN, so each NaN is yielded (Go map equality semantics).
+- **EX5**: `Zip` where one source panics mid-iteration :  panic propagates; other source is not consumed further.
+- **EX6**: `MapErr` where caller `continue`s after error :  off-by-one impossibility guaranteed by range semantics.
+- **EX7**: `ToMap` on Seq2 with zero elements :  returns non-nil empty map.
 
 ## Dependency Justification
 
@@ -1020,8 +1020,8 @@ No new direct dependencies. `fluent` imports only stdlib: `bufio`, `cmp`, `io`, 
 
 | Row | Input source | Parser / decoder | Size cap | Validation rule |
 |---|---|---|---|---|
-| 14 | `Lines(r io.Reader)` | `bufio.Scanner` (ScanLines) | None — caller must wrap r with `io.LimitReader` when reading from untrusted sources | No line-length enforcement beyond bufio.MaxScanTokenSize (64 KiB); callers are responsible for bounding the reader |
-| 15 | `Words(r io.Reader)` | `bufio.Scanner` (ScanWords) | Same — caller wraps | Same |
+| 14 | `Lines(r io.Reader)` | `bufio.Scanner` (ScanLines) | None :  caller must wrap r with `io.LimitReader` when reading from untrusted sources | No line-length enforcement beyond bufio.MaxScanTokenSize (64 KiB); callers are responsible for bounding the reader |
+| 15 | `Words(r io.Reader)` | `bufio.Scanner` (ScanWords) | Same :  caller wraps | Same |
 
 The `Lines` and `Words` functions deliberately do not enforce an overall size cap. They are general-purpose streaming operators; imposing an arbitrary global limit would break legitimate use cases (e.g., streaming a large log file). Callers reading from untrusted network input, user-supplied files, or CLI stdin **must** wrap the reader with `io.LimitReader` before passing it to `Lines` or `Words`. This requirement is documented in the godoc for each function and must be re-stated in any Glacier documentation that mentions these operators in an untrusted-input context.
 
@@ -1041,7 +1041,7 @@ None. `fluent` performs no I/O other than what callers route through `Lines`/`Wo
 
 **Why no method-chaining DSL? Every other language's LINQ equivalent does `seq.Filter(...).Map(...).ToSlice()`.**
 
-Go generics do not compose method chains cleanly across `T → U` transitions. A method `Filter` on a `Seq[T]` can return `Seq[T]`, but a method `Map` that changes the element type would need to return `Seq[U]` — and Go does not allow methods to introduce new type parameters beyond those on the receiver. The workaround (wrapper types, interface{}) produces ugly call sites and breaks `go doc`. Top-level functions are honest: they show the full signature, compose naturally, and survive `go doc` without ceremony. The named-step pattern (`active := Filter(From(users), pred); result := ToSlice(Map(active, f))`) is readable and explicit about data flow.
+Go generics do not compose method chains cleanly across `T → U` transitions. A method `Filter` on a `Seq[T]` can return `Seq[T]`, but a method `Map` that changes the element type would need to return `Seq[U]` :  and Go does not allow methods to introduce new type parameters beyond those on the receiver. The workaround (wrapper types, interface{}) produces ugly call sites and breaks `go doc`. Top-level functions are honest: they show the full signature, compose naturally, and survive `go doc` without ceremony. The named-step pattern (`active := Filter(From(users), pred); result := ToSlice(Map(active, f))`) is readable and explicit about data flow.
 
 **Why is `Number` exported? Isn't it an implementation detail?**
 
@@ -1049,7 +1049,7 @@ Go generics do not compose method chains cleanly across `T → U` transitions. A
 
 **Why does `MapErr` return `iter.Seq2[U, error]` instead of `(iter.Seq[U], error)`?**
 
-Returning `(iter.Seq[U], error)` would force a design choice: either surface the first error immediately (before iteration begins, which is wrong for a lazy stream) or buffer the entire sequence and return the first error only after materializing everything (which defeats laziness). `iter.Seq2[U, error]` lets the caller see each error at the point where it occurs and decide — short-circuit, log-and-continue, collect-all — at the range site. This is idiomatic Go: errors as values, caller in control.
+Returning `(iter.Seq[U], error)` would force a design choice: either surface the first error immediately (before iteration begins, which is wrong for a lazy stream) or buffer the entire sequence and return the first error only after materializing everything (which defeats laziness). `iter.Seq2[U, error]` lets the caller see each error at the point where it occurs and decide :  short-circuit, log-and-continue, collect-all :  at the range site. This is idiomatic Go: errors as values, caller in control.
 
 **What is the allocation profile of a `Map(Filter(From(s)), f)` pipeline?**
 
@@ -1057,43 +1057,43 @@ The pipeline is constructed with two closure allocations (one per transformer ca
 
 **Why does `Sort` have to be eager? Can't it be lazy?**
 
-No. Sorting requires seeing all elements before yielding any. The sort family materializes the sequence into a `[]T`, sorts it in place, and returns a lazy Seq over the sorted slice. The O(n) allocation is unavoidable and documented. If you only want the smallest or largest element without sorting everything, use `Min`, `Max`, `MinBy`, or `MaxBy` instead — they stream in O(1) space.
+No. Sorting requires seeing all elements before yielding any. The sort family materializes the sequence into a `[]T`, sorts it in place, and returns a lazy Seq over the sorted slice. The O(n) allocation is unavoidable and documented. If you only want the smallest or largest element without sorting everything, use `Min`, `Max`, `MinBy`, or `MaxBy` instead :  they stream in O(1) space.
 
 ## Decisions & Rationale
 
 <!-- **Internal.** Why-this-and-not-that for non-obvious choices. Folded-in ADR. -->
 
-### D1 — Top-level functions, not methods
+### D1 :  Top-level functions, not methods
 
 Go generics do not allow methods to introduce new type parameters (e.g., `(Seq[T]).Map[U](f func(T) U) Seq[U]` is not legal Go). Any method-chaining approach requires wrapper types or `any`, both of which produce worse call sites and worse `go doc` output. Top-level functions with type parameters (`Map[T, U any](src, f)`) are idiomatic, composable, and understood by `go doc`. This decision is locked by spec 0002 §21.6 naming rationale.
 
-### D2 — `Number` constraint exported (per D36 generics-first)
+### D2 :  `Number` constraint exported (per D36 generics-first)
 
 The `Number` constraint is exported as `fluent.Number` so consumers can write their own generic numeric functions that compose with `Sum` and `Avg` without duplicating the constraint. Keeping it unexported would force every downstream library to either duplicate the constraint or cast through `any`. Exporting it costs nothing and follows the generics-first ergonomics commitment (D36, plan §3).
 
-### D3 — `MapErr` / `FilterErr` use `iter.Seq2[U, error]` (not a callback or Result type)
+### D3 :  `MapErr` / `FilterErr` use `iter.Seq2[U, error]` (not a callback or Result type)
 
 The alternatives were: (a) a callback `func(U, error)` per element; (b) a `Result[U]` generic type; (c) `iter.Seq2[U, error]`. The `for k, v := range seq2` form is the natural Go 1.23+ idiom for two-valued sequences. It composes with `break` (short-circuit) and `continue` (skip error) naturally. A `Result[U]` type would require Go callers to pattern-match, which is not idiomatic. A callback prevents the caller from breaking early. `iter.Seq2[U, error]` is the idiomatic choice.
 
-### D4 — `Lines` and `Words` do not impose a size cap
+### D4 :  `Lines` and `Words` do not impose a size cap
 
 Imposing an arbitrary global limit would break legitimate use cases (streaming a 2 GB log file line-by-line is valid). The untrusted-input discipline (register rows 14–15) places the cap responsibility on callers who are consuming untrusted input. This is consistent with the Glacier principle that library code does not make policy decisions for callers.
 
-### D5 — Sort family is eager, not lazy
+### D5 :  Sort family is eager, not lazy
 
-Sort requires a total order over all elements. An element at position n may need to be yielded before an element at position n+1, or vice versa, based on their values — you cannot know until you have seen all of them. The sort family materializes, sorts, and returns a lazy Seq over the result slice. The one O(n) allocation is disclosed in doc comments and the NF section.
+Sort requires a total order over all elements. An element at position n may need to be yielded before an element at position n+1, or vice versa, based on their values :  you cannot know until you have seen all of them. The sort family materializes, sorts, and returns a lazy Seq over the result slice. The one O(n) allocation is disclosed in doc comments and the NF section.
 
-### D6 — §23.13 zero-alloc qualification
+### D6 :  §23.13 zero-alloc qualification
 
-Plan §23.13 (Major A perf recalibration) qualifies the zero-alloc claim as: "for non-capturing functions in pre-composed pipelines." This is not a weakening — it is an accurate description. A pipeline composed before iteration (`f := Map(Filter(From(s), pred), fn); ToSlice(f)`) allocates its closures once at composition time. Once composed, iterating through the pipeline in a tight loop has zero per-element allocations when `pred` and `fn` are top-level non-capturing functions. Closures that capture loop variables or heap-allocate values inside the body add those allocations; `fluent` cannot prevent that. The benchmark `BenchmarkMapFilterReduce` is the gate test that enforces this claim using top-level functions.
+Plan §23.13 (Major A perf recalibration) qualifies the zero-alloc claim as: "for non-capturing functions in pre-composed pipelines." This is not a weakening :  it is an accurate description. A pipeline composed before iteration (`f := Map(Filter(From(s), pred), fn); ToSlice(f)`) allocates its closures once at composition time. Once composed, iterating through the pipeline in a tight loop has zero per-element allocations when `pred` and `fn` are top-level non-capturing functions. Closures that capture loop variables or heap-allocate values inside the body add those allocations; `fluent` cannot prevent that. The benchmark `BenchmarkMapFilterReduce` is the gate test that enforces this claim using top-level functions.
 
-### D7 — No `Close` on any type
+### D7 :  No `Close` on any type
 
 Per the §23.16 lifecycle audit: `fluent` is stateless. Source builders return closures; transformers wrap closures; sinks consume them. No goroutines are spawned, no file handles are opened by `fluent` itself (`Lines`/`Words` receive an already-opened `io.Reader` from the caller). There are no resources to release. Adding `Close` would be misleading. The audit result is: `fluent` has no types that carry `Close`.
 
-### D8 — Zero internal Glacier dependencies at v0
+### D8 :  Zero internal Glacier dependencies at v0
 
-`fluent` imports only stdlib (`bufio`, `cmp`, `io`, `iter`, `math`, `slices`, `strings`). The plan DAG allows `internal/reflectx → fluent` as a permitted import in the other direction; at v0, `fluent` itself has no reason to import any Glacier package. This is explicitly allowed by the tier rules — a mid-tier package is permitted to be stdlib-only. Zero Glacier imports is the strictest possible interpretation of the supply-chain minimalism principle.
+`fluent` imports only stdlib (`bufio`, `cmp`, `io`, `iter`, `math`, `slices`, `strings`). The plan DAG allows `internal/reflectx → fluent` as a permitted import in the other direction; at v0, `fluent` itself has no reason to import any Glacier package. This is explicitly allowed by the tier rules :  a mid-tier package is permitted to be stdlib-only. Zero Glacier imports is the strictest possible interpretation of the supply-chain minimalism principle.
 
 ## Open Questions
 

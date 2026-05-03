@@ -31,7 +31,7 @@ const (
 )
 
 // resolvedColor is the effective color decision after consulting ColorMode and env vars.
-// It is a boolean: color is either on or off — ColorAuto has been resolved.
+// It is a boolean: color is either on or off :  ColorAuto has been resolved.
 // invariant: set once at NewHandler time; never mutated.
 type resolvedColor bool
 
@@ -49,7 +49,7 @@ type handlerConfig struct {
 // Performance target: ≤ 3 allocs beyond stdlib slog baseline on the hot path.
 // Get correctness first; optimize allocations in a follow-up pass.
 type glacierHandler struct {
-	inner slog.Handler // invariant: non-nil
+	inner slog.Handler  // invariant: non-nil
 	color resolvedColor // invariant: computed once at construction; immutable after
 }
 
@@ -59,12 +59,12 @@ type glacierHandler struct {
 // palette tokens (which have a separate purpose). Hex values are the spec
 // 0005 documentation set.
 var levelStyles = [6]term.Style{
-	term.New().Foreground(term.RGB(0x8B, 0x94, 0x9E)), // TRACE  — text-muted #8B949E
-	term.New().Foreground(term.RGB(0x8B, 0x94, 0x9E)), // DEBUG  — text-muted #8B949E
-	term.New().Foreground(term.RGB(0x22, 0xD3, 0xEE)), // INFO   — cyan       #22D3EE
-	term.New().Foreground(term.RGB(0x2D, 0xD4, 0xBF)), // NOTICE — teal       #2DD4BF
-	term.New().Foreground(term.RGB(0xFB, 0xBF, 0x24)), // WARN   — warning    #FBBF24
-	term.New().Foreground(term.RGB(0xF8, 0x71, 0x71)), // ERROR  — error      #F87171
+	term.New().Foreground(term.RGB(0x8B, 0x94, 0x9E)), // TRACE  :  text-muted #8B949E
+	term.New().Foreground(term.RGB(0x8B, 0x94, 0x9E)), // DEBUG  :  text-muted #8B949E
+	term.New().Foreground(term.RGB(0x22, 0xD3, 0xEE)), // INFO   :  cyan       #22D3EE
+	term.New().Foreground(term.RGB(0x2D, 0xD4, 0xBF)), // NOTICE :  teal       #2DD4BF
+	term.New().Foreground(term.RGB(0xFB, 0xBF, 0x24)), // WARN   :  warning    #FBBF24
+	term.New().Foreground(term.RGB(0xF8, 0x71, 0x71)), // ERROR  :  error      #F87171
 }
 
 // levelLabels mirrors levelStyles in the order TRACE, DEBUG, INFO, NOTICE,
@@ -101,7 +101,7 @@ func init() {
 // emitted ` level=<LABEL>` field with its colored equivalent on each Write.
 // One Write call corresponds to one record (slog's text handler buffers a
 // full record before calling Write). The substitution happens at most once
-// per Write — slog emits the level field exactly once per record.
+// per Write :  slog emits the level field exactly once per record.
 type colorWriter struct {
 	w io.Writer
 }
@@ -185,7 +185,7 @@ func NewHandler(w io.Writer, opts ...option.Option[handlerConfig]) slog.Handler 
 	// When color is enabled, wrap the writer in a colorWriter that
 	// substitutes the serialized level field with its colored form. The
 	// stdlib text handler quotes string values containing control bytes,
-	// so we cannot inject ANSI escapes via ReplaceAttr — the substitution
+	// so we cannot inject ANSI escapes via ReplaceAttr :  the substitution
 	// has to happen on the rendered byte stream instead.
 	out := w
 	if bool(color) {
@@ -248,7 +248,7 @@ func applyHandlerConfig(opts []option.Option[handlerConfig]) handlerConfig {
 // WithLevel sets the handler's minimum log level. Records below this level
 // are discarded. Default: slog.LevelInfo.
 //
-// Pass any slog.Leveler — including dynamic LevelVar pointers — for runtime
+// Pass any slog.Leveler :  including dynamic LevelVar pointers :  for runtime
 // level control.
 func WithLevel(l slog.Leveler) option.Option[handlerConfig] {
 	return option.OptionFunc[handlerConfig](func(c *handlerConfig) error {
@@ -258,7 +258,7 @@ func WithLevel(l slog.Leveler) option.Option[handlerConfig] {
 }
 
 // WithSource enables source-location attribution on every record: the
-// caller's file and line are included. Off by default — source attribution
+// caller's file and line are included. Off by default :  source attribution
 // adds approximately 30% latency per log call.
 func WithSource() option.Option[handlerConfig] {
 	return option.OptionFunc[handlerConfig](func(c *handlerConfig) error {

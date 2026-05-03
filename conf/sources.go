@@ -10,11 +10,11 @@ import (
 
 // loadConfig holds all resolved options for a Load or Decode call.
 type loadConfig struct {
-	filePath    string            // from WithFile; "" means no file
-	envPrefix   string            // from WithEnvPrefix; "" means no env layer
-	envSliceSep string            // from WithEnvSliceSep; defaults to ","
-	flagSrc     FlagSource        // from WithFlagSource; nil means no flag layer
-	sets        map[string]any    // from WithSet; applied last (highest priority)
+	filePath    string                  // from WithFile; "" means no file
+	envPrefix   string                  // from WithEnvPrefix; "" means no env layer
+	envSliceSep string                  // from WithEnvSliceSep; defaults to ","
+	flagSrc     FlagSource              // from WithFlagSource; nil means no flag layer
+	sets        map[string]any          // from WithSet; applied last (highest priority)
 	defaultsFns []func() map[string]any // from WithDefaults; applied after struct defaults
 	logger      *slog.Logger
 }

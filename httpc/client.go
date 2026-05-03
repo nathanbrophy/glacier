@@ -34,7 +34,7 @@ type clientConfig struct {
 // via New. A single Client is goroutine-safe: concurrent calls share the
 // underlying transport.
 type Client struct {
-	cfg      clientConfig
+	cfg       clientConfig
 	closeOnce sync.Once
 }
 

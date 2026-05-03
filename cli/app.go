@@ -419,7 +419,7 @@ func (a *App) Lookup(name string) (string, bool) {
 }
 
 // Close shuts down the App: cancels any pending signal handlers and frees
-// resources. Close is idempotent — subsequent calls return nil.
+// resources. Close is idempotent :  subsequent calls return nil.
 // Concurrency: goroutine-safe.
 func (a *App) Close() error {
 	a.closeOnce.Do(func() {

@@ -38,7 +38,7 @@ docs-extract:
 
 <!-- **Public.** One paragraph in end-user voice. The canonical description for the site and README. -->
 
-`assert` is Glacier's test-assertion and runtime-invariant package — two distinct faces in one kernel package, separated by file. The test face provides assertion functions that report failures via `t.Errorf` and return `bool`, so a test can stack multiple assertions and see every failure in a single run. The runtime face provides `Must`, `Must2`, and `Mustf` helpers that panic at initialization time when an invariant is violated — for `init()` setup and program startup, never for library hot paths. The companion sub-package `assert/require` mirrors every test assertion with `t.FailNow` semantics: import `assert` for "continue on failure," import `require` for "halt on failure." At the heart of both is a smart deep-equality comparator that goes well beyond `reflect.DeepEqual` — pointer-aware, map-order-insensitive, optionally slice-order-insensitive, case-fold-capable, field-selective, float-tolerant, cycle-safe — giving every test a single coherent equality primitive it can trust.
+`assert` is Glacier's test-assertion and runtime-invariant package :  two distinct faces in one kernel package, separated by file. The test face provides assertion functions that report failures via `t.Errorf` and return `bool`, so a test can stack multiple assertions and see every failure in a single run. The runtime face provides `Must`, `Must2`, and `Mustf` helpers that panic at initialization time when an invariant is violated :  for `init()` setup and program startup, never for library hot paths. The companion sub-package `assert/require` mirrors every test assertion with `t.FailNow` semantics: import `assert` for "continue on failure," import `require` for "halt on failure." At the heart of both is a smart deep-equality comparator that goes well beyond `reflect.DeepEqual` :  pointer-aware, map-order-insensitive, optionally slice-order-insensitive, case-fold-capable, field-selective, float-tolerant, cycle-safe :  giving every test a single coherent equality primitive it can trust.
 
 ## Mental Model
 
@@ -48,30 +48,30 @@ The package has three conceptually distinct residents that share an import path:
 
 ```
 assert/
-├── asserts.go      — test assertions  (t.Errorf, return bool, never halt)
-├── equal.go        — smart-equal engine (fast path + slow path)
-├── match.go        — glob / regex matching
-├── ordering.go     — Greater, Less, GreaterOrEqual, LessOrEqual, InDelta
-├── jsoneq.go       — JSONEq, BytesEq, Subset
-├── diff.go         — struct-walking diff for failure messages
-└── must.go         — runtime Must helpers (panic on violation)
+├── asserts.go      :  test assertions  (t.Errorf, return bool, never halt)
+├── equal.go        :  smart-equal engine (fast path + slow path)
+├── match.go        :  glob / regex matching
+├── ordering.go     :  Greater, Less, GreaterOrEqual, LessOrEqual, InDelta
+├── jsoneq.go       :  JSONEq, BytesEq, Subset
+├── diff.go         :  struct-walking diff for failure messages
+└── must.go         :  runtime Must helpers (panic on violation)
 
 assert/require/
-└── require.go      — thin t.FailNow wrapper around every assert.X
+└── require.go      :  thin t.FailNow wrapper around every assert.X
 ```
 
-**Test assertions** (`asserts.go`, `equal.go`, `match.go`, `ordering.go`, `jsoneq.go`) accept a `TB` interface compatible with `*testing.T`, `*testing.B`, and `*testing.F`. Every assertion calls `t.Helper()`, calls `t.Errorf` on failure, and returns `bool`. Returning `bool` is the key design: a test function can stack ten assertions and see all ten failures rather than stopping at the first. When stopping early is correct — for example, when a nil return would crash the next assertion — the author imports `require` instead.
+**Test assertions** (`asserts.go`, `equal.go`, `match.go`, `ordering.go`, `jsoneq.go`) accept a `TB` interface compatible with `*testing.T`, `*testing.B`, and `*testing.F`. Every assertion calls `t.Helper()`, calls `t.Errorf` on failure, and returns `bool`. Returning `bool` is the key design: a test function can stack ten assertions and see all ten failures rather than stopping at the first. When stopping early is correct :  for example, when a nil return would crash the next assertion :  the author imports `require` instead.
 
 **Smart equality** is the engine that powers `Equal`, `NotEqual`, `Contains`, `JSONEq`, `Subset`, and the diff renderer. It operates in two tiers:
 
 - *Primitive fast path*: when `T` is `comparable` and `got == want` by the `==` operator, equality is confirmed in ≤ 50 ns/op with zero allocations. No reflection, no recursion.
 - *Smart-equal slow path*: for all other cases, the engine walks the value graph via `reflect`. It dereferences pointers, folds map iteration order, optionally treats slices as multisets, applies case folding, tolerates float deltas, skips named fields, invokes custom `Equal(any) bool` methods, and detects pointer cycles via a per-call visited-set. Target: ≤ 200 ns/op for small structs; documented O(n) multiset algorithm for slices.
 
-**`EqualOption`** values configure the slow path. They use the universal `option.Option[T]` pattern — constructed by the five constructor functions (`IgnoreOrder`, `IgnoreCase`, `IgnoreWhitespace`, `WithDelta`, `IgnoreFields`) — and are passed as trailing variadic arguments to `Equal`, `NotEqual`, `JSONEq`, `Contains`, and `Subset`.
+**`EqualOption`** values configure the slow path. They use the universal `option.Option[T]` pattern :  constructed by the five constructor functions (`IgnoreOrder`, `IgnoreCase`, `IgnoreWhitespace`, `WithDelta`, `IgnoreFields`) :  and are passed as trailing variadic arguments to `Equal`, `NotEqual`, `JSONEq`, `Contains`, and `Subset`.
 
-**Runtime Must helpers** (`must.go`) are semantically distinct: they do not interact with `testing.TB` at all. They panic on violation. The doc comments on every `Must` variant state: initialization-time invariants only — `package init`, `main()` setup, test harness setup. Never in library hot paths (CLAUDE.md directive 4 prohibits library panics).
+**Runtime Must helpers** (`must.go`) are semantically distinct: they do not interact with `testing.TB` at all. They panic on violation. The doc comments on every `Must` variant state: initialization-time invariants only :  `package init`, `main()` setup, test harness setup. Never in library hot paths (CLAUDE.md directive 4 prohibits library panics).
 
-**`assert/require`** is a thin sub-package: one file, one import (`assert`), one pattern — call the corresponding `assert.X`, and if it returned `false`, call `t.FailNow()`. The `require` package exports no types of its own and declares no sentinels. Its only purpose is the `FailNow` semantic.
+**`assert/require`** is a thin sub-package: one file, one import (`assert`), one pattern :  call the corresponding `assert.X`, and if it returned `false`, call `t.FailNow()`. The `require` package exports no types of its own and declares no sentinels. Its only purpose is the `FailNow` semantic.
 
 ```mermaid
 flowchart TB
@@ -97,7 +97,7 @@ flowchart TB
 - Provide `assert/require` as a thin halt-on-failure mirror, matching the testify split familiar to most Go contributors.
 - Provide `Must`, `Must2`, `Mustf` for initialization-time invariants in non-test code.
 - Deliver a primitive fast path that bypasses reflection for comparable types matched by `==`, achieving ≤ 50 ns/op zero allocations.
-- Dogfood: Glacier's own packages use `assert` and `assert/require` in every test — never `testify`, never bare `if got != want`.
+- Dogfood: Glacier's own packages use `assert` and `assert/require` in every test :  never `testify`, never bare `if got != want`.
 - Keep total production LOC ≤ 1100 and test LOC ≤ 1500, the largest kernel package by surface area.
 
 ## Non-Goals
@@ -120,47 +120,47 @@ flowchart TB
 
 ```
 assert/
-├── doc.go                  — package declaration + package-level doc comment
-├── tb.go                   — TB interface declaration
-├── equal.go                — Equal[T], NotEqual[T]; smart-equal engine; EqualOption types
-├── asserts.go              — True, False, Nil, NotNil, NoError, Error, ErrorIs, ErrorAs,
+├── doc.go                  :  package declaration + package-level doc comment
+├── tb.go                   :  TB interface declaration
+├── equal.go                :  Equal[T], NotEqual[T]; smart-equal engine; EqualOption types
+├── asserts.go              :  True, False, Nil, NotNil, NoError, Error, ErrorIs, ErrorAs,
 │                             Contains, Len, Eventually, Halt
-├── match.go                — Match; MatchOption types (MatchRegex, MatchIgnoreCase)
-├── ordering.go             — Greater[T], Less[T], GreaterOrEqual[T], LessOrEqual[T],
+├── match.go                :  Match; MatchOption types (MatchRegex, MatchIgnoreCase)
+├── ordering.go             :  Greater[T], Less[T], GreaterOrEqual[T], LessOrEqual[T],
 │                             InDelta[T]
-├── jsoneq.go               — JSONEq, BytesEq, Subset[T]
-├── diff.go                 — failure-message renderer; struct-walking diff with +/-/~ markers;
+├── jsoneq.go               :  JSONEq, BytesEq, Subset[T]
+├── diff.go                 :  failure-message renderer; struct-walking diff with +/-/~ markers;
 │                             TTY-aware color via term package
-├── must.go                 — Must[T], Must2[A,B], Mustf
-├── asserts_test.go         — assertion unit tests (uses bootstrap subset for Equal itself)
-├── equal_test.go           — smart-equal exhaustive tests
-├── equal_options_test.go   — IgnoreOrder, IgnoreCase, IgnoreWhitespace, WithDelta, IgnoreFields
-├── match_test.go           — glob, regex, ignore-case
-├── ordering_test.go        — Greater, Less, GreaterOrEqual, LessOrEqual
-├── indelta_test.go         — InDelta
-├── jsoneq_test.go          — JSONEq
-├── bytes_test.go           — BytesEq
-├── subset_test.go          — Subset
-├── contains_test.go        — Contains
-├── len_test.go             — Len
-├── eventually_test.go      — Eventually
-├── error_test.go           — Error, NoError, ErrorIs, ErrorAs
-├── nil_test.go             — Nil, NotNil
-├── bool_test.go            — True, False
-├── halt_test.go            — Halt
-├── must_test.go            — Must, Must2, Mustf
-├── diff_test.go            — failure-message diff output
-├── concurrent_test.go      — race-detector tests
-├── bench_test.go           — D35 + §23.13 fast-path benchmarks
-├── fuzz_test.go            — FuzzMatchGlob, FuzzMatchRegex
-├── property_test.go        — reflexivity, symmetry, transitivity
-└── example_test.go         — runnable godoc examples
+├── must.go                 :  Must[T], Must2[A,B], Mustf
+├── asserts_test.go         :  assertion unit tests (uses bootstrap subset for Equal itself)
+├── equal_test.go           :  smart-equal exhaustive tests
+├── equal_options_test.go   :  IgnoreOrder, IgnoreCase, IgnoreWhitespace, WithDelta, IgnoreFields
+├── match_test.go           :  glob, regex, ignore-case
+├── ordering_test.go        :  Greater, Less, GreaterOrEqual, LessOrEqual
+├── indelta_test.go         :  InDelta
+├── jsoneq_test.go          :  JSONEq
+├── bytes_test.go           :  BytesEq
+├── subset_test.go          :  Subset
+├── contains_test.go        :  Contains
+├── len_test.go             :  Len
+├── eventually_test.go      :  Eventually
+├── error_test.go           :  Error, NoError, ErrorIs, ErrorAs
+├── nil_test.go             :  Nil, NotNil
+├── bool_test.go            :  True, False
+├── halt_test.go            :  Halt
+├── must_test.go            :  Must, Must2, Mustf
+├── diff_test.go            :  failure-message diff output
+├── concurrent_test.go      :  race-detector tests
+├── bench_test.go           :  D35 + §23.13 fast-path benchmarks
+├── fuzz_test.go            :  FuzzMatchGlob, FuzzMatchRegex
+├── property_test.go        :  reflexivity, symmetry, transitivity
+└── example_test.go         :  runnable godoc examples
 
 assert/require/
-├── doc.go                  — package declaration
-├── require.go              — one mirror function per assert.X; calls assert.X then t.FailNow
-├── require_test.go         — halt-on-failure verification for every mirror
-└── example_test.go         — runnable godoc examples
+├── doc.go                  :  package declaration
+├── require.go              :  one mirror function per assert.X; calls assert.X then t.FailNow
+├── require_test.go         :  halt-on-failure verification for every mirror
+└── example_test.go         :  runnable godoc examples
 ```
 
 ### Smart-equal algorithm
@@ -200,14 +200,14 @@ Equal(got, want, cfg):
        default    → reflect.DeepEqual fallback
 ```
 
-Cycle detection uses a `map[[2]uintptr]bool` keyed by the ordered pair of pointer addresses, scoped per top-level `Equal` call and freed when `Equal` returns. On a repeated encounter, the algorithm returns `true` (back-edge treated as equal — the cycle has the same structure on both sides).
+Cycle detection uses a `map[[2]uintptr]bool` keyed by the ordered pair of pointer addresses, scoped per top-level `Equal` call and freed when `Equal` returns. On a repeated encounter, the algorithm returns `true` (back-edge treated as equal :  the cycle has the same structure on both sides).
 
 ### Dependency edges
 
 `assert/` imports:
 - stdlib: `bytes`, `cmp`, `encoding/json`, `errors`, `fmt`, `reflect`, `regexp`, `slices`, `strings`, `time`, `unicode`
-- `github.com/nathanbrophy/glacier/option` (kernel — for `EqualOption` / `MatchOption` construction pattern)
-- `github.com/nathanbrophy/glacier/term` (kernel — for TTY detection and color in diff output; F3b in spec 0002 §6)
+- `github.com/nathanbrophy/glacier/option` (kernel :  for `EqualOption` / `MatchOption` construction pattern)
+- `github.com/nathanbrophy/glacier/term` (kernel :  for TTY detection and color in diff output; F3b in spec 0002 §6)
 
 `assert/require/` imports:
 - `github.com/nathanbrophy/glacier/assert` (parent package only; nothing else from the module)
@@ -614,7 +614,7 @@ func Halt(t TB)
 // Must returns v if err is nil. If err is non-nil, Must panics with a
 // value that wraps err. Use only for initialization-time invariants:
 // package init, main() setup, test harness setup. Never use in library
-// hot paths — library code must not panic (CLAUDE.md directive 4).
+// hot paths :  library code must not panic (CLAUDE.md directive 4).
 //
 // Example:
 //   var rePhone = assert.Must(regexp.Compile(`^\+?[0-9 -]+$`))
@@ -647,7 +647,7 @@ func Mustf(cond bool, format string, args ...any)
 // Package require provides assertion functions that halt the test goroutine
 // on failure via t.FailNow. Every function mirrors a corresponding
 // assert.X. Import require when a failing assertion should stop the test
-// immediately — for example, when a nil return from the previous assertion
+// immediately :  for example, when a nil return from the previous assertion
 // would cause a nil-pointer dereference in the next line.
 //
 // require functions call the corresponding assert.X first (which invokes
@@ -656,7 +656,7 @@ func Mustf(cond bool, format string, args ...any)
 package require
 ```
 
-Every assertion in `assert` is mirrored in `require` with an identical signature, including generic functions (generic-for-generic per §23.17). The runtime Must helpers (`Must`, `Must2`, `Mustf`) are not mirrored — they are not testing functions and do not take a `TB`.
+Every assertion in `assert` is mirrored in `require` with an identical signature, including generic functions (generic-for-generic per §23.17). The runtime Must helpers (`Must`, `Must2`, `Mustf`) are not mirrored :  they are not testing functions and do not take a `TB`.
 
 ```go
 func Equal[T any](t assert.TB, got, want T, opts ...assert.EqualOption) bool
@@ -703,7 +703,7 @@ func X(t assert.TB, ...) bool {
   Each example is self-contained and `go test ./...`-compatible.
 -->
 
-### Smart equality — slice ordering
+### Smart equality :  slice ordering
 
 ```go
 func ExampleEqual_ignoreOrder() {
@@ -718,7 +718,7 @@ func ExampleEqual_ignoreOrder() {
 }
 ```
 
-### Smart equality — struct field exclusion
+### Smart equality :  struct field exclusion
 
 ```go
 func ExampleEqual_ignoreFields() {
@@ -738,7 +738,7 @@ func ExampleEqual_ignoreFields() {
 }
 ```
 
-### Smart equality — map case-insensitive keys
+### Smart equality :  map case-insensitive keys
 
 ```go
 func ExampleEqual_ignoreCase() {
@@ -750,7 +750,7 @@ func ExampleEqual_ignoreCase() {
 }
 ```
 
-### Smart equality — float tolerance via Equal
+### Smart equality :  float tolerance via Equal
 
 ```go
 func ExampleEqual_withDelta() {
@@ -794,7 +794,7 @@ func ExampleJSONEq() {
 }
 ```
 
-### Stacking assertions — see all failures in one run
+### Stacking assertions :  see all failures in one run
 
 ```go
 func ExampleEqual_stacked() {
@@ -848,10 +848,10 @@ Full matrices drawn from `specs/test-matrices/kernel.md` §§ "Package: assert/"
 
 #### Test files
 
-- `assert/equal_test.go` — Equal across all type kinds (~30 cases; bootstrap-tested with bare-`if`)
-- `assert/equal_options_test.go` — IgnoreOrder, IgnoreCase, IgnoreWhitespace, WithDelta, IgnoreFields
-- `assert/match_test.go` — glob, regex, ignore-case
-- `assert/ordering_test.go` — Greater, Less, GreaterOrEqual, LessOrEqual
+- `assert/equal_test.go` :  Equal across all type kinds (~30 cases; bootstrap-tested with bare-`if`)
+- `assert/equal_options_test.go` :  IgnoreOrder, IgnoreCase, IgnoreWhitespace, WithDelta, IgnoreFields
+- `assert/match_test.go` :  glob, regex, ignore-case
+- `assert/ordering_test.go` :  Greater, Less, GreaterOrEqual, LessOrEqual
 - `assert/indelta_test.go`
 - `assert/jsoneq_test.go`
 - `assert/bytes_test.go`
@@ -859,23 +859,23 @@ Full matrices drawn from `specs/test-matrices/kernel.md` §§ "Package: assert/"
 - `assert/contains_test.go`
 - `assert/len_test.go`
 - `assert/eventually_test.go`
-- `assert/error_test.go` — Error, NoError, ErrorIs, ErrorAs
-- `assert/nil_test.go` — Nil, NotNil
-- `assert/bool_test.go` — True, False
+- `assert/error_test.go` :  Error, NoError, ErrorIs, ErrorAs
+- `assert/nil_test.go` :  Nil, NotNil
+- `assert/bool_test.go` :  True, False
 - `assert/halt_test.go`
 - `assert/must_test.go`
-- `assert/diff_test.go` — failure-message diffs
+- `assert/diff_test.go` :  failure-message diffs
 - `assert/concurrent_test.go`
-- `assert/bench_test.go` — D35 + §23.13 fast-path benchmarks
-- `assert/fuzz_test.go` — FuzzMatchGlob, FuzzMatchRegex
-- `assert/property_test.go` — reflexivity, symmetry
+- `assert/bench_test.go` :  D35 + §23.13 fast-path benchmarks
+- `assert/fuzz_test.go` :  FuzzMatchGlob, FuzzMatchRegex
+- `assert/property_test.go` :  reflexivity, symmetry
 - `assert/example_test.go`
 
 #### Test matrix
 
 | #   | Name | Spec ref | Type | Description | Test helpers used |
 |-----|------|----------|------|-------------|-------------------|
-| **Equal — bootstrap subset (uses bare-`if`)** |||||
+| **Equal :  bootstrap subset (uses bare-`if`)** |||||
 | 1   | TestEqual_Bootstrap_PrimitiveInt | §21.4 F2, F11; §23.5 | unit (bootstrap) | `Equal(t, 5, 5)` returns true; mockTB.errors == 0. Bare-`if` only. | mockTB recording, bare `if` |
 | 2   | TestEqual_Bootstrap_PrimitiveString | §21.4 F2; §23.5 | unit (bootstrap) | `Equal(t, "a", "a") == true`. | mockTB, bare `if` |
 | 3   | TestEqual_Bootstrap_NilNil | §21.4 E1 | unit (bootstrap) | `Equal(t, nil, nil) == true`. | bare `if` |
@@ -884,7 +884,7 @@ Full matrices drawn from `specs/test-matrices/kernel.md` §§ "Package: assert/"
 | 6   | TestEqual_Bootstrap_TypeMismatchAtTop | §21.4 E3 | unit (bootstrap; via `any`) | `Equal[any](t, (*A)(nil), (*B)(nil)) == false`. | bare `if` |
 | 7   | TestPrimitiveFastPathBypass | §23.5, §23.13, §23.17 | bench | `BenchmarkEqualPrimitiveFastPath`: 50 ns/op, 0 allocs/op. Uses `testing.AllocsPerRun` to prove primitives bypass smart-equal. | `testing.AllocsPerRun == 0`, `testing.B.ReportAllocs` |
 | 8   | TestPrimitiveFastPathTypeNotComparable | §23.5 | unit | If T is not comparable (e.g., `[]int`), the fast path is NOT taken; slow path exercised. | mockTB; instrumentation hook (test-only) |
-| **Equal — composition tests (use `assert` itself)** |||||
+| **Equal :  composition tests (use `assert` itself)** |||||
 | 9   | TestEqualPointerDeref | §21.4 F11, E4, E5 | unit | `Equal(t, &T{x:1}, &T{x:1}) == true`; `&T{x:1}, &T{x:2} == false`. | `assert.True`, `assert.False`, mockTB |
 | 10  | TestEqualSliceOrdered | §21.4 E6 | unit | `[]int{1,2,3}` vs `[]int{3,2,1}` → false default. | mockTB |
 | 11  | TestEqualSliceIgnoreOrder | §21.4 F12, E6 | unit | Same with `IgnoreOrder()` → true. | mockTB |
@@ -1040,32 +1040,32 @@ Testing assert with assert is the chicken-and-egg problem. Resolution (per `spec
 
 #### Coverage target
 
-- **Line coverage:** 100% — the package is the test-helper kernel; gaps are unacceptable.
-- **Branch coverage:** ≥98% — some unreachable defensive branches in the smart-equal kind switch are documented and excluded by name.
-- **Public-API coverage:** 100% — verified by the reflection-based surface snapshot test (#118).
+- **Line coverage:** 100% :  the package is the test-helper kernel; gaps are unacceptable.
+- **Branch coverage:** ≥98% :  some unreachable defensive branches in the smart-equal kind switch are documented and excluded by name.
+- **Public-API coverage:** 100% :  verified by the reflection-based surface snapshot test (#118).
 - **Smart-equal kind coverage:** every `reflect.Kind` reachable from a typed value has at least one test: Pointer, Map, Slice, Array, Struct, String, Float32, Float64, Int*, Uint*, Bool, Interface, Chan, Func.
 
 #### Edge cases to test (not in spec requirements, locked by Lynx)
 
-- **L-add-1:** `Equal` on `unsafe.Pointer` — document and test behavior (spec is silent).
-- **L-add-2:** `Equal` on a struct with unexported fields — `reflect.DeepEqual` rules apply; document.
-- **L-add-3:** `Equal` on a map with NaN keys — document panic / no-panic behavior.
-- **L-add-4:** Smart equal on a slice of `*T` where pointers differ but values are equal — dereferences correctly.
-- **L-add-5:** `IgnoreFields` with a field name that does not exist on the struct — spec gap resolved as: silently ignored (no error). Test it.
-- **L-add-6:** `WithDelta(d)` where `d < 0` — reports via t.Errorf and returns false. Test it.
-- **L-add-7:** `Eventually` where `fn` panics — propagated (not treated as condition-false). Test it.
-- **L-add-8:** `Match(t, "", "")` — empty pattern matches empty string in glob mode. Pin and test.
-- **L-add-9:** Concurrent `assert.Equal(t, ...)` from goroutines on the SAME `*testing.T` — t.Errorf is goroutine-safe; verify our wrapper introduces no additional races (#101).
-- **L-add-10:** `Must` with a wrapped error — `errors.Is(recover(), originalErr)` returns true. Test.
-- **L-add-11:** `Must2[int, int]` — same type for A and B compiles and works.
-- **L-add-12:** `assert.Len(t, (chan int)(nil), 0)` — nil channel; len returns 0; no panic.
-- **L-add-13:** `assert.JSONEq` with embedded `null` values vs missing keys — pin the distinction.
+- **L-add-1:** `Equal` on `unsafe.Pointer` :  document and test behavior (spec is silent).
+- **L-add-2:** `Equal` on a struct with unexported fields :  `reflect.DeepEqual` rules apply; document.
+- **L-add-3:** `Equal` on a map with NaN keys :  document panic / no-panic behavior.
+- **L-add-4:** Smart equal on a slice of `*T` where pointers differ but values are equal :  dereferences correctly.
+- **L-add-5:** `IgnoreFields` with a field name that does not exist on the struct :  spec gap resolved as: silently ignored (no error). Test it.
+- **L-add-6:** `WithDelta(d)` where `d < 0` :  reports via t.Errorf and returns false. Test it.
+- **L-add-7:** `Eventually` where `fn` panics :  propagated (not treated as condition-false). Test it.
+- **L-add-8:** `Match(t, "", "")` :  empty pattern matches empty string in glob mode. Pin and test.
+- **L-add-9:** Concurrent `assert.Equal(t, ...)` from goroutines on the SAME `*testing.T` :  t.Errorf is goroutine-safe; verify our wrapper introduces no additional races (#101).
+- **L-add-10:** `Must` with a wrapped error :  `errors.Is(recover(), originalErr)` returns true. Test.
+- **L-add-11:** `Must2[int, int]` :  same type for A and B compiles and works.
+- **L-add-12:** `assert.Len(t, (chan int)(nil), 0)` :  nil channel; len returns 0; no panic.
+- **L-add-13:** `assert.JSONEq` with embedded `null` values vs missing keys :  pin the distinction.
 
 ### Package: `assert/require/`
 
 #### Test files
 
-- `assert/require/require_test.go` — every mirror function halts on failure (generic-for-generic per §23.17)
+- `assert/require/require_test.go` :  every mirror function halts on failure (generic-for-generic per §23.17)
 - `assert/require/example_test.go`
 
 #### Test matrix
@@ -1075,7 +1075,7 @@ Testing assert with assert is the chicken-and-egg problem. Resolution (per `spec
 | R1 | TestRequireEqualHaltsOnFailure | §21.4 F22, E24, T20 | unit | `require.Equal(mockTB, 1, 2)` calls `mockTB.Errorf` then `mockTB.FailNow`. Subsequent code in the test goroutine does not run. | mockTB; spy on FailNow + sub-goroutine to verify halt |
 | R2 | TestRequireEqualPassNoHalt | §21.4 F22 | unit | `require.Equal(t, 1, 1)` returns true; no FailNow called. | mockTB |
 | R3 | TestRequireForEveryAssertMirror | §21.4 F22, §23.17 | unit | Reflection-based table: for each assert.X there is a require.X with identical signature; both behave equivalently on pass; require halts on fail. | reflection over package symbols |
-| R4 | TestRequireEqualGenericMirror | §23.17 | unit | `require.Equal[int]`, `require.Equal[string]` — verify generic-for-generic mirror. | composition |
+| R4 | TestRequireEqualGenericMirror | §23.17 | unit | `require.Equal[int]`, `require.Equal[string]` :  verify generic-for-generic mirror. | composition |
 | R5 | TestRequireGreater | §21.4 F22 | unit | Mirror. | mockTB |
 | R6 | TestRequireMatch | §21.4 F22 | unit | Mirror. | mockTB |
 | R7 | TestRequireJSONEq | §21.4 F22 | unit | Mirror. | mockTB |
@@ -1084,8 +1084,8 @@ Testing assert with assert is the chicken-and-egg problem. Resolution (per `spec
 
 #### Coverage target
 
-- **Line coverage:** 100% — the require package is ~80 LOC; every line is a mirror call.
-- **Public-API coverage:** 100% — enforced by #R3 reflection table.
+- **Line coverage:** 100% :  the require package is ~80 LOC; every line is a mirror call.
+- **Public-API coverage:** 100% :  enforced by #R3 reflection table.
 
 ## Dependency Justification
 
@@ -1102,7 +1102,7 @@ No new direct dependencies. `assert/` imports only stdlib and two in-module pack
 
 ### Failure-message information disclosure
 
-Every assertion failure message may include argument values as formatted strings (e.g., "Equal failed: got=<got> want=<want>"). This is intentional — test output is for developers, not end users — but carries a risk when test code logs or transmits assertion failures to external systems.
+Every assertion failure message may include argument values as formatted strings (e.g., "Equal failed: got=<got> want=<want>"). This is intentional :  test output is for developers, not end users :  but carries a risk when test code logs or transmits assertion failures to external systems.
 
 **Documented guidance (in package doc comment and godoc for `Equal`):** Arguments that may contain secrets (tokens, passwords, private keys) should be wrapped with `log.RedactValue` before passing to assertions, or the assertion should be guarded with a sanitized representation. The `assert` package itself does not scrub values.
 
@@ -1110,7 +1110,7 @@ Every assertion failure message may include argument values as formatted strings
 
 ### Smart-equal and untrusted data
 
-`assert/` is a testing and initialization-time package. It is never called on untrusted input in production code paths. The smart-equal engine uses `reflect` and traverses arbitrary value graphs — if called on data from an untrusted source (which the package prohibits by design), a deeply nested structure could cause long traversal times. The cycle-detection visited-set bounds O(∞) cycles; depth is bounded by the Go stack. No size cap is required because the package is test-only.
+`assert/` is a testing and initialization-time package. It is never called on untrusted input in production code paths. The smart-equal engine uses `reflect` and traverses arbitrary value graphs :  if called on data from an untrusted source (which the package prohibits by design), a deeply nested structure could cause long traversal times. The cycle-detection visited-set bounds O(∞) cycles; depth is bounded by the Go stack. No size cap is required because the package is test-only.
 
 ### No file I/O, no network, no subprocess
 
@@ -1121,22 +1121,22 @@ Every assertion failure message may include argument values as formatted strings
 <!-- **Public.** -->
 
 **Why two faces in one package?**
-Test assertions and runtime `Must` helpers express the same idea — "this invariant must hold" — but with different failure semantics. Keeping them in one package means a developer imports one path (`glacier/assert`) and gets both. Splitting them into `glacier/assert` and `glacier/must` would be over-engineering for what amounts to three small functions. The separation by file (`asserts.go` vs `must.go`) keeps the doc surface clean without requiring a second import.
+Test assertions and runtime `Must` helpers express the same idea :  "this invariant must hold" :  but with different failure semantics. Keeping them in one package means a developer imports one path (`glacier/assert`) and gets both. Splitting them into `glacier/assert` and `glacier/must` would be over-engineering for what amounts to three small functions. The separation by file (`asserts.go` vs `must.go`) keeps the doc surface clean without requiring a second import.
 
 **Why is `Equal` generic but `Len` is not?**
-`Equal[T any]` carries a compile-time type constraint: `Equal(t, 5, "5")` is a compile error, catching a class of test bugs at build time. `Len`, by contrast, must work on slices, maps, strings, and channels — four incompatible type families with no common constraint in the Go type system short of `any`. Making `Len` generic would require the caller to spell a type parameter for every invocation, defeating ergonomics. `Len` uses `reflect` internally and is non-generic; the trade-off is explicit and intentional (§23.17).
+`Equal[T any]` carries a compile-time type constraint: `Equal(t, 5, "5")` is a compile error, catching a class of test bugs at build time. `Len`, by contrast, must work on slices, maps, strings, and channels :  four incompatible type families with no common constraint in the Go type system short of `any`. Making `Len` generic would require the caller to spell a type parameter for every invocation, defeating ergonomics. `Len` uses `reflect` internally and is non-generic; the trade-off is explicit and intentional (§23.17).
 
 **Why both `assert` and `assert/require`?**
-They serve different test-authoring intentions. `assert` is for "report and continue" — the test sees all assertion failures in one run, which is more informative. `require` is for "report and stop" — necessary when a nil or invalid value from a prior assertion would cause a nil-pointer dereference or misleading cascading failures in the next line. The split mirrors the testify convention familiar to most Go contributors, minimizing the learning curve.
+They serve different test-authoring intentions. `assert` is for "report and continue" :  the test sees all assertion failures in one run, which is more informative. `require` is for "report and stop" :  necessary when a nil or invalid value from a prior assertion would cause a nil-pointer dereference or misleading cascading failures in the next line. The split mirrors the testify convention familiar to most Go contributors, minimizing the learning curve.
 
 **How does smart-equal handle cycles?**
-Smart-equal maintains a `map[[2]uintptr]bool` per top-level call, keyed by the ordered pair of pointer addresses. When the engine encounters a pair it has seen before (a back-edge in the value graph), it returns `true` — the cycle has the same structure on both sides. The visited-set is freed when `Equal` returns; there is no global state. A 1000-deep nesting test (`TestEqualLargeRecursive`) verifies there is no stack overflow and no unexpected allocation growth.
+Smart-equal maintains a `map[[2]uintptr]bool` per top-level call, keyed by the ordered pair of pointer addresses. When the engine encounters a pair it has seen before (a back-edge in the value graph), it returns `true` :  the cycle has the same structure on both sides. The visited-set is freed when `Equal` returns; there is no global state. A 1000-deep nesting test (`TestEqualLargeRecursive`) verifies there is no stack overflow and no unexpected allocation growth.
 
 **Why is slice ordering opt-in rather than the default?**
 Unordered equality is a surprising default for sequences. A `[]string{"a", "b"}` and `[]string{"b", "a"}` look like different data to most readers; treating them as equal by default would mask bugs where the callee produces elements in the wrong order. `IgnoreOrder()` is an explicit declaration: "I know the order is non-deterministic and I only care about membership." Making it opt-in keeps `Equal` predictable and avoids silent test passes on order-dependent bugs.
 
 **Why does `Must` panic instead of returning an error?**
-`Must` is for initialization-time invariants in non-test code — `package init`, `main()` setup, global `var` declarations. In those contexts there is no caller to return an error to, and a failed invariant is unrecoverable. A panic is the correct Go idiom for an unrecoverable startup condition. The doc comment and this FAQ both state: "Never use `Must` in library hot paths" — per CLAUDE.md directive 4, library code must not panic.
+`Must` is for initialization-time invariants in non-test code :  `package init`, `main()` setup, global `var` declarations. In those contexts there is no caller to return an error to, and a failed invariant is unrecoverable. A panic is the correct Go idiom for an unrecoverable startup condition. The doc comment and this FAQ both state: "Never use `Must` in library hot paths" :  per CLAUDE.md directive 4, library code must not panic.
 
 **How is the primitive fast path verified?**
 `BenchmarkEqualPrimitiveFastPath` uses `testing.AllocsPerRun` to prove zero allocations. A companion unit test (`TestPrimitiveFastPathBypass`) instruments the slow-path entry point with a counter and verifies it is NOT incremented for comparable types equal by `==`. Both tests are required CI gates per D35.
@@ -1145,9 +1145,9 @@ Unordered equality is a surprising default for sequences. A `[]string{"a", "b"}`
 
 <!-- **Internal.** -->
 
-**Dual-face package (§21.4 charter).** Test assertions and runtime `Must` helpers share an import path. Rationale: the package's mental model is "express invariants" — the two faces are the testing flavour and the runtime flavour of the same idea. The file split (`asserts.go` / `must.go`) keeps godoc clean; the shared import is the ergonomic win.
+**Dual-face package (§21.4 charter).** Test assertions and runtime `Must` helpers share an import path. Rationale: the package's mental model is "express invariants" :  the two faces are the testing flavour and the runtime flavour of the same idea. The file split (`asserts.go` / `must.go`) keeps godoc clean; the shared import is the ergonomic win.
 
-**`Equal[T any]` — generic shell, reflective body (§23.5).** `Equal` is constrained to `any` (not `comparable`) so it accepts slices, maps, and structs without requiring the caller to cast. The generic shell provides compile-time type match; the body uses reflect for the slow path. The primitive fast path short-circuits before reflect when `T` is `comparable` and `got == want`. This design was locked in §23.5 after the alternative (`Equal[T comparable]` with a separate `DeepEqual` variant) was rejected as surface duplication.
+**`Equal[T any]` :  generic shell, reflective body (§23.5).** `Equal` is constrained to `any` (not `comparable`) so it accepts slices, maps, and structs without requiring the caller to cast. The generic shell provides compile-time type match; the body uses reflect for the slow path. The primitive fast path short-circuits before reflect when `T` is `comparable` and `got == want`. This design was locked in §23.5 after the alternative (`Equal[T comparable]` with a separate `DeepEqual` variant) was rejected as surface duplication.
 
 **Primitive fast path ≤ 50 ns/op zero allocs (§23.13).** The performance target was recalibrated to 50 ns/op (up from an earlier 30 ns/op) to account for the overhead of the generics wrapper and the nil guard. The slow path target of ≤ 200 ns/op for a simple struct is achievable without a caching layer. Benchmarks are CI-gated.
 

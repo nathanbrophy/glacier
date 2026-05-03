@@ -39,31 +39,31 @@ docs-extract:
 
 <!-- **Public.** One paragraph in end-user voice. The canonical description for the site and README. -->
 
-Glacier is a Go framework — a curated suite of consumable packages that make Go development easy and just work. A developer pulls in Glacier, writes idiomatic handler code, and gets the messy generic problems handled for them: argument parsing, configuration layering, lifecycle and signal handling, mock-driven testing, HTTP transport faking, typed HTTP client with retries, terminal-as-first-class-output, observability, structured logging, error wrapping, options propagation, concurrency primitives, sequence operators, assertions, and test fixtures. Each package stands alone. Together they are Glacier. The framework's primary artifact is the packages; the dogfooded Glacier SDK CLI binary is a demonstration shipped separately.
+Glacier is a Go framework :  a curated suite of consumable packages that make Go development easy and just work. A developer pulls in Glacier, writes idiomatic handler code, and gets the messy generic problems handled for them: argument parsing, configuration layering, lifecycle and signal handling, mock-driven testing, HTTP transport faking, typed HTTP client with retries, terminal-as-first-class-output, observability, structured logging, error wrapping, options propagation, concurrency primitives, sequence operators, assertions, and test fixtures. Each package stands alone. Together they are Glacier. The framework's primary artifact is the packages; the dogfooded Glacier SDK CLI binary is a demonstration shipped separately.
 
 ## Mental Model
 
 <!-- **Public.** The conceptual frame a developer should hold while using this. Mermaid diagrams welcome. Source for the "Concepts" page on the site. -->
 
-Glacier's coherence comes from its layering. Kernel packages are universal: every consumer of any Glacier package transitively depends on `option`, `errs`, `log`, `assert`, and `term`. Mid-tier packages are independent of each other. Leaf packages are large enough to deserve isolation: `cli`, `mock`, `httpmock`, and `httpc` may not import each other, only kernel and mid-tier. The result: any consumer can pick exactly the packages they need without dragging in unrelated leaves. The dogfooded Glacier SDK, when it ships, composes leaves at the binary level — never inside a package.
+Glacier's coherence comes from its layering. Kernel packages are universal: every consumer of any Glacier package transitively depends on `option`, `errs`, `log`, `assert`, and `term`. Mid-tier packages are independent of each other. Leaf packages are large enough to deserve isolation: `cli`, `mock`, `httpmock`, and `httpc` may not import each other, only kernel and mid-tier. The result: any consumer can pick exactly the packages they need without dragging in unrelated leaves. The dogfooded Glacier SDK, when it ships, composes leaves at the binary level :  never inside a package.
 
 ```mermaid
 flowchart TB
-    subgraph T0[Tier 0 — kernel]
+    subgraph T0[Tier 0 :  kernel]
         option
         errs
         log
         assert
         term
     end
-    subgraph T1[Tier 1 — mid]
+    subgraph T1[Tier 1 :  mid]
         concur
         fluent
         conf
         fixture
         obs
     end
-    subgraph T2[Tier 2 — leaves]
+    subgraph T2[Tier 2 :  leaves]
         cli
         mock
         httpmock
@@ -251,7 +251,7 @@ The full DAG diagram appears in the Mental Model section. The forbidden edges be
 | --- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | F1  | `option/` imports nothing from `github.com/nathanbrophy/glacier/...`.                               | Universal kernel becomes coupled; consumers cannot depend on `option` without dragging in unrelated packages.                                 |
 | F2  | `errs/` does not import `log/`.                                                                     | Cycle.                                                                                                                                        |
-| F3  | `log/` may import `errs/`. (One-way edge, an allowance.)                                            | (No failure mode — it is an allowance, not a prohibition.)                                                                                    |
+| F3  | `log/` may import `errs/`. (One-way edge, an allowance.)                                            | (No failure mode :  it is an allowance, not a prohibition.)                                                                                    |
 | F3a | `log/` may import `term/` for color and TTY detection. `term/` does NOT import `log/`.              | `term/` importing `log/` creates a cycle.                                                                                                     |
 | F3b | `assert/` may import `term/` for failure-message color in structured diffs.                         | `term/` importing `assert/` creates a cycle.                                                                                                  |
 | F3c | `term/` imports only `option` and `errs` from the kernel.                                           | Any other kernel import would create a cycle.                                                                                                 |
@@ -521,7 +521,7 @@ func BytesEq(t TB, got, want []byte, msg ...any) bool
 func Subset[T any](t TB, got, want []T, opts ...EqualOption) bool
 func Halt(t TB)
 
-// Runtime Must helpers (must.go) — init-time invariants only; never library hot paths
+// Runtime Must helpers (must.go) :  init-time invariants only; never library hot paths
 func Must[T any](v T, err error) T
 func Must2[A, B any](a A, b B, err error) (A, B)
 func Mustf(cond bool, format string, args ...any)
@@ -611,7 +611,7 @@ var ErrNotInteractive = errs.Sentinel("term: not interactive")
 var ErrTimeout      = errs.Sentinel("term: timeout")
 ```
 
-### `concur/` (Tier 1 mid) — shape summary
+### `concur/` (Tier 1 mid) :  shape summary
 
 Full surface in component spec 0007.
 
@@ -650,7 +650,7 @@ type WaitGroup struct{ sync.WaitGroup }
 func (*WaitGroup) WaitCtx(ctx context.Context) error
 ```
 
-### `fluent/` (Tier 1 mid) — shape summary
+### `fluent/` (Tier 1 mid) :  shape summary
 
 Full surface in component spec 0008. Top-level functions over `iter.Seq[T]` and `iter.Seq2[K, V]`. Lazy by default; sinks terminate.
 
@@ -662,7 +662,7 @@ Fallible: `MapErr`, `FilterErr` (yield `iter.Seq2[U, error]`).
 Sinks: `Reduce`, `ToSlice`, `ToMap`, `Count`, `First`, `Last`, `Any`, `All`, `Sum`, `Avg`, `Min`, `Max`, `MinBy`, `MaxBy`.
 Helper types: `KV[K, V any]`, `Number` constraint.
 
-### `conf/` (Tier 1 mid) — shape summary
+### `conf/` (Tier 1 mid) :  shape summary
 
 Full surface in component spec 0009.
 
@@ -690,7 +690,7 @@ type DecodeError struct { Key string; Cause error }
 
 Precedence (highest wins): `WithSet` > flag source > env > file > defaults. Internal config storage uses `atomic.Pointer[T]` indirection; `Register[T]` returns a snapshot accessor (`func() *T`) rather than a stable pointer.
 
-### `fixture/` (Tier 1 mid) — shape summary
+### `fixture/` (Tier 1 mid) :  shape summary
 
 Full surface in component spec 0010.
 
@@ -715,7 +715,7 @@ func WatchEnv() LeakOption; func WatchFDs() LeakOption; func WatchAll() LeakOpti
 func StrictLeaks() LeakOption; func WithDrainTimeout(d time.Duration) LeakOption
 ```
 
-### `obs/` (Tier 1 mid) — shape summary
+### `obs/` (Tier 1 mid) :  shape summary
 
 Full surface in component spec 0017.
 
@@ -741,7 +741,7 @@ func SpanIDFromContext(ctx context.Context) (SpanID, bool)
 
 The `log/` package automatically appends `trace_id` and `span_id` slog attrs when an active span exists in ctx (F3a allowance: `log` may import `obs`).
 
-### Leaf packages — shape and dependency posture
+### Leaf packages :  shape and dependency posture
 
 | Package     | Tier | Imports allowed (Glacier-internal)                       | One-paragraph charter                                                                                                                                                                                                                                                                             |
 | ----------- | ---- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -933,7 +933,7 @@ type User struct{ ID, Name string }
 func TestHandler(t *testing.T) {
     fixture.GuardLeaks(t, fixture.WatchAll())
 
-    // Mock the database layer (no cross-leaf import — composition in test, not in package).
+    // Mock the database layer (no cross-leaf import :  composition in test, not in package).
     repo := mock.Of[Repo](t)
     repo.OnCall("GetUser").
         With(mock.Any[context.Context](), mock.Eq[string]("u-42")).
@@ -1018,7 +1018,7 @@ func main() {
 Spec 0002's test matrix consists of three layers:
 
 1. **Per-package matrices**: Exhaustive matrices for all 14 v0 packages are maintained by Lynx in `specs/test-matrices/`. See the README there for scope, file layout, and mutability rules.
-2. **Cross-cutting framework-level tests**: The rows in the table below are framework-shape-specific — they verify invariants that no single package can verify alone.
+2. **Cross-cutting framework-level tests**: The rows in the table below are framework-shape-specific :  they verify invariants that no single package can verify alone.
 3. **Cross-package integration tests**: See §25.9 of the plan; 8 scenarios exercising the full composition story.
 
 ### Per-package test count summary
@@ -1083,7 +1083,7 @@ Three direct dependencies are pre-approved by Falcon. All others are forbidden.
 | Module                                                                                | Version                 | License      | Last release          | Maintainers         | Alternatives considered      | Why we can't roll our own                                                                                                                                                                                                                                                                             |
 | ------------------------------------------------------------------------------------- | ----------------------- | ------------ | --------------------- | ------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `golang.org/x/tools` (specifically `go/packages`)                                     | pinned (latest at impl) | BSD-3-Clause | Active (Go team)      | Go team (Google)    | None viable                  | Replicating `go/packages` is ~3,000 lines of stdlib-quality type-checked source-file loading. Go-team-maintained; pinned to a named version. Used only by `cli/gen` at build time.                                                                                                                    |
-| `golang.org/x/sys`                                                                    | pinned (latest at impl) | BSD-3-Clause | Active (Go team)      | Go team (Google)    | syscall package (incomplete) | Platform-specific syscall constants for terminal raw-mode and Windows console capability probing required by `term/`. Replicating this would mean maintaining per-OS syscall tables — Go team already does it.                                                                                        |
+| `golang.org/x/sys`                                                                    | pinned (latest at impl) | BSD-3-Clause | Active (Go team)      | Go team (Google)    | syscall package (incomplete) | Platform-specific syscall constants for terminal raw-mode and Windows console capability probing required by `term/`. Replicating this would mean maintaining per-OS syscall tables :  Go team already does it.                                                                                        |
 | `go.opentelemetry.io/otel` (+ `sdk`, `sdk/metric`, `sdk/trace`, `exporters/otlp/...`) | pinned (1.x at impl)    | Apache-2.0   | Active (CNCF project) | CNCF multi-org pool | None (OTEL is the standard)  | Implementing the OpenTelemetry data model and SDK (metric pipelines, trace context propagation, OTLP export) is a substantial multi-thousand-line undertaking defining a CNCF standard. The transitive close (`google.golang.org/grpc`, `google.golang.org/protobuf`) is user-approved at this scope. |
 
 All direct deps: license compatible (BSD-3-Clause, Apache-2.0), active (released within 18 months), multi-maintainer, vulnerability-scan clean, version-pinned. No `replace` directives. No pseudo-versions.
@@ -1094,7 +1094,7 @@ All direct deps: license compatible (BSD-3-Clause, Apache-2.0), active (released
 
 ### Untrusted-input register
 
-Every input that flows across a trust boundary is listed below. Future specs amend the register by adding rows. Entries are never removed — only superseded by a spec amendment with rationale.
+Every input that flows across a trust boundary is listed below. Future specs amend the register by adding rows. Entries are never removed :  only superseded by a spec amendment with rationale.
 
 | #   | Input source                               | Component | Parser / decoder                                                     | Size cap                                                | Validation rule                                                                                                                                                                                             |
 | --- | ------------------------------------------ | --------- | -------------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1156,7 +1156,7 @@ Glacier commits to byte-for-byte reproducibility for tagged releases under: `CGO
 
 ## Migration & Compatibility
 
-<!-- N/A — no prior accepted spec is being changed by this spec's implementation commit. -->
+<!-- N/A :  no prior accepted spec is being changed by this spec's implementation commit. -->
 
 The repo-wide "SDK → framework" prose sweep (§10 of the plan) that touches `CLAUDE.md`, `README.md`, `specs/0001-brand-identity.md`, `specs/0000-spec-process.md`, `specs/README.md`, and `.claude/agents/otter.md` is a casual prose edit riding in the same implementation commit as this spec. It is not a tracked migration because the "SDK" phrasing was informal; the packages-first reframe is the *new* contract, not a change to an old one.
 
@@ -1177,28 +1177,28 @@ Both anchors are optional, not required. Existing accepted specs are not require
 Supply-chain minimalism is a posture, not a cost-cutting exercise. Every dependency we don't have is a CVE we don't own, a license we don't track, and a transitive closure we don't audit. When the Falcon six-question checklist (100-lines-ourselves? license? age? maintainer count? vuln-scan? pinned?) is applied honestly, the candidates for v0 fail: testify (we built a better assert), cobra (we built a better cli), viper/koanf (we built a better conf), linq libs (we built fluent on iter.Seq). The three approved deps (golang.org/x/tools for codegen, golang.org/x/sys for terminal raw-mode, go.opentelemetry.io/otel for observability standards) each clear all six questions and cannot be replicated at the quality level required.
 
 **Why three tiers?**
-Kernel/mid/leaf is the smallest layering that captures the natural dependency structure without becoming arbitrary. The alternative — a flat package graph — makes it impossible to depend on `option` without reasoning about whether `mock` somehow imports it; it does, but cleanly (option → mock is allowed; mock → option is what happens). The two-tier alternative (kernel vs. everything else) gives no isolation between the mid packages that have no legitimate reason to import each other (`conf` and `fluent` have nothing to say to each other) and the leaf packages that absolutely must not import each other (`cli` and `mock` would create a combinatorial nightmare for consumers who want one but not the other).
+Kernel/mid/leaf is the smallest layering that captures the natural dependency structure without becoming arbitrary. The alternative :  a flat package graph :  makes it impossible to depend on `option` without reasoning about whether `mock` somehow imports it; it does, but cleanly (option → mock is allowed; mock → option is what happens). The two-tier alternative (kernel vs. everything else) gives no isolation between the mid packages that have no legitimate reason to import each other (`conf` and `fluent` have nothing to say to each other) and the leaf packages that absolutely must not import each other (`cli` and `mock` would create a combinatorial nightmare for consumers who want one but not the other).
 
 **Why is `cli` a leaf, not the headline?**
 The packages-first reframe (D1). Glacier is libraries. The `cli` package is one leaf alongside `mock`, `httpmock`, and `httpc`. Consumers who want `conf` + `log` + `fluent` + `assert` for a pure library project should never have to think about `cli`. The Glacier SDK binary (which happens to use `cli`) is a separate artifact deferred to spec 0032.
 
 **Why is `term` a kernel package and not a leaf?**
-`log` needs TTY detection and color for its text handler. `assert` needs color for structured failure diffs. Both are kernel packages. Putting TTY detection and color in a leaf would force `log` to import a leaf — a DAG cycle. Promoting `term` to kernel is the clean resolution: `term` depends only on `option` and `errs` (already kernel), `log` may import `term`, `assert` may import `term`.
+`log` needs TTY detection and color for its text handler. `assert` needs color for structured failure diffs. Both are kernel packages. Putting TTY detection and color in a leaf would force `log` to import a leaf :  a DAG cycle. Promoting `term` to kernel is the clean resolution: `term` depends only on `option` and `errs` (already kernel), `log` may import `term`, `assert` may import `term`.
 
 **When does the Glacier SDK binary ship?**
 A follow-up spec (0032), after the `cli` package matures in component spec 0011. v0 is libraries. The SDK binary is icing on the cake.
 
 **Why is sandboxing not in v0?**
-Two reasons. First, consumers using `mock` + `fixture.NewClock` + `fixture.NewFS` achieve the same semantic isolation goals for tests — the primary use case for sandboxing at v0. Second, the sandbox design (a `cli`↔`sandbox` dispatcher coupling) violated the DAG's F5 invariant (leaves may not import leaves), and platform fragility (`sandbox-exec` deprecation on macOS) made the v0 threat model misleading. The design space needs more maturity. See deferred spec 0018.
+Two reasons. First, consumers using `mock` + `fixture.NewClock` + `fixture.NewFS` achieve the same semantic isolation goals for tests :  the primary use case for sandboxing at v0. Second, the sandbox design (a `cli`↔`sandbox` dispatcher coupling) violated the DAG's F5 invariant (leaves may not import leaves), and platform fragility (`sandbox-exec` deprecation on macOS) made the v0 threat model misleading. The design space needs more maturity. See deferred spec 0018.
 
 **Why JSON-only config in v0?**
-Falcon's ruling: every YAML and TOML parser in the Go ecosystem has had CVEs. Glacier ships JSON via `encoding/json` at v0 — stdlib, no dep, no CVE surface. Additional formats land in spec 0023 where each dep gets fully justified. JSON is also the strictest parser to get right (no ambiguous multi-document, no merge keys, no executable values) and the most widely understood for configuration.
+Falcon's ruling: every YAML and TOML parser in the Go ecosystem has had CVEs. Glacier ships JSON via `encoding/json` at v0 :  stdlib, no dep, no CVE surface. Additional formats land in spec 0023 where each dep gets fully justified. JSON is also the strictest parser to get right (no ambiguous multi-document, no merge keys, no executable values) and the most widely understood for configuration.
 
 **Why no method-chaining DSL in fluent?**
 Go generics do not compose method-chained pipelines across `T → U` type transitions cleanly without forced wrapper types. `fluent.Map(fluent.Filter(seq, pred), f)` is honest Go that survives `go doc`, composes with range-for, and is refactorable. The chaining aesthetic from LINQ loses out to the honesty requirement. If generics evolve to support clean chaining, the design can be revisited in a v0.x spec.
 
 **Why is the assert package "dual-face"?**
-Test assertions (`t.Errorf`, return bool) and runtime Must helpers (`panic` on failure) are semantically distinct — one fails a test, one crashes the program — but conceptually both express invariants. The same package, separated by file (`asserts.go` vs. `must.go`), keeps the concept together without coupling the two uses. The `assert/require/` sub-package mirrors the test assertions with `t.FailNow` semantics, giving consumers the testify-familiar assert/require split.
+Test assertions (`t.Errorf`, return bool) and runtime Must helpers (`panic` on failure) are semantically distinct :  one fails a test, one crashes the program :  but conceptually both express invariants. The same package, separated by file (`asserts.go` vs. `must.go`), keeps the concept together without coupling the two uses. The `assert/require/` sub-package mirrors the test assertions with `t.FailNow` semantics, giving consumers the testify-familiar assert/require split.
 
 **How does the cli/conf split work?**
 `conf` declares a `FlagSource` interface (`Lookup(name string) (string, bool)`). `cli` implements it. This means `conf` can read flag values without importing `cli`. The dependency runs one way: `cli` may import `conf` (to wire flag parsing into the config loader); `conf` never imports `cli`. Consumers who use only `conf` without `cli` get full configuration layering without any CLI overhead.
@@ -1225,14 +1225,14 @@ The decisions below are ordered by their plan reference. D1–D36 are locked fro
 | D9  | Repo-wide "SDK → framework" sweep: `CLAUDE.md`, `README.md`, `specs/0001-brand-identity.md`, `specs/README.md`, `specs/0000-spec-process.md`, `.claude/agents/otter.md`. The "SDK frameworks" phrase in `octopus.md` (referring to *external* SDK frameworks across languages) is unchanged. | Per D8 + packages-first reframe.                                                                                                                                                                                                                            |
 | D10 | Thirteen user-stated components map to 11 packages (plus `httpc` = 12 initially, then `term` and `obs` added = 14) plus 2 internal helpers. "Shared primitives" dissolves into `errs` + `concur` + `internal/sigh`.                                                                          | A grab-bag package is an anti-pattern. Signals belong inside `internal/sigh`. Errors deserve a kernel package. Sync deserves a mid-tier package.                                                                                                            |
 | D11 | 14 v0 packages: `option`, `errs`, `log`, `assert`, `term`, `concur`, `fluent`, `conf`, `fixture`, `obs`, `cli`, `mock`, `httpmock`, `httpc`. 2 internal helpers: `internal/sigh`, `internal/reflectx`. `internal/ttyx` subsumed into `term/`.                                                | `term` kernel-promotion (§23.2) absorbed `ttyx`. `obs` (§23.2) and `sandbox` drop (§23.1) complete the count.                                                                                                                                               |
-| D12 | Three-tier DAG with explicit forbidden edges. Tier 0 (kernel): option, errs, log, assert, term. Tier 1 (mid): concur, fluent, conf, fixture, obs. Tier 2 (leaves): cli, mock, httpmock, httpc.                                                                                               | "Leaves never import leaves" is the most important rule and the most inconvenient to hold — it keeps every leaf independently usable.                                                                                                                       |
+| D12 | Three-tier DAG with explicit forbidden edges. Tier 0 (kernel): option, errs, log, assert, term. Tier 1 (mid): concur, fluent, conf, fixture, obs. Tier 2 (leaves): cli, mock, httpmock, httpc.                                                                                               | "Leaves never import leaves" is the most important rule and the most inconvenient to hold :  it keeps every leaf independently usable.                                                                                                                       |
 | D13 | Forbidden edges F1–F7 plus F3a/F3b/F3c. See §Architecture.                                                                                                                                                                                                                                   | See tabular rationale in the Architecture section.                                                                                                                                                                                                          |
 | D14 | Functional options pattern: `option.Apply[T](opts []Option[T], mode ...Mode) (T, error)`. Boolean knobs as no-arg constructors.                                                                                                                                                              | One pattern across the framework so consumers learn it once.                                                                                                                                                                                                |
 | D15 | Error contract: `errs` is helpers only; per-package sentinels via `errs.Sentinel`; typed errors with `Unwrap`; `errors.Is`/`errors.As` composition only.                                                                                                                                     | Stable API; no string matching; cross-package errors compose safely.                                                                                                                                                                                        |
 | D16 | Context rule: `ctx` first parameter for I/O / time / goroutine-observable functions; constructors do not take ctx.                                                                                                                                                                           | Prevents the Java-style anti-pattern of threading ctx through every call.                                                                                                                                                                                   |
 | D17 | Lifecycle rule: `New → (Start?) → Use → Close`. `Close` is idempotent; multi-resource `Close` uses `errs.Join`.                                                                                                                                                                              | Consistent, testable lifecycle across all stateful types.                                                                                                                                                                                                   |
 | D18 | Logging rule: inject via `WithLogger(*slog.Logger)`; ctx carries attributes, never handlers; `log.With` accumulates.                                                                                                                                                                         | Aligns with `log/slog`'s own design; ctx-based handler fetching defeats testing.                                                                                                                                                                            |
-| D19 | `option/` exact surface: 8 symbols — `Option[T]`, `OptionFunc[T]`, `Mode`, `Strict`, `Apply`, `Validator[T]`, `Validate`, `Required`.                                                                                                                                                        | Tiny, generic, universal. `apply` method unexported to forbid out-of-module implementations.                                                                                                                                                                |
+| D19 | `option/` exact surface: 8 symbols :  `Option[T]`, `OptionFunc[T]`, `Mode`, `Strict`, `Apply`, `Validator[T]`, `Validate`, `Required`.                                                                                                                                                        | Tiny, generic, universal. `apply` method unexported to forbid out-of-module implementations.                                                                                                                                                                |
 | D20 | `errs/` exact surface: `Wrapper`, `Wrap`, `StackOf`, `Join`, `Chain`, `Sentinel`, `IsAny`, `MarkRetryable`, `Retryable`, `Coded`, `Code`.                                                                                                                                                    | More than the original sketch (D20 in the plan) because the per-package interviews revealed the need for `IsAny`, retryable markers, and coded errors.                                                                                                      |
 | D21 | `log/` exact surface: 6 levels, `Default`/`SetDefault`/`From`/`Inject`/`With`, `ColorMode`, `NewHandler`/`NewJSONHandler`, `WithLevel`/`WithSource`/`WithColor`, `Redact`.                                                                                                                   | Thin slog wrapper. `Redact` is Falcon's addition for explicit secret marking.                                                                                                                                                                               |
 | D22 | `assert/` dual-face: test assertions (`asserts.go`) + runtime Must helpers (`must.go`) + `assert/require/` sub-package. Smart-equal with 5 options.                                                                                                                                          | Testify-familiar split. Smart-equal avoids requiring a third-party dep.                                                                                                                                                                                     |

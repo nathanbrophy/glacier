@@ -11,7 +11,7 @@ import (
 )
 
 func TestPropertySequenceCycleAlgebraic(t *testing.T) {
-	// Property: Sequence(a, b, c).Cycle — first 6 calls = [a,b,c,a,b,c].
+	// Property: Sequence(a, b, c).Cycle :  first 6 calls = [a,b,c,a,b,c].
 	statuses := []int{200, 201, 202}
 	responders := make([]httpmock.Responder, len(statuses))
 	for i, s := range statuses {

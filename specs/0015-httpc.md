@@ -38,7 +38,7 @@ docs-extract:
 
 <!-- **Public.** One paragraph in end-user voice. The canonical description for the site and README. -->
 
-`httpc` is Glacier's typed, retry-aware, dry-run-capable HTTP client. Write `user, resp, err := httpc.Get[User](ctx, url)` and the framework reads the response body, JSON-unmarshals it into your type, and hands it back — no boilerplate read-all-unmarshal loop. Mutating methods take closure-generated bodies so retry is safe even for large or streamed payloads: each attempt gets a fresh body from your closure, no seeking required. Retry policies compose declaratively — `MaxAttempts`, `ExponentialBackoff`, `Jittered`, `RetryOn`, `RetryIf` — and a CLI's `--dry-run` flag propagates through `context.Context` so every `httpc` call inside becomes plan-only without a single conditional at the call site. The package wraps stdlib `net/http`, carries no third-party dependencies, and composes directly with `httpmock` for hermetic, network-free tests.
+`httpc` is Glacier's typed, retry-aware, dry-run-capable HTTP client. Write `user, resp, err := httpc.Get[User](ctx, url)` and the framework reads the response body, JSON-unmarshals it into your type, and hands it back :  no boilerplate read-all-unmarshal loop. Mutating methods take closure-generated bodies so retry is safe even for large or streamed payloads: each attempt gets a fresh body from your closure, no seeking required. Retry policies compose declaratively :  `MaxAttempts`, `ExponentialBackoff`, `Jittered`, `RetryOn`, `RetryIf` :  and a CLI's `--dry-run` flag propagates through `context.Context` so every `httpc` call inside becomes plan-only without a single conditional at the call site. The package wraps stdlib `net/http`, carries no third-party dependencies, and composes directly with `httpmock` for hermetic, network-free tests.
 
 ## Mental Model
 
@@ -46,11 +46,11 @@ docs-extract:
 
 Three ideas hold `httpc` together.
 
-**Typed methods auto-unmarshal.** `Get[T]`, `Post[T]`, `Put[T]`, `Patch[T]`, and `Delete[T]` are generic functions. The type parameter `T` names the Go type you want back. The framework reads and decodes the response body for you. When `T` is `[]byte`, the raw body is returned unchanged. When `T` is anything else, the body is decoded via `internal/safejson` — a depth-capped, size-limited, UTF-8-validating wrapper around `encoding/json`. You get back the decoded value alongside a `*Response` wrapper that exposes the original `*http.Response`, the body bytes, and the elapsed duration.
+**Typed methods auto-unmarshal.** `Get[T]`, `Post[T]`, `Put[T]`, `Patch[T]`, and `Delete[T]` are generic functions. The type parameter `T` names the Go type you want back. The framework reads and decodes the response body for you. When `T` is `[]byte`, the raw body is returned unchanged. When `T` is anything else, the body is decoded via `internal/safejson` :  a depth-capped, size-limited, UTF-8-validating wrapper around `encoding/json`. You get back the decoded value alongside a `*Response` wrapper that exposes the original `*http.Response`, the body bytes, and the elapsed duration.
 
-**Closure-generated bodies make retry correct.** Retry requires re-sending the same body on every attempt. HTTP bodies are `io.Reader` — one-shot, not rewindable. `httpc` solves this by requiring callers to provide a _closure_ that produces the body, not the body itself. `JSONBody[T](func() T)` is called once per attempt. `MultipartBody(func(*multipart.Writer) error)` gets a fresh `multipart.Writer` per attempt. The previous attempt's `StreamBody` `ReadCloser` is closed before the closure is invoked again. Your closure is called serially — never concurrently for the same request.
+**Closure-generated bodies make retry correct.** Retry requires re-sending the same body on every attempt. HTTP bodies are `io.Reader` :  one-shot, not rewindable. `httpc` solves this by requiring callers to provide a _closure_ that produces the body, not the body itself. `JSONBody[T](func() T)` is called once per attempt. `MultipartBody(func(*multipart.Writer) error)` gets a fresh `multipart.Writer` per attempt. The previous attempt's `StreamBody` `ReadCloser` is closed before the closure is invoked again. Your closure is called serially :  never concurrently for the same request.
 
-**Dry-run propagates through `context.Context`.** Attaching dry-run to a context with `httpc.WithDryRun(ctx, httpc.WithPlanSink(fn))` makes every `httpc` call inside that context skip the network and emit a structured `*RequestPlan` to your sink function instead. There is no conditional code at call sites — the caller's code is unchanged. A CLI command's `--dry-run` flag sets the context attribute once; every downstream `httpc` call is automatically audit-only. The plan's rendered headers are scrubbed of sensitive values by default; opt into raw header values with `httpc.WithPlanIncludeSecrets()`.
+**Dry-run propagates through `context.Context`.** Attaching dry-run to a context with `httpc.WithDryRun(ctx, httpc.WithPlanSink(fn))` makes every `httpc` call inside that context skip the network and emit a structured `*RequestPlan` to your sink function instead. There is no conditional code at call sites :  the caller's code is unchanged. A CLI command's `--dry-run` flag sets the context attribute once; every downstream `httpc` call is automatically audit-only. The plan's rendered headers are scrubbed of sensitive values by default; opt into raw header values with `httpc.WithPlanIncludeSecrets()`.
 
 ```
 Client.Get[T](ctx, url, opts...)
@@ -626,7 +626,7 @@ func IsDryRun(ctx context.Context) bool
 // Scrubbing replaces the header value slice with []string{"[REDACTED]"}.
 type RequestPlan struct {
     // Request is the fully-prepared *http.Request (URL joined, headers applied,
-    // body not attached — body bytes are in the Body field below).
+    // body not attached :  body bytes are in the Body field below).
     // Header values are scrubbed unless WithPlanIncludeSecrets is set.
     Request *http.Request
     // Body holds the bytes the body closure would have produced. Nil for HEAD/GET.
@@ -837,22 +837,22 @@ func ExampleNew_withHttpmock() {
 
 ### Test files
 
-- `httpc/client_test.go` — New, Default, Client options
-- `httpc/methods_test.go` — Get/Post/Put/Patch/Delete/Head/Do (all generic)
-- `httpc/body_test.go` — JSONBody[T] / MultipartBody / RawBody / StreamBody / FormBody / WithRequestHeaders
-- `httpc/retry_test.go` — every retry option, MaxAttempts, MaxElapsed, RetryOn, RetryIf
-- `httpc/dryrun_test.go` — WithDryRun, WithPlanSink, WithDryRunErrors, IsDryRun
-- `httpc/response_test.go` — Response wrapper, Body, Elapsed, Drain
-- `httpc/errors_test.go` — StatusError, BodyParseError (§23.15 rename), ErrDryRun, ErrMaxAttempts, ErrMaxElapsed
-- `httpc/limits_test.go` — WithMaxResponseBytes / WithUnboundedResponse (§23.7)
-- `httpc/redaction_test.go` — header redaction in plan, body omission in errors (§23.11)
-- `httpc/concurrency_test.go` — concurrent Get/Post (-race)
-- `httpc/lifecycle_test.go` — Client.Close (§23.16)
-- `httpc/property_test.go` — property tests
-- `httpc/fuzz_test.go` — FuzzResponseBody
-- `httpc/bench_test.go` — benchmarks
-- `httpc/example_test.go` — godoc examples
-- `httpc/testdata/` — golden plans, attacker-shaped JSON, oversized bodies
+- `httpc/client_test.go` :  New, Default, Client options
+- `httpc/methods_test.go` :  Get/Post/Put/Patch/Delete/Head/Do (all generic)
+- `httpc/body_test.go` :  JSONBody[T] / MultipartBody / RawBody / StreamBody / FormBody / WithRequestHeaders
+- `httpc/retry_test.go` :  every retry option, MaxAttempts, MaxElapsed, RetryOn, RetryIf
+- `httpc/dryrun_test.go` :  WithDryRun, WithPlanSink, WithDryRunErrors, IsDryRun
+- `httpc/response_test.go` :  Response wrapper, Body, Elapsed, Drain
+- `httpc/errors_test.go` :  StatusError, BodyParseError (§23.15 rename), ErrDryRun, ErrMaxAttempts, ErrMaxElapsed
+- `httpc/limits_test.go` :  WithMaxResponseBytes / WithUnboundedResponse (§23.7)
+- `httpc/redaction_test.go` :  header redaction in plan, body omission in errors (§23.11)
+- `httpc/concurrency_test.go` :  concurrent Get/Post (-race)
+- `httpc/lifecycle_test.go` :  Client.Close (§23.16)
+- `httpc/property_test.go` :  property tests
+- `httpc/fuzz_test.go` :  FuzzResponseBody
+- `httpc/bench_test.go` :  benchmarks
+- `httpc/example_test.go` :  godoc examples
+- `httpc/testdata/` :  golden plans, attacker-shaped JSON, oversized bodies
 
 ### Matrix
 
@@ -962,7 +962,7 @@ func ExampleNew_withHttpmock() {
 
 | Name | Description |
 |---|---|
-| TestGetPointerT | `Get[*User]` — pointer type T works |
+| TestGetPointerT | `Get[*User]` :  pointer type T works |
 | TestGetAnyT | `Get[any]` unmarshal as map[string]any |
 | TestRetryOnTransportError | RetryIf can detect transport-level errors; RetryOn is status-only |
 | TestMaxAttemptsZero | `MaxAttempts(0)` treated as `MaxAttempts(1)` (no retry) |
@@ -976,14 +976,14 @@ func ExampleNew_withHttpmock() {
 ### Coverage targets
 
 - **Line coverage:** 92% minimum.
-- **Public API coverage:** 100% — every Get/Head/Post/Put/Patch/Delete/Do, every body builder, every retry option, every dry-run helper, every error type, every Client option.
+- **Public API coverage:** 100% :  every Get/Head/Post/Put/Patch/Delete/Do, every body builder, every retry option, every dry-run helper, every error type, every Client option.
 - **Fuzz gate:** `FuzzResponseBody` accumulates ≥ 1 hour CI fuzz time without crash before tag.
 
 ### Test-helper dogfooding requirements
 
 Every `httpc` test file must:
 
-- Import `assert` and/or `assert/require` — never raw `t.Errorf` / `t.Fatal`.
+- Import `assert` and/or `assert/require` :  never raw `t.Errorf` / `t.Fatal`.
 - Use `httpmock` as the transport for every non-trivial method test (never real `http.DefaultTransport`).
 - Use `fixture.NewClock` for every retry-timing test (never real `time.Sleep`).
 - Use `mock` for plan sinks, slog handlers, and `io.Closer` dependencies.
@@ -1022,7 +1022,7 @@ The default body cap is 32 MiB (`WithMaxResponseBytes(32 * 1024 * 1024)`). This 
 1. **Pre-decompression:** the compressed byte stream is limited to `maxBytes`.
 2. **Post-decompression:** the decompressed output is limited to `maxBytes`.
 
-This closes the zip-bomb attack surface: a 32 MiB compressed response that expands to several GiB is rejected at the pre-decompression stage. Callers who need to handle large responses opt out with `WithUnboundedResponse()` — this option requires Falcon sign-off at framework call sites. Consumer code may use it freely.
+This closes the zip-bomb attack surface: a 32 MiB compressed response that expands to several GiB is rejected at the pre-decompression stage. Callers who need to handle large responses opt out with `WithUnboundedResponse()` :  this option requires Falcon sign-off at framework call sites. Consumer code may use it freely.
 
 ### JSON safety (§23.7 / §23.9 row 14)
 
@@ -1032,7 +1032,7 @@ Every JSON decode routes through `internal/safejson.Decode[T]`, which applies:
 - Depth cap of 32 levels. Deeply nested JSON (e.g., `{"a":{"a":{"a":...}}}`) exceeding this limit is rejected with `*BodyParseError`.
 - UTF-8 validation on all string values when `Content-Type` is `application/json` or `text/*`.
 
-The JSON depth cap and UTF-8 validation are unconditional — they cannot be disabled by any `RequestOption` or `WithUnboundedResponse`.
+The JSON depth cap and UTF-8 validation are unconditional :  they cannot be disabled by any `RequestOption` or `WithUnboundedResponse`.
 
 ### Information-disclosure defaults (§23.11)
 
@@ -1067,11 +1067,11 @@ The package does not perform file-path operations and does not call `internal/sa
 
 **Why is there a default 32 MiB response-body cap?**
 
-Unbounded response body reads are a class of denial-of-service: a malicious or misconfigured server can stream gigabytes of data until the process runs out of memory. The default cap of 32 MiB covers the vast majority of REST API responses. Callers that genuinely need larger responses — binary downloads, streaming endpoints — opt out with `WithUnboundedResponse()` and accept the responsibility. The cap is implemented as an `io.LimitReader` applied before any JSON parsing, so it is unconditionally enforced and cannot be bypassed by content-encoding tricks. gzip responses are capped both before and after decompression to prevent zip-bomb attacks.
+Unbounded response body reads are a class of denial-of-service: a malicious or misconfigured server can stream gigabytes of data until the process runs out of memory. The default cap of 32 MiB covers the vast majority of REST API responses. Callers that genuinely need larger responses :  binary downloads, streaming endpoints :  opt out with `WithUnboundedResponse()` and accept the responsibility. The cap is implemented as an `io.LimitReader` applied before any JSON parsing, so it is unconditionally enforced and cannot be bypassed by content-encoding tricks. gzip responses are capped both before and after decompression to prevent zip-bomb attacks.
 
 **How does dry-run propagate? Do I need to change my handler code?**
 
-No. `httpc.WithDryRun` attaches a flag to the `context.Context` value. Every `httpc` call that receives a context carrying that flag checks it at the start of the request dispatch path and emits a `*RequestPlan` to the configured sink instead of making a network call. Your handler code never needs a `if dryRun { ... }` conditional — it calls the same `httpc.Get[T](ctx, url)` it always does. This is the key ergonomic property: a CLI command's `--dry-run` flag flips one context attribute and the entire call pipeline becomes audit-only.
+No. `httpc.WithDryRun` attaches a flag to the `context.Context` value. Every `httpc` call that receives a context carrying that flag checks it at the start of the request dispatch path and emits a `*RequestPlan` to the configured sink instead of making a network call. Your handler code never needs a `if dryRun { ... }` conditional :  it calls the same `httpc.Get[T](ctx, url)` it always does. This is the key ergonomic property: a CLI command's `--dry-run` flag flips one context attribute and the entire call pipeline becomes audit-only.
 
 **Why closure-generated bodies instead of accepting `io.Reader` directly?**
 
@@ -1083,11 +1083,11 @@ Inject `httpmock.NewWithT(t)` as the transport: `client := httpc.New(httpc.WithT
 
 **What happens when my body closure returns an error?**
 
-The request is never sent. `httpc` calls the body closure as the first step of request construction. If the closure returns an error, the error is returned directly to the caller and no `RoundTrip` is attempted. The retry loop does not start — a closure failure is treated as a construction error, not a transient failure. This behavior is verified by `TestBodyClosureReturnsError`.
+The request is never sent. `httpc` calls the body closure as the first step of request construction. If the closure returns an error, the error is returned directly to the caller and no `RoundTrip` is attempted. The retry loop does not start :  a closure failure is treated as a construction error, not a transient failure. This behavior is verified by `TestBodyClosureReturnsError`.
 
 **Can I use a package-level function like `httpc.Get[T]` and also have a test-configured client?**
 
-Yes, but they are separate. `httpc.Get[T](ctx, url)` delegates to `httpc.Default`. In tests, you can replace `Default`: `httpc.Default = httpc.New(httpc.WithTransport(rt))` and restore it after the test. For cleaner isolation, prefer constructing an explicit `*Client` and threading it through your code — the explicit client approach is more testable and avoids mutating shared package state.
+Yes, but they are separate. `httpc.Get[T](ctx, url)` delegates to `httpc.Default`. In tests, you can replace `Default`: `httpc.Default = httpc.New(httpc.WithTransport(rt))` and restore it after the test. For cleaner isolation, prefer constructing an explicit `*Client` and threading it through your code :  the explicit client approach is more testable and avoids mutating shared package state.
 
 **Why is the error type named `BodyParseError` instead of `ParseError`?**
 
@@ -1097,45 +1097,45 @@ Yes, but they are separate. `httpc.Get[T](ctx, url)` delegates to `httpc.Default
 
 <!-- **Internal.** Why-this-and-not-that for non-obvious choices. Folded-in ADR. -->
 
-**D1 — Typed methods over a generic `Do[T]`.** The five named methods (`Get[T]`, `Post[T]`, `Put[T]`, `Patch[T]`, `Delete[T]`) are more discoverable than a single `Do[T any](method, url string, ...)` and match the mental model of HTTP. The raw `Do(ctx, *http.Request)` escape hatch exists for cases that don't fit.
+**D1 :  Typed methods over a generic `Do[T]`.** The five named methods (`Get[T]`, `Post[T]`, `Put[T]`, `Patch[T]`, `Delete[T]`) are more discoverable than a single `Do[T any](method, url string, ...)` and match the mental model of HTTP. The raw `Do(ctx, *http.Request)` escape hatch exists for cases that don't fit.
 
-**D2 — Closure bodies, not `io.Reader`.** See FAQ above. The closure design also enables dry-run to capture what would have been sent — the plan records `Body []byte` produced by calling the closure once, which would be impossible with a plain `io.Reader` passed once at call time.
+**D2 :  Closure bodies, not `io.Reader`.** See FAQ above. The closure design also enables dry-run to capture what would have been sent :  the plan records `Body []byte` produced by calling the closure once, which would be impossible with a plain `io.Reader` passed once at call time.
 
-**D3 — ctx-propagated dry-run over a method parameter.** Adding a `dryRun bool` parameter to every method signature would litter call sites and couple callers to the dry-run concept. ctx is the conventional Go mechanism for request-scoped options. The `IsDryRun` helper exposes the ctx state for callers who need to short-circuit their own logic, covering the "I need to know before calling httpc" use case.
+**D3 :  ctx-propagated dry-run over a method parameter.** Adding a `dryRun bool` parameter to every method signature would litter call sites and couple callers to the dry-run concept. ctx is the conventional Go mechanism for request-scoped options. The `IsDryRun` helper exposes the ctx state for callers who need to short-circuit their own logic, covering the "I need to know before calling httpc" use case.
 
-**D4 — Header scrubbing in plan by default (§23.11).** Dry-run plans are often emitted to logs (the default sink is a `slog.Debug` call). Logging `Authorization: Bearer eyJ...` by default would be an information-disclosure regression. The opt-in is `WithPlanIncludeSecrets`, explicitly named to signal developer intent. The regex `(?i)auth|key|token|cookie|secret` catches common non-standard header names that contain sensitive values.
+**D4 :  Header scrubbing in plan by default (§23.11).** Dry-run plans are often emitted to logs (the default sink is a `slog.Debug` call). Logging `Authorization: Bearer eyJ...` by default would be an information-disclosure regression. The opt-in is `WithPlanIncludeSecrets`, explicitly named to signal developer intent. The regex `(?i)auth|key|token|cookie|secret` catches common non-standard header names that contain sensitive values.
 
-**D5 — `BodyParseError.Error()` excludes body bytes.** Including body bytes in the error string makes them appear in log lines wherever the error is logged. The body may contain PII or large payloads. The struct field is the explicit inclusion mechanism; callers who want the body in their log line write it explicitly. This aligns with `StatusError` for consistency.
+**D5 :  `BodyParseError.Error()` excludes body bytes.** Including body bytes in the error string makes them appear in log lines wherever the error is logged. The body may contain PII or large payloads. The struct field is the explicit inclusion mechanism; callers who want the body in their log line write it explicitly. This aligns with `StatusError` for consistency.
 
-**D6 — 32 MiB default cap, not configurable at construction.** The cap is a safety invariant, not a configuration preference. Making it a `New()` option would let callers inadvertently remove it. Per-call override is possible (`WithMaxResponseBytes`, `WithUnboundedResponse`) so callers with genuine large-response needs are unblocked. The explicit per-call override makes large-response acceptance visible in code review.
+**D6 :  32 MiB default cap, not configurable at construction.** The cap is a safety invariant, not a configuration preference. Making it a `New()` option would let callers inadvertently remove it. Per-call override is possible (`WithMaxResponseBytes`, `WithUnboundedResponse`) so callers with genuine large-response needs are unblocked. The explicit per-call override makes large-response acceptance visible in code review.
 
-**D7 — JSON depth cap 32 is unconditional.** Legitimate API responses virtually never exceed 32 levels of nesting. If they do, the spec-0002 plan calls for a structured BodyParseError with context sufficient for the caller to re-issue with different decode logic. The depth cap is implemented inside `internal/safejson` and cannot be bypassed by any `RequestOption`.
+**D7 :  JSON depth cap 32 is unconditional.** Legitimate API responses virtually never exceed 32 levels of nesting. If they do, the spec-0002 plan calls for a structured BodyParseError with context sufficient for the caller to re-issue with different decode logic. The depth cap is implemented inside `internal/safejson` and cannot be bypassed by any `RequestOption`.
 
-**D8 — `Client.Close()` only closes the transport it owns (§23.16).** When callers supply their own transport (`httpmock.NewWithT(t)` in tests, or a shared enterprise transport), they own the lifecycle. Automatically closing an externally-supplied transport would cause unexpected failures in callers who share the transport across multiple clients. The `ownsTransport` boolean in `clientConfig` tracks this.
+**D8 :  `Client.Close()` only closes the transport it owns (§23.16).** When callers supply their own transport (`httpmock.NewWithT(t)` in tests, or a shared enterprise transport), they own the lifecycle. Automatically closing an externally-supplied transport would cause unexpected failures in callers who share the transport across multiple clients. The `ownsTransport` boolean in `clientConfig` tracks this.
 
-**D9 — Retry short-circuits on ctx cancellation mid-retry (§23.14).** The body closure is not called after ctx cancellation, even if a backoff sleep is scheduled. This prevents wasted work (invoking a potentially expensive closure) when the caller has already signaled intent to abort. The retry loop checks `ctx.Err()` after each backoff sleep before invoking the next closure.
+**D9 :  Retry short-circuits on ctx cancellation mid-retry (§23.14).** The body closure is not called after ctx cancellation, even if a backoff sleep is scheduled. This prevents wasted work (invoking a potentially expensive closure) when the caller has already signaled intent to abort. The retry loop checks `ctx.Err()` after each backoff sleep before invoking the next closure.
 
-**D10 — `JSONBody[T any](gen func() T)` typed (§23.17).** The original `JSONBody(func() any)` accepted any type but lost the compile-time connection between the return type of the closure and T in the surrounding `Post[T]` call. Making the closure generic (`func() T`) causes the compiler to verify the closure return type is assignable to the expected body type, catching mismatches at compile time rather than at JSON-marshal time.
+**D10 :  `JSONBody[T any](gen func() T)` typed (§23.17).** The original `JSONBody(func() any)` accepted any type but lost the compile-time connection between the return type of the closure and T in the surrounding `Post[T]` call. Making the closure generic (`func() T`) causes the compiler to verify the closure return type is assignable to the expected body type, catching mismatches at compile time rather than at JSON-marshal time.
 
-**D11 — `retryConfig` is a value type, not a pointer.** The retry configuration is small, copied once when building a request, and never mutated after construction. Value semantics prevent subtle aliasing bugs between the client-level default and per-call overrides.
+**D11 :  `retryConfig` is a value type, not a pointer.** The retry configuration is small, copied once when building a request, and never mutated after construction. Value semantics prevent subtle aliasing bugs between the client-level default and per-call overrides.
 
-**D12 — Package-level `Default` var (§21.13 F2).** Mirrors `http.DefaultClient`. Most simple programs need one client; the package-level convenience (`httpc.Get[T](ctx, url)`) avoids boilerplate. Advanced consumers construct explicit clients for isolation. Replacing `Default` in tests is documented but discouraged in favor of explicit clients.
+**D12 :  Package-level `Default` var (§21.13 F2).** Mirrors `http.DefaultClient`. Most simple programs need one client; the package-level convenience (`httpc.Get[T](ctx, url)`) avoids boilerplate. Advanced consumers construct explicit clients for isolation. Replacing `Default` in tests is documented but discouraged in favor of explicit clients.
 
 ### §23 Amendment rationale
 
-**§23.7 — Response body cap.** Added after Falcon identified unbounded response-body reads as a Tier 1 security risk. The 32 MiB value matches common practice (AWS SDK, Google API client) and the gzip dual-cap closes the zip-bomb vector that single-cap implementations leave open.
+**§23.7 :  Response body cap.** Added after Falcon identified unbounded response-body reads as a Tier 1 security risk. The 32 MiB value matches common practice (AWS SDK, Google API client) and the gzip dual-cap closes the zip-bomb vector that single-cap implementations leave open.
 
-**§23.11 — Header scrubber in plan.** Added after Magpie flagged that the default dry-run sink (slog.Debug) would log full headers including `Authorization` to any configured log handler. The allowlist + regex approach (rather than a denylist) was chosen because it is extensible — new header conventions like `X-My-Secret` are covered by the regex without spec changes.
+**§23.11 :  Header scrubber in plan.** Added after Magpie flagged that the default dry-run sink (slog.Debug) would log full headers including `Authorization` to any configured log handler. The allowlist + regex approach (rather than a denylist) was chosen because it is extensible :  new header conventions like `X-My-Secret` are covered by the regex without spec changes.
 
-**§23.13 — 50 µs target qualified.** The original target was ≤ 50 µs/op "excluding network." After Lynx reviewed benchmark design, "httpmock transport" was specified as the qualification — it is more reproducible and honest than "excluding network" (which implies real transport overhead is simply subtracted). The httpmock transport adds ~1–2 µs of in-process overhead; the target absorbs this.
+**§23.13 :  50 µs target qualified.** The original target was ≤ 50 µs/op "excluding network." After Lynx reviewed benchmark design, "httpmock transport" was specified as the qualification :  it is more reproducible and honest than "excluding network" (which implies real transport overhead is simply subtracted). The httpmock transport adds ~1–2 µs of in-process overhead; the target absorbs this.
 
-**§23.14 — Body closure not called after ctx cancel.** Added after a code review identified that the original retry loop could invoke the closure during a backoff window even after `ctx.Done()` closed. The fix is a `select { case <-ctx.Done(): return ...; default: }` check immediately before each closure call.
+**§23.14 :  Body closure not called after ctx cancel.** Added after a code review identified that the original retry loop could invoke the closure during a backoff window even after `ctx.Done()` closed. The fix is a `select { case <-ctx.Done(): return ...; default: }` check immediately before each closure call.
 
-**§23.15 — BodyParseError rename.** See D5 above and FAQ.
+**§23.15 :  BodyParseError rename.** See D5 above and FAQ.
 
-**§23.16 — Client.Close().** Added as part of the framework-wide Close audit. The audit table in §23.16 identified httpc as missing a Close method. Transport lifecycle management is non-trivial without it.
+**§23.16 :  Client.Close().** Added as part of the framework-wide Close audit. The audit table in §23.16 identified httpc as missing a Close method. Transport lifecycle management is non-trivial without it.
 
-**§23.17 — JSONBody[T any].** See D10 above.
+**§23.17 :  JSONBody[T any].** See D10 above.
 
 ## Open Questions
 

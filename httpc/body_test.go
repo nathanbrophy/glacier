@@ -117,8 +117,8 @@ func TestStreamBodyCloserClosed(t *testing.T) {
 	httpc.PostWith[struct{}](c, ctx, "http://example.com/",
 		httpc.StreamBody(func() (io.ReadCloser, string, error) {
 			return &trackingReadCloser{
-				Reader:    strings.NewReader("data"),
-				onClose:   func() { closedCount++ },
+				Reader:  strings.NewReader("data"),
+				onClose: func() { closedCount++ },
 			}, "application/octet-stream", nil
 		}),
 		httpc.WithRetry(httpc.MaxAttempts(3)),

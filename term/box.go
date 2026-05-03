@@ -85,8 +85,8 @@ func WithTitleStyle(s Style) BoxOption {
 func Box(text string, opts ...BoxOption) string {
 	// Pre-seed defaults so callers get colored borders/title without having
 	// to opt in. Options applied below override these.
-	defaultBorderColor, _ := Hex("#46D9FF")  // bright cyan
-	defaultTitleColor, _ := Hex("#7FE7FF")   // lighter cyan for the title
+	defaultBorderColor, _ := Hex("#46D9FF") // bright cyan
+	defaultTitleColor, _ := Hex("#7FE7FF")  // lighter cyan for the title
 	cfg := boxConfig{
 		corners:     roundedCorners,
 		borderStyle: New().Foreground(defaultBorderColor),
@@ -115,7 +115,17 @@ func Box(text string, opts ...BoxOption) string {
 	if innerW < 1 {
 		innerW = 1
 	}
-	wrapped := Wrap(text, innerW)
+
+	// Pre-wrap raw text only. Wrap is not ANSI-aware: it would count escape
+	// bytes as visible columns, splitting a colored line in the middle of an
+	// escape sequence. For colored content we trust visibleWidth + the
+	// caller's own line breaking and skip Wrap entirely.
+	var wrapped string
+	if strings.ContainsRune(text, '\x1b') {
+		wrapped = text
+	} else {
+		wrapped = Wrap(text, innerW)
+	}
 	lines := strings.Split(wrapped, "\n")
 
 	// Compute content width as the longest VISIBLE line. ANSI color codes
@@ -173,7 +183,7 @@ func Box(text string, opts ...BoxOption) string {
 			}
 		}
 		titStr := string(titRunes)
-		leftFill := 1                                          // one "─" before space
+		leftFill := 1                                              // one "─" before space
 		rightFill := topFill - leftFill - 2 - visibleWidth(titStr) // remaining; visible width excludes ANSI
 		if rightFill < 0 {
 			rightFill = 0

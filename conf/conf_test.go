@@ -159,7 +159,7 @@ func TestDecode_PathTraversalReturnsError(t *testing.T) {
 // ---- T#CF8: Register panics on duplicate path ------------------------------
 
 func TestRegister_PanicsDuplicate(t *testing.T) {
-	// Not parallel — uses globalRegistry.
+	// Not parallel :  uses globalRegistry.
 	const path = "test.duplicate"
 	// First registration must succeed.
 	conf.Register[serverCfg](path, serverCfg{Port: 1})
@@ -175,7 +175,7 @@ func TestRegister_PanicsDuplicate(t *testing.T) {
 // ---- T#CF9: Register accessor returns defaults before Load -----------------
 
 func TestRegister_AccessorReturnsDefaults(t *testing.T) {
-	// Not parallel — uses globalRegistry.
+	// Not parallel :  uses globalRegistry.
 	const path = "test.defaults"
 	defaults := serverCfg{Host: "localhost", Port: 8080}
 	get := conf.Register[serverCfg](path, defaults)
@@ -189,7 +189,7 @@ func TestRegister_AccessorReturnsDefaults(t *testing.T) {
 // ---- T#CF10: Loader.Load updates registered sections ----------------------
 
 func TestLoader_Load_UpdatesRegistered(t *testing.T) {
-	// Not parallel — uses globalRegistry.
+	// Not parallel :  uses globalRegistry.
 	const path = "test.loader.load"
 	defaults := serverCfg{Host: "default", Port: 80}
 	get := conf.Register[serverCfg](path, defaults)

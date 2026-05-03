@@ -18,7 +18,7 @@ Specs are Glacier's source of truth. Every code change, identity change, or proc
 
 3. **Fill the front matter.** Set `id`, `title`, `slug`, `owner-agent`, `created`, `last-updated`. Set `status: proposed`. Populate `reviewers` per the sign-off matrix in [`0000-spec-process.md`](0000-spec-process.md). `## Open Questions` may be non-empty during `proposed` and `in-review`.
 
-4. **Write the spec.** Every required section in the template must be filled. Section headers are stable anchors — do not rename or reorder them. Public-marked sections feed the docs site verbatim, so write them in end-user voice; Internal-marked sections are engineering-only.
+4. **Write the spec.** Every required section in the template must be filled. Section headers are stable anchors :  do not rename or reorder them. Public-marked sections feed the docs site verbatim, so write them in end-user voice; Internal-marked sections are engineering-only.
 
 5. **Move to `in-review`.** Set `status: in-review` and open a PR. Reviewers update their `signed-off-at` ISO timestamp under `reviewers:` when satisfied.
 
@@ -47,7 +47,7 @@ Full detail in [`0000-spec-process.md`](0000-spec-process.md).
 | Component (CLI, mock, httpmock, sandbox, primitives) | Otter (owner), Lynx, Falcon |
 | Testing infrastructure | Lynx (owner), Otter, Falcon |
 | Process / governance change | Otter (owner), Magpie |
-| Research artifact (`research/`) | Owner only — no gate |
+| Research artifact (`research/`) | Owner only :  no gate |
 
 ## Layout
 

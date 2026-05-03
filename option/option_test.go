@@ -105,7 +105,7 @@ func TestApplySuccessCases(t *testing.T) {
 			wantCfg: testConfig{},
 		},
 		{
-			name:    "duplicate field — last wins",
+			name:    "duplicate field :  last wins",
 			opts:    []option.Option[testConfig]{withA(1), withA(2), withA(3)},
 			wantCfg: testConfig{a: 3},
 		},
@@ -130,7 +130,7 @@ func TestApplyDefaultShortCircuit(t *testing.T) {
 		applied++
 		return nil
 	})
-	// first option errors; counter is second — should not run.
+	// first option errors; counter is second :  should not run.
 	_, err := option.Apply([]option.Option[testConfig]{withErr(errA), counter})
 	require.Error(t, err)
 	assert.ErrorIs(t, err, errA)
@@ -170,7 +170,7 @@ func TestApplyModes(t *testing.T) {
 	}
 	cases := []tc{
 		{
-			name:     "strict — accumulates all errors, applies successes",
+			name:     "strict :  accumulates all errors, applies successes",
 			opts:     []option.Option[testConfig]{withErr(errA), withA(99), withErr(errB)},
 			modes:    []option.Mode{option.Strict()},
 			wantErrA: true,
@@ -178,14 +178,14 @@ func TestApplyModes(t *testing.T) {
 			wantA:    99,
 		},
 		{
-			name:      "strict — no errors returns nil",
+			name:      "strict :  no errors returns nil",
 			opts:      []option.Option[testConfig]{withA(5), withB("ok"), withC(true)},
 			modes:     []option.Mode{option.Strict()},
 			wantNilEr: true,
 			wantA:     5,
 		},
 		{
-			name:     "multiple modes — last wins (Mode{} then Strict → strict)",
+			name:     "multiple modes :  last wins (Mode{} then Strict → strict)",
 			opts:     []option.Option[testConfig]{withErr(errA), withA(7), withErr(errB)},
 			modes:    []option.Mode{option.Mode{}, option.Strict()},
 			wantErrA: true,
@@ -278,7 +278,7 @@ func TestApplyOptionPanicsPropagates(t *testing.T) {
 			require.True(t, false, "expected panic to propagate from Apply, but it did not")
 		}
 	}()
-	//nolint:errcheck // panic expected — return never reached.
+	//nolint:errcheck // panic expected :  return never reached.
 	_, _ = option.Apply([]option.Option[testConfig]{panicking})
 }
 
@@ -443,27 +443,27 @@ func TestRequiredErrorMessages(t *testing.T) {
 	}
 	cases := []tc{
 		{
-			name:      "field present — no error",
+			name:      "field present :  no error",
 			fieldName: "val",
 			present:   true,
 			wantErr:   false,
 		},
 		{
-			name:      "field absent — error with quoted name",
+			name:      "field absent :  error with quoted name",
 			fieldName: "val",
 			present:   false,
 			wantErr:   true,
 			wantMsg:   `option: required: field "val" not set`,
 		},
 		{
-			name:      "field name with embedded quotes — %q escaping",
+			name:      "field name with embedded quotes :  %q escaping",
 			fieldName: `my "field"`,
 			present:   false,
 			wantErr:   true,
 			wantMsg:   `option: required: field "my \"field\"" not set`,
 		},
 		{
-			name:      "empty field name — error with empty quotes",
+			name:      "empty field name :  error with empty quotes",
 			fieldName: "",
 			present:   false,
 			wantErr:   true,
@@ -563,11 +563,11 @@ func TestErrorRegisterConformanceOption(t *testing.T) {
 
 	// Apply: single error (from OptionFunc).
 	_, err := option.Apply([]option.Option[testConfig]{withErr(errA)})
-	// errA itself comes from the caller — not from the package. Skip that.
+	// errA itself comes from the caller :  not from the package. Skip that.
 	// We only check errors the package itself constructs.
 	_ = err
 
-	// Apply strict: joined errors also come from caller — skip.
+	// Apply strict: joined errors also come from caller :  skip.
 
 	for _, e := range allErrors {
 		if e == nil {

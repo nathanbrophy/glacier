@@ -51,7 +51,7 @@ func TestRace_Semaphore_ConcurrentAcquireRelease(t *testing.T) {
 	wg.Wait()
 }
 
-// T#C32 Once.Do: concurrent calls — only one fn executes.
+// T#C32 Once.Do: concurrent calls :  only one fn executes.
 func TestRace_Once_ConcurrentDo(t *testing.T) {
 	t.Parallel()
 	var o concur.Once[int]

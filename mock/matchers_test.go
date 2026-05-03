@@ -38,7 +38,7 @@ func TestEqInt(t *testing.T) {
 }
 
 func TestEqMismatchType(t *testing.T) {
-	// Eq[string] called with an int arg via anyMatcher — should not match.
+	// Eq[string] called with an int arg via anyMatcher :  should not match.
 	m := mock.Of[Calculator](t)
 	m.OnCall("Add").
 		With(mock.Eq[int](1), mock.Eq[int](2)).

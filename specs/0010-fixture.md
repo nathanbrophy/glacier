@@ -50,38 +50,38 @@ docs-extract:
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  Persistent test data                                                         │
 │  ─────────────────                                                            │
-│  Golden  — compare raw bytes against a file in testdata/; auto-update via    │
+│  Golden  :  compare raw bytes against a file in testdata/; auto-update via    │
 │            GLACIER_GOLDEN_UPDATE=1                                           │
-│  Snapshot[T] — pretty-print a typed value, compare against stored snapshot;  │
+│  Snapshot[T] :  pretty-print a typed value, compare against stored snapshot;  │
 │                delegates equality to assert.Equal[T]                         │
-│  Load    — read arbitrary bytes from testdata/ into memory                   │
-│  LoadJSON[T] — read + unmarshal JSON from testdata/                          │
+│  Load    :  read arbitrary bytes from testdata/ into memory                   │
+│  LoadJSON[T] :  read + unmarshal JSON from testdata/                          │
 └──────────────────────────────────────────────────────────────────────────────┘
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  Test environment                                                             │
 │  ────────────────                                                             │
-│  Clock / FakeClock — injectable clock interface; FakeClock.Advance drives    │
+│  Clock / FakeClock :  injectable clock interface; FakeClock.Advance drives    │
 │                      timers deterministically without wall-clock sleeping     │
-│  NewFS  — in-memory fs.FS from a map[string][]byte; read-only                │
-│  Capture — redirect os.Stdout and os.Stderr to string buffers for a fn call  │
+│  NewFS  :  in-memory fs.FS from a map[string][]byte; read-only                │
+│  Capture :  redirect os.Stdout and os.Stderr to string buffers for a fn call  │
 └──────────────────────────────────────────────────────────────────────────────┘
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  Lifecycle invariants                                                         │
 │  ────────────────────                                                         │
-│  GuardLeaks — registers a t.Cleanup that diffs state before/after the test   │
+│  GuardLeaks :  registers a t.Cleanup that diffs state before/after the test   │
 │               for goroutines, temp dirs, env vars, and file descriptors       │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ```mermaid
 flowchart LR
-    subgraph kernel[Tier 0 — kernel]
+    subgraph kernel[Tier 0 :  kernel]
         assert
         option
         errs
         log
     end
-    subgraph mid[Tier 1 — mid]
+    subgraph mid[Tier 1 :  mid]
         fixture
     end
     subgraph internal[internal]
@@ -95,7 +95,7 @@ flowchart LR
     safefile --> fixture
 ```
 
-The `fixture` package imports `assert` (for `TB` and `EqualOption`) but does NOT import any other mid-tier package. `fixture` may not import `concur`, `fluent`, `conf`, or `obs` — that would create a forbidden F4 tier-1 cycle.
+The `fixture` package imports `assert` (for `TB` and `EqualOption`) but does NOT import any other mid-tier package. `fixture` may not import `concur`, `fluent`, `conf`, or `obs` :  that would create a forbidden F4 tier-1 cycle.
 
 ## Goals
 
@@ -110,7 +110,7 @@ The `fixture` package imports `assert` (for `TB` and `EqualOption`) but does NOT
 - Provide a lifecycle invariant guard covering goroutine leaks (F15), temp-dir leaks (F14), env-var leaks (F16), and file-descriptor leaks (F17, with Windows no-op).
 - All file-path operations route through `internal/safefile` to prevent path traversal (§23.10 / NF6).
 - All cleanup registers via `t.Cleanup`, never requiring explicit defer or Close calls from callers.
-- Hot-path benchmarks — Golden compare, Snapshot format, Capture lock — are baselined and gated in CI (D35 / §23.13).
+- Hot-path benchmarks :  Golden compare, Snapshot format, Capture lock :  are baselined and gated in CI (D35 / §23.13).
 
 ## Non-Goals
 
@@ -143,7 +143,7 @@ fixture/
 ├── guardleaks.go     GuardLeaks, WatchTempDirs, WatchGoroutines, WatchEnv,
 │                     WatchFDs, WatchAll, StrictLeaks, WithDrainTimeout,
 │                     LeakOption, leakConfig
-└── fixture_test.go   (split into per-facility test files — see Test Matrix)
+└── fixture_test.go   (split into per-facility test files :  see Test Matrix)
     golden_test.go
     snapshot_test.go
     load_test.go
@@ -160,33 +160,33 @@ fixture/
     testdata/           golden + snapshot fixture files committed to repo
 ```
 
-### golden.go — persistent byte comparison
+### golden.go :  persistent byte comparison
 
 `Golden(t, name, got, opts...)` resolves `name` relative to `testdata/` (or a WithRoot override) through `internal/safefile`. On match: returns true silently. On mismatch: calls `t.Errorf` with a line-by-line diff for text content or a hex header for binary, returns false. If the file is missing and `GLACIER_GOLDEN_UPDATE=1` is set, the file is created and true is returned; otherwise `t.Errorf` is called with a hint message. On `GLACIER_GOLDEN_UPDATE=1` and the file exists but differs, the file is overwritten via `safefile`'s rename-into-place strategy.
 
 Textual vs binary detection: `utf8.Valid(got)` determines the rendering path. All textual diffs are produced by `assert`'s diff engine (reusing the same colored output).
 
-### snapshot.go — typed pretty-print comparison
+### snapshot.go :  typed pretty-print comparison
 
 `Snapshot[T](t, name, got, opts...)` serializes `got` into a deterministic human-readable text representation (see NF3 invariants below), then delegates to `Golden` for file comparison. The `opts` are `assert.EqualOption` values forwarded to `assert.Equal[T]` during re-deserialization comparison. Map keys are sorted. Struct fields are printed in declaration order. `time.Time` values are formatted as RFC 3339 dates only (no sub-second clock component) to avoid drift across runs.
 
-### load.go — testdata I/O
+### load.go :  testdata I/O
 
-`Load(t, name)` reads and returns raw bytes from `testdata/<name>`, using `internal/safefile`. Registers `t.Helper()`. Calls `t.Fatal` on error. `LoadJSON[T](t, name)` additionally unmarshals via the stdlib `encoding/json` decoder (no `internal/safejson` depth-cap needed here — these are developer-committed files, not untrusted input; see row 14 in the untrusted-input register).
+`Load(t, name)` reads and returns raw bytes from `testdata/<name>`, using `internal/safefile`. Registers `t.Helper()`. Calls `t.Fatal` on error. `LoadJSON[T](t, name)` additionally unmarshals via the stdlib `encoding/json` decoder (no `internal/safejson` depth-cap needed here :  these are developer-committed files, not untrusted input; see row 14 in the untrusted-input register).
 
-### clock.go — injectable time
+### clock.go :  injectable time
 
-`Clock` is the production interface. `FakeClock` extends it with control methods. `Real()` returns a live-clock implementation backed by `time.Now`, `time.Sleep`, and `time.After`. `NewClock(t, start)` returns a `FakeClock` that is frozen at `start` and only advances when `Advance` or `SetTime` is called. Timer channels created via `After` fire synchronously on the next `Advance` call that crosses their deadline. `NewClock` registers a `t.Cleanup` that asserts no pending timer channels exist (to catch test setup mistakes). Goroutine-safe: internal state protected by a `sync.Mutex` (not `concur.Mutex` — fixture must not import concur per F4).
+`Clock` is the production interface. `FakeClock` extends it with control methods. `Real()` returns a live-clock implementation backed by `time.Now`, `time.Sleep`, and `time.After`. `NewClock(t, start)` returns a `FakeClock` that is frozen at `start` and only advances when `Advance` or `SetTime` is called. Timer channels created via `After` fire synchronously on the next `Advance` call that crosses their deadline. `NewClock` registers a `t.Cleanup` that asserts no pending timer channels exist (to catch test setup mistakes). Goroutine-safe: internal state protected by a `sync.Mutex` (not `concur.Mutex` :  fixture must not import concur per F4).
 
-### mockfs.go — in-memory fs.FS
+### mockfs.go :  in-memory fs.FS
 
 `NewFS(files map[string][]byte)` builds and returns an `fs.FS` that satisfies `fs.ReadFileFS` and `fs.ReadDirFS`. The FS is constructed once, is immutable, and panics at construction time if the provided paths conflict (a file and a directory occupy the same path). Paths are processed through `filepath.ToSlash` + `path.Clean` at construction; the FS serves all reads through `path`-based lookups (not OS-filesystem). No write methods are exposed.
 
-### capture.go — process-wide output capture
+### capture.go :  process-wide output capture
 
-`Capture(t, fn)` holds a process-wide mutex (a `sync.Mutex` package-level variable) for the duration of `fn`, redirecting `os.Stdout` and `os.Stderr` to `bytes.Buffer` pipes via `os.Pipe`. After `fn` returns (or panics — the restore runs in a deferred call), the original file descriptors are restored and the captured text is returned as `(stdout, stderr string)`. The process-wide lock is explicit and documented: tests using `Capture` cannot run in parallel within the same process. `t.Cleanup` is NOT used for Capture — the restore is deferred inside `Capture` itself, completing before the function returns, so the caller always gets both values.
+`Capture(t, fn)` holds a process-wide mutex (a `sync.Mutex` package-level variable) for the duration of `fn`, redirecting `os.Stdout` and `os.Stderr` to `bytes.Buffer` pipes via `os.Pipe`. After `fn` returns (or panics :  the restore runs in a deferred call), the original file descriptors are restored and the captured text is returned as `(stdout, stderr string)`. The process-wide lock is explicit and documented: tests using `Capture` cannot run in parallel within the same process. `t.Cleanup` is NOT used for Capture :  the restore is deferred inside `Capture` itself, completing before the function returns, so the caller always gets both values.
 
-### guardleaks.go — lifecycle invariant guard
+### guardleaks.go :  lifecycle invariant guard
 
 `GuardLeaks(t, opts...)` records baseline state for every enabled watcher and registers a `t.Cleanup` that diffs the baseline against state after the test. Watchers:
 
@@ -752,7 +752,7 @@ func TestCaptureBanner(t *testing.T) {
 }
 ```
 
-### Lifecycle invariants — guard against goroutine and env leaks
+### Lifecycle invariants :  guard against goroutine and env leaks
 
 ```go
 package fixture_test
@@ -835,7 +835,7 @@ Source: `specs/test-matrices/mid.md` `## Package: fixture/`. The full rows are r
 | 45 | TestMockFSStat | §21.8 F11 | Unit (positive) | Stat on a directory entry reports IsDir() == true. | `assert.True` |
 | 46 | TestCaptureRoundTrip | §21.8 F12 | Unit (positive) | Capture(t, fn) returns fn's stdout/stderr. | `assert.Equal` |
 | 47 | TestCaptureRestoresStreams | §21.8 NF4 | Unit (positive) | After Capture returns, os.Stdout / os.Stderr restored. | identity check, `assert.Equal` |
-| 48 | TestCaptureProcessWideLockSerializes | §21.8 NF7, E11 | Race | Two parallel `Capture` calls — they serialize; no interleaving. | `concur.WaitGroup`, `-race`, `fixture.GuardLeaks` |
+| 48 | TestCaptureProcessWideLockSerializes | §21.8 NF7, E11 | Race | Two parallel `Capture` calls :  they serialize; no interleaving. | `concur.WaitGroup`, `-race`, `fixture.GuardLeaks` |
 | 49 | TestCaptureFromGoroutine | §21.8 E11 | Unit (documented) | Capture lock holds even when fn writes from goroutine; ALL stdout goes to buffer. | `concur.WaitGroup`, `assert.Contains` |
 | 50 | TestCapturePanicRestoresStreams | §21.8 NF4 | Unit (negative) | If fn panics, os.Stdout and os.Stderr are still restored before re-panic. | deferred identity check |
 | 51 | TestGuardLeaksTempDirCatchesLeak | §21.8 F14 | Unit (negative) | Test creates `glacier-XXXXX` dir without removing → cleanup reports. | mock TB tracker |
@@ -845,8 +845,8 @@ Source: `specs/test-matrices/mid.md` `## Package: fixture/`. The full rows are r
 | 55 | TestGuardLeaksGoroutineFiltersFalsePositives | §21.8 F15 | Unit (positive) | Network resolver / GC sweepers / cleanup goroutine itself filtered. | mock TB |
 | 56 | TestGuardLeaksEnvCatchesLeak | §21.8 F16 | Unit (negative) | Test sets env var without unsetting → cleanup reports. | mock TB |
 | 57 | TestGuardLeaksEnvIgnoresUnrelated | §21.8 F16 | Unit (positive) | Env vars set BEFORE GuardLeaks ignored. | mock TB |
-| 58 | TestGuardLeaksFDsCatchesLeak | §21.8 F17 | Unit (negative — Linux/macOS) | Open file without close → cleanup reports leaked FD. | platform-conditional |
-| 59 | TestGuardLeaksFDsNoOpOnWindows | §21.8 E13 | Unit (positive — Windows) | No-op with debug log on Windows. | `fixture.Capture`, `assert.Contains` |
+| 58 | TestGuardLeaksFDsCatchesLeak | §21.8 F17 | Unit (negative :  Linux/macOS) | Open file without close → cleanup reports leaked FD. | platform-conditional |
+| 59 | TestGuardLeaksFDsNoOpOnWindows | §21.8 E13 | Unit (positive :  Windows) | No-op with debug log on Windows. | `fixture.Capture`, `assert.Contains` |
 | 60 | TestGuardLeaksWatchAll | §21.8 F18 | Unit (positive) | WatchAll == all four Watches. | introspection |
 | 61 | TestGuardLeaksStrictHaltsTest | §21.8 F19 | Unit (negative) | StrictLeaks() makes leaks call t.Fatalf. | mock TB tracker |
 | 62 | TestGuardLeaksStrictRenamed | §23.15 | Unit (positive) | The exported name is `StrictLeaks` (not `Strict`); verify via reflection. | reflection |
@@ -858,17 +858,17 @@ Source: `specs/test-matrices/mid.md` `## Package: fixture/`. The full rows are r
 | 68 | TestSnapshotFormatterUnicodeStable | §21.8 NF3 | Unit (positive) | UTF-8 strings preserve byte identity. | `assert.Equal` |
 | 69 | TestSnapshotPathRejectsTraversal | §21.8 NF6 | Unit (negative) | Snapshot name `../oops` rejected. | mock TB |
 | 70 | BenchmarkGoldenBytes | §21.8 NF1, §23.13 | Benchmark | Compare-and-pass path for 4 KiB goldens; zero allocs on match. | `testing.B`, `testing.AllocsPerRun` |
-| 71 | BenchmarkSnapshotStruct | §21.8 NF1, §23.13 | Benchmark | Snapshot of 50-field struct — pretty-print is the cost; baselined. | `testing.B`, `testing.AllocsPerRun` |
+| 71 | BenchmarkSnapshotStruct | §21.8 NF1, §23.13 | Benchmark | Snapshot of 50-field struct :  pretty-print is the cost; baselined. | `testing.B`, `testing.AllocsPerRun` |
 | 72 | BenchmarkSnapshotMap100Keys | §21.8 NF3, §23.13 | Benchmark | Deterministic-formatter perf with 100-key map (sort cost). | `testing.B` |
 | 73 | BenchmarkCaptureSmallOutput | §21.8 NF1, §23.13 | Benchmark | Capture of small fn cost (lock + redirect). | `testing.B` |
 
 ### Edge cases locked by annotation
 
-- **EX1**: `Snapshot[T]` of a value containing `time.Time` — the formatter must NOT include time-of-day; verify by snapshotting a struct with `time.Time` set to `time.Now()` and checking determinism after sleeping 1 s.
-- **EX2**: `Capture` with fn that panics — streams MUST still be restored; verify via deferred restore check.
-- **EX3**: `GuardLeaks` ordering with multiple Watch* options — ordering does not matter (lock to: no).
-- **EX4**: `MockFS` `Stat` on a directory — reports `IsDir()` correctly.
-- **EX5**: `Golden` with empty `got` byte slice — distinct from missing file; matched against empty golden file.
+- **EX1**: `Snapshot[T]` of a value containing `time.Time` :  the formatter must NOT include time-of-day; verify by snapshotting a struct with `time.Time` set to `time.Now()` and checking determinism after sleeping 1 s.
+- **EX2**: `Capture` with fn that panics :  streams MUST still be restored; verify via deferred restore check.
+- **EX3**: `GuardLeaks` ordering with multiple Watch* options :  ordering does not matter (lock to: no).
+- **EX4**: `MockFS` `Stat` on a directory :  reports `IsDir()` correctly.
+- **EX5**: `Golden` with empty `got` byte slice :  distinct from missing file; matched against empty golden file.
 
 ## Dependency Justification
 
@@ -876,7 +876,7 @@ Source: `specs/test-matrices/mid.md` `## Package: fixture/`. The full rows are r
 
 | Module | Version | License | Last release | Maintainers | Alternatives considered | Why we can't roll our own |
 |---|---|---|---|---|---|---|
-| (none) | — | — | — | — | — | — |
+| (none) | :  | :  | :  | :  | :  | :  |
 
 `fixture` has zero direct external dependencies. All capabilities are built on the Go standard library (`testing`, `os`, `runtime`, `io/fs`, `encoding/json`, `sync`, `bytes`, `path`, `path/filepath`, `unicode/utf8`) and the Glacier kernel packages (`option`, `errs`, `log`, `assert`). Goroutine-leak detection uses `runtime.Stack`; no third-party leak detector library is introduced.
 
@@ -889,7 +889,7 @@ Source: `specs/test-matrices/mid.md` `## Package: fixture/`. The full rows are r
 All file operations in `golden.go`, `snapshot.go`, and `load.go` route through `internal/safefile`:
 
 - `filepath.Clean` canonicalization applied to every name argument before any filesystem call.
-- Any post-clean path component equal to `..` is rejected with `t.Errorf` (not `t.Fatal` — to allow the test to collect all failures).
+- Any post-clean path component equal to `..` is rejected with `t.Errorf` (not `t.Fatal` :  to allow the test to collect all failures).
 - Absolute paths are rejected unless an explicit `safefile.AllowAbsolute()` option is passed (none of `fixture`'s callers pass this option).
 - Windows UNC paths (`\\server\share` and `\\?\`) are rejected.
 - Files are opened with `safefile.Open` (open-then-fstat, never stat-then-open).
@@ -925,7 +925,7 @@ Zero new direct external dependencies. The existing approved kernel deps (`optio
 <!-- **Public.** -->
 
 **Q: When should I use `Snapshot[T]` instead of `assert.Equal[T]`?**
-A: Use `assert.Equal[T]` when the expected value is small and readable inline. Use `Snapshot[T]` when the expected value is large, struct-shaped, or should survive future refactors without the test author manually updating expected values — the snapshot file becomes self-documenting test data. Both use the same equality semantics under the hood.
+A: Use `assert.Equal[T]` when the expected value is small and readable inline. Use `Snapshot[T]` when the expected value is large, struct-shaped, or should survive future refactors without the test author manually updating expected values :  the snapshot file becomes self-documenting test data. Both use the same equality semantics under the hood.
 
 **Q: Can I run `Capture` in a parallel subtest?**
 A: No. `Capture` holds a process-wide mutex that serializes all `Capture` calls in the same process. Calling `t.Parallel()` in a test that uses `Capture` will cause that test to block indefinitely (or until the `-timeout` fires). This is a documented constraint, not a bug. If you need parallel isolation of output, structure your code to accept an `io.Writer` and test via that interface instead.
@@ -937,49 +937,49 @@ A: Re-run your test suite with `GLACIER_GOLDEN_UPDATE=1`. All golden and snapsho
 A: No. `WatchGoroutines` filters well-known runtime goroutines including the test cleanup goroutine, GC worker, finalizer, signal handler, and `runtime/cgo` goroutines. False positives from the test infrastructure are aggressively filtered to keep the signal-to-noise ratio high.
 
 **Q: What is the difference between `StrictLeaks()` and the default GuardLeaks behavior?**
-A: By default (`t.Errorf`), a leak is reported but the test continues to run and may pass overall if it was the only failing check. With `StrictLeaks()` (which calls `t.Fatalf`), the test halts immediately when a leak is found — useful for integration tests where a leaked goroutine would pollute the next test's baseline.
+A: By default (`t.Errorf`), a leak is reported but the test continues to run and may pass overall if it was the only failing check. With `StrictLeaks()` (which calls `t.Fatalf`), the test halts immediately when a leak is found :  useful for integration tests where a leaked goroutine would pollute the next test's baseline.
 
 ## Decisions & Rationale
 
 <!-- **Internal.** -->
 
-### D1 — `fixture` is distinct from `assert` (not a sub-package)
+### D1 :  `fixture` is distinct from `assert` (not a sub-package)
 
-Test-resource management (files, clocks, FS, capture, lifecycle guards) is a fundamentally different concern from value assertion. Merging them into `assert` would create a package that imports `os`, `runtime`, and `io/fs` — dependencies that belong at mid-tier, not kernel. Keeping `fixture` at Tier 1 allows the `assert` kernel to remain small and dependency-free.
+Test-resource management (files, clocks, FS, capture, lifecycle guards) is a fundamentally different concern from value assertion. Merging them into `assert` would create a package that imports `os`, `runtime`, and `io/fs` :  dependencies that belong at mid-tier, not kernel. Keeping `fixture` at Tier 1 allows the `assert` kernel to remain small and dependency-free.
 
-### D2 — `Golden` and `Snapshot[T]` are top-level functions, not methods on a struct
+### D2 :  `Golden` and `Snapshot[T]` are top-level functions, not methods on a struct
 
 Every call site is `fixture.Golden(t, "name", got)`, which is idiomatic and readable. There is no global state to initialize. A struct-based design would require callers to construct a `*fixture.Suite` or similar, adding ceremony that adds no value when `t` already serves as the lifecycle anchor.
 
-### D3 — `Snapshot[T]` delegates comparison to `assert.Equal[T]`
+### D3 :  `Snapshot[T]` delegates comparison to `assert.Equal[T]`
 
 Re-implementing smart-equal in `fixture` would duplicate logic from `assert`. Instead, `Snapshot[T]` serializes `got` to a text representation, compares the file, and on mismatch re-runs `assert.Equal[T]` with the caller's `EqualOption` values to produce the same colored diff output that `assert` produces. This means callers get `IgnoreFields`, `IgnoreOrder`, and `WithDelta` for free.
 
-### D4 — `FakeClock` fires timers synchronously in `Advance`
+### D4 :  `FakeClock` fires timers synchronously in `Advance`
 
-Asynchronous timer delivery (a background goroutine that fires timers) would require `WatchGoroutines` to filter out the FakeClock's own goroutine, and would make timer delivery order non-deterministic. Synchronous delivery in `Advance` gives callers precise control: they know exactly which timers have fired after each `Advance` call. The tradeoff is that `Sleep` in a goroutine requires the test to `Advance` from another goroutine — an explicit design.
+Asynchronous timer delivery (a background goroutine that fires timers) would require `WatchGoroutines` to filter out the FakeClock's own goroutine, and would make timer delivery order non-deterministic. Synchronous delivery in `Advance` gives callers precise control: they know exactly which timers have fired after each `Advance` call. The tradeoff is that `Sleep` in a goroutine requires the test to `Advance` from another goroutine :  an explicit design.
 
-### D5 — `NewFS` panics on construction-time path conflicts instead of returning an error
+### D5 :  `NewFS` panics on construction-time path conflicts instead of returning an error
 
 `NewFS` is called from test setup code, not production code. A panic at construction time gives an immediate, loud failure pointing to the broken test setup. An error return would require callers to check it, adding boilerplate to every test that uses `NewFS`. Construction-time panics are acceptable in test helpers (consistent with `testing.TB.Helper`, `assert.Must`, etc.).
 
-### D6 — `Capture` uses a process-wide mutex, not goroutine-local capture
+### D6 :  `Capture` uses a process-wide mutex, not goroutine-local capture
 
 Goroutine-local stdout capture is not possible in Go without `unsafe` or runtime patches. `os.Stdout` is a process-wide file descriptor. The only safe, `unsafe`-free approach is to replace the descriptor for the entire process and serialize all captures. The constraint (no `t.Parallel`) is acceptable: tests that need output isolation should depend on `io.Writer` injection, not `os.Stdout`.
 
-### D7 — `GuardLeaks` default is no watchers; all must be opt-in
+### D7 :  `GuardLeaks` default is no watchers; all must be opt-in
 
 Defaulting all four watchers on would make `GuardLeaks()` a footgun in existing test suites: WatchFDs is a no-op on Windows and WatchGoroutines would catch runtime goroutines the filter hasn't been tuned for yet. Making every watcher explicit preserves the principle of least surprise. `WatchAll()` exists for callers who want everything.
 
-### D8 — `StrictLeaks` not `Strict` (§23.15 naming)
+### D8 :  `StrictLeaks` not `Strict` (§23.15 naming)
 
 The name `Strict()` is already used by `option.Strict()` in the kernel. Using `Strict()` in `fixture` would require callers to import-qualify every time they mix `option` and `fixture` in the same test file. `StrictLeaks()` is unambiguous and self-documenting.
 
-### D9 — `GLACIER_GOLDEN_UPDATE`, not `MONGOOSE_GOLDEN_UPDATE` (§23.18)
+### D9 :  `GLACIER_GOLDEN_UPDATE`, not `MONGOOSE_GOLDEN_UPDATE` (§23.18)
 
-The project was renamed from Mongoose to Glacier on 2026-05-01. All env vars use the `GLACIER_` prefix. There is no fallback to the old name — this is a clean rebrand, not a compatibility shim. Test #66 in the matrix locks this.
+The project was renamed from Mongoose to Glacier on 2026-05-01. All env vars use the `GLACIER_` prefix. There is no fallback to the old name :  this is a clean rebrand, not a compatibility shim. Test #66 in the matrix locks this.
 
-### D10 — `fixture` does not import `concur` (F4 enforcement)
+### D10 :  `fixture` does not import `concur` (F4 enforcement)
 
 The tier-1 no-cross-import rule (F4 from spec 0002) prohibits `fixture` from importing `concur`. The internal sync needs of `fixture` (FakeClock's mutex, Capture's process lock) are satisfied by `sync.Mutex` from the standard library, which is always available.
 
@@ -988,7 +988,7 @@ The tier-1 no-cross-import rule (F4 from spec 0002) prohibits `fixture` from imp
 - **§23.10 (path safety)**: All file-touching operations in `fixture` route through `internal/safefile`. Documented in Security section and Test Matrix rows 19–23.
 - **§23.13 (performance)**: Benchmarks #70–#73 are required CI gates; `testing.AllocsPerRun` assertions enforce zero-alloc on the Golden match path.
 - **§23.15 (naming disambiguation)**: `StrictLeaks()` is the canonical exported name (not `Strict()`). Locked by test #62.
-- **§23.16 (Close audit)**: `fixture` types use `t.Cleanup` rather than `Close`. The lifecycle audit table in spec 0002 §7.4 does not include any `fixture` type — this is correct. `NewClock`'s cleanup is documented in its API entry. `GuardLeaks`'s cleanup is documented in its API entry.
+- **§23.16 (Close audit)**: `fixture` types use `t.Cleanup` rather than `Close`. The lifecycle audit table in spec 0002 §7.4 does not include any `fixture` type :  this is correct. `NewClock`'s cleanup is documented in its API entry. `GuardLeaks`'s cleanup is documented in its API entry.
 - **§23.18 (Glacier rebrand)**: `GLACIER_GOLDEN_UPDATE` is the only recognized env var. `MONGOOSE_GOLDEN_UPDATE` does not exist. Locked by test #66.
 
 ## Open Questions
@@ -1012,6 +1012,6 @@ The tier-1 no-cross-import rule (F4 from spec 0002) prohibits `fixture` from imp
 7. `grep -r "MONGOOSE_GOLDEN_UPDATE" ./fixture/` returns zero matches.
 8. `grep -r "github.com/stretchr/testify" ./fixture/` returns zero matches (no testify import).
 9. `go vet ./fixture/...` exits 0; `staticcheck ./fixture/...` exits 0.
-10. CI lifecycle-audit check (per §23.16): `fixture.NewClock` registers cleanup (verified by test #35); `fixture.GuardLeaks` registers cleanup (verified by test #51); no `fixture` type appears in the `Close`-audit table (correct — these are t.Cleanup-based types, not io.Closer types).
+10. CI lifecycle-audit check (per §23.16): `fixture.NewClock` registers cleanup (verified by test #35); `fixture.GuardLeaks` registers cleanup (verified by test #51); no `fixture` type appears in the `Close`-audit table (correct :  these are t.Cleanup-based types, not io.Closer types).
 11. Cross-package layering test (`internal/laytest/layering_test.go`): `fixture` imports only `option`, `errs`, `log`, `assert`, and `internal/safefile` from the Glacier module; no import of `concur`, `fluent`, `conf`, or `obs`.
 12. Property test #65 (`TestSnapshotRoundTripProperty`) runs 1000 generated cases and exits 0.

@@ -13,7 +13,7 @@ import (
 	"github.com/nathanbrophy/glacier/concur"
 )
 
-// T#C1 Lock/Unlock: mutual exclusion — two goroutines race for lock; only one at a time proceeds.
+// T#C1 Lock/Unlock: mutual exclusion :  two goroutines race for lock; only one at a time proceeds.
 func TestMutex_LockUnlock_MutualExclusion(t *testing.T) {
 	t.Parallel()
 	var mu concur.Mutex

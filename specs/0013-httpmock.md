@@ -38,7 +38,7 @@ docs-extract:
 
 <!-- **Public.** One paragraph in end-user voice. The canonical description for the site and README. -->
 
-`httpmock` is a programmable `http.RoundTripper` for testing Go code that makes HTTP calls. Plug it into any `*http.Client` in your tests, declare what responses each request should receive via a fluent stub builder, and run your tests with zero real network calls — ever. Stubs are typed (generic `JSON[T]` marshals your structs at compile time), sequenceable (serve different responses for successive calls to the same endpoint), and matchable on method, path, query parameters, headers, and body content. The transport is strict by default: any request that does not match a registered stub is an immediate test failure, surfacing gaps in your mock setup loudly. Fixtures can be loaded from JSON files in `testdata/httpmock/` for scenario-driven test suites. The package ships zero dependencies beyond the Glacier kernel.
+`httpmock` is a programmable `http.RoundTripper` for testing Go code that makes HTTP calls. Plug it into any `*http.Client` in your tests, declare what responses each request should receive via a fluent stub builder, and run your tests with zero real network calls :  ever. Stubs are typed (generic `JSON[T]` marshals your structs at compile time), sequenceable (serve different responses for successive calls to the same endpoint), and matchable on method, path, query parameters, headers, and body content. The transport is strict by default: any request that does not match a registered stub is an immediate test failure, surfacing gaps in your mock setup loudly. Fixtures can be loaded from JSON files in `testdata/httpmock/` for scenario-driven test suites. The package ships zero dependencies beyond the Glacier kernel.
 
 ## Mental Model
 
@@ -89,7 +89,7 @@ Key invariants:
 
 - **Recording mode.** httpmock is replay-only at v0. No capturing of real network traffic. Recording is deferred to `0024-httpmock-record.md` with a full Falcon scrubbing review. The scrubbing rules from Falcon §1.3 (allowlist-based header redaction, body-redaction hooks) are documented as forward-pointers in the `## Security & Supply-Chain Notes` section.
 - **Real-network proxying or man-in-the-middle.** Out of scope, not a v0 goal, and architecturally incompatible with the "never dials" invariant.
-- **TLS certificate management.** The transport intercepts before TLS — the test code constructs `http.Client` with this transport, so TLS handshake never occurs.
+- **TLS certificate management.** The transport intercepts before TLS :  the test code constructs `http.Client` with this transport, so TLS handshake never occurs.
 - **gRPC / WebSocket / SSE transport mocking.** Those are streaming protocols with distinct framing; deferred to `0025-httpc-streams.md`.
 - **Integration with `httpc` at the package level.** `httpc` and `httpmock` are both Tier 2 leaves; they must not import each other. Consumers wire them together at the test level: `httpc.New(httpc.WithTransport(httpmock.New()))`. No architectural coupling.
 - **YAML or TOML fixture formats.** JSON only at v0, per Falcon's supply-chain ruling (D25).
@@ -643,7 +643,7 @@ type Responder interface {
 //
 // Preconditions: status must be a valid HTTP status code (100–599).
 // body must be JSON-marshallable.
-// Panics at call time if json.Marshal(body) fails — this is a programming
+// Panics at call time if json.Marshal(body) fails :  this is a programming
 // error (mismatched type); library-register message:
 //   "httpmock: JSON: marshal <T>: <cause>".
 //
@@ -832,7 +832,7 @@ func ExampleTransport_OnRequest() {
     // seen := rt.RequestsTo("/users/42")
     // assert.Len(t, seen, 1)
     //
-    // // Verify() fires at t.Cleanup — confirms Times(1) was satisfied.
+    // // Verify() fires at t.Cleanup :  confirms Times(1) was satisfied.
 }
 ```
 
@@ -1102,10 +1102,10 @@ The resolved absolute path must have the `testdata/httpmock/` directory as a pre
 
 All fixture JSON decoding passes through `internal/safejson.Decode[T]`, which applies in one call:
 
-- `io.LimitReader(r, 16*1024*1024)` — 16 MiB cap; excess triggers `ErrFixtureTooLarge`.
-- `json.NewDecoder(...).DisallowUnknownFields()` — unknown fields are rejected.
-- Depth cap ≤ 32 — deeply-nested JSON (via adversarial fixture) is rejected.
-- UTF-8 validation — malformed byte sequences are rejected.
+- `io.LimitReader(r, 16*1024*1024)` :  16 MiB cap; excess triggers `ErrFixtureTooLarge`.
+- `json.NewDecoder(...).DisallowUnknownFields()` :  unknown fields are rejected.
+- Depth cap ≤ 32 :  deeply-nested JSON (via adversarial fixture) is rejected.
+- UTF-8 validation :  malformed byte sequences are rejected.
 
 ### "Never makes a real network call" (NF3 / E14)
 
@@ -1127,19 +1127,19 @@ Fixture files are committed to the repository under `testdata/httpmock/`. Develo
 
 **Why no recording mode?**
 
-Recording mode — capturing real HTTP traffic and persisting it as fixtures — requires a scrubbing pass to redact secrets from headers and bodies before anything touches disk. Getting that scrubbing right is a non-trivial security review, and shipping it half-baked would be worse than shipping nothing. v0 focuses on the case that matters most for unit testing: scripted, deterministic, zero-network responses. Recording lands in `0024-httpmock-record.md` once there is a real consumer use case and a Falcon-reviewed scrubbing design.
+Recording mode :  capturing real HTTP traffic and persisting it as fixtures :  requires a scrubbing pass to redact secrets from headers and bodies before anything touches disk. Getting that scrubbing right is a non-trivial security review, and shipping it half-baked would be worse than shipping nothing. v0 focuses on the case that matters most for unit testing: scripted, deterministic, zero-network responses. Recording lands in `0024-httpmock-record.md` once there is a real consumer use case and a Falcon-reviewed scrubbing design.
 
 **How does httpmock integrate with httpc?**
 
-Both `httpmock` and `httpc` are Tier 2 leaf packages. Leaves must not import each other (D12). They are wired together by the test or application at the call site: `httpc.New(httpc.WithTransport(httpmock.New()))`. This keeps both packages independently usable — a project that uses `httpc` for production HTTP does not need to pull in `httpmock`, and a project using `httpmock` to test a hand-rolled `*http.Client` does not need `httpc`. The wiring is deliberate and follows the framework's composition-at-the-leaves rule.
+Both `httpmock` and `httpc` are Tier 2 leaf packages. Leaves must not import each other (D12). They are wired together by the test or application at the call site: `httpc.New(httpc.WithTransport(httpmock.New()))`. This keeps both packages independently usable :  a project that uses `httpc` for production HTTP does not need to pull in `httpmock`, and a project using `httpmock` to test a hand-rolled `*http.Client` does not need `httpc`. The wiring is deliberate and follows the framework's composition-at-the-leaves rule.
 
 **Why is strict mode the default?**
 
-An unmatched request in lenient mode silently returns a 404 or empty response. A test that relies on lenient behavior may pass even when the code under test is calling the wrong endpoint, has a typo in the path, or is making extra requests it shouldn't. Strict mode makes every unmatched request a loud, immediate failure with `ErrNoRouteMatch`. If you want lenient mode, you must explicitly opt in with `LenientMode()` or `WithDefaultStatus(n)` — the API makes the intent visible in the test code.
+An unmatched request in lenient mode silently returns a 404 or empty response. A test that relies on lenient behavior may pass even when the code under test is calling the wrong endpoint, has a typo in the path, or is making extra requests it shouldn't. Strict mode makes every unmatched request a loud, immediate failure with `ErrNoRouteMatch`. If you want lenient mode, you must explicitly opt in with `LenientMode()` or `WithDefaultStatus(n)` :  the API makes the intent visible in the test code.
 
 **What happens if I forget to call Respond on a stub?**
 
-If `Respond` is never called, the stub's `responder` field is nil. When `RoundTrip` matches that stub, it returns a `ScriptError` (row 37 in the test matrix). Use `NewWithT(t)` and `Times(n)` — the `Verify` at `t.Cleanup` will also catch it if the stub was never matched at all. Both failure modes surface the problem before the test can pass accidentally.
+If `Respond` is never called, the stub's `responder` field is nil. When `RoundTrip` matches that stub, it returns a `ScriptError` (row 37 in the test matrix). Use `NewWithT(t)` and `Times(n)` :  the `Verify` at `t.Cleanup` will also catch it if the stub was never matched at all. Both failure modes surface the problem before the test can pass accidentally.
 
 **Is it safe to share one Transport across concurrent goroutines?**
 
@@ -1147,7 +1147,7 @@ Yes. All mutable state (stub list, recorded requests, closed flag) is protected 
 
 **Can I use httpmock outside of tests?**
 
-The package only uses `net/http` from the standard library for its `RoundTripper` interface implementation; there is no `//go:build` constraint limiting it to test contexts. The `NewWithT` constructor takes an `assert.TB` (which `*testing.T` satisfies), but `New()` does not. In practice, `httpmock` is designed for tests and there is little reason to use it in production code — but nothing prevents it.
+The package only uses `net/http` from the standard library for its `RoundTripper` interface implementation; there is no `//go:build` constraint limiting it to test contexts. The `NewWithT` constructor takes an `assert.TB` (which `*testing.T` satisfies), but `New()` does not. In practice, `httpmock` is designed for tests and there is little reason to use it in production code :  but nothing prevents it.
 
 ## Decisions & Rationale
 
@@ -1175,7 +1175,7 @@ If `json.Marshal(body)` fails (e.g., the caller passed a channel or a function),
 The fixture root is hardcoded to `testdata/httpmock/` relative to the caller's working directory (i.e., the package under test). This is the same convention as `fixture.Load` and the Go test tooling itself. Rooting under `testdata/` ensures `go build` never includes fixture files in the binary. The `httpmock/` subdirectory disambiguates httpmock fixtures from fixture-package golden files.
 
 **D-HM-8: Replay-only at v0 (NF6 / §23.19).**
-The original Falcon §1.3 analysis focused on recording mode — scrubbing headers and bodies before persisting traffic. Since v0 ships replay only, those scrubbing rules become forward-pointers. Deferring recording simplifies the v0 surface, eliminates a non-trivial security-review scope, and lets the recording design be informed by real usage patterns once the replay story is mature.
+The original Falcon §1.3 analysis focused on recording mode :  scrubbing headers and bodies before persisting traffic. Since v0 ships replay only, those scrubbing rules become forward-pointers. Deferring recording simplifies the v0 surface, eliminates a non-trivial security-review scope, and lets the recording design be informed by real usage patterns once the replay story is mature.
 
 ### §23 amendments incorporated
 

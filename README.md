@@ -1,6 +1,6 @@
 <!--
   Banner ASCII is the canonical art from specs/0001-brand-identity.md.
-  Source of truth: assets/logo/banner.txt. Do not edit here in isolation —
+  Source of truth: assets/logo/banner.txt. Do not edit here in isolation : 
   any change is a brand-identity spec change.
 -->
 
@@ -17,10 +17,10 @@ Glacier is a Go framework that handles the plumbing so you can focus on what's y
 
 Glacier is in early design. The repo currently holds the development lifecycle and the brand identity. Code lands as component specs are accepted.
 
-- [`specs/`](specs/) — the source of truth. Every change is a spec first.
-- [`specs/0000-spec-process.md`](specs/0000-spec-process.md) — how Glacier is built.
-- [`specs/0001-brand-identity.md`](specs/0001-brand-identity.md) — what Glacier looks and feels like.
-- [`CLAUDE.md`](CLAUDE.md) — the rules.
+- [`specs/`](specs/) :  the source of truth. Every change is a spec first.
+- [`specs/0000-spec-process.md`](specs/0000-spec-process.md) :  how Glacier is built.
+- [`specs/0001-brand-identity.md`](specs/0001-brand-identity.md) :  what Glacier looks and feels like.
+- [`CLAUDE.md`](CLAUDE.md) :  the rules.
 
 ## Glacier SDK
 

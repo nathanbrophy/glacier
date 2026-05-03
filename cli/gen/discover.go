@@ -22,9 +22,9 @@ const loadMode = packages.NeedName |
 
 // DiscoveredCommand represents a struct type that implements cli.Command.
 type DiscoveredCommand struct {
-	PkgPath   string // e.g. "github.com/example/app"
-	PkgDir    string // absolute directory of the package
-	TypeName  string // e.g. "ServeCmd"
+	PkgPath     string // e.g. "github.com/example/app"
+	PkgDir      string // absolute directory of the package
+	TypeName    string // e.g. "ServeCmd"
 	ParseResult *ParseResult
 }
 

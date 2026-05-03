@@ -62,7 +62,7 @@ func TestOfRegistersCleanup(t *testing.T) {
 	ft := newFakeT()
 	m := mock.Of[Greeter](ft)
 	m.OnCall("Greet").Return("hello").Times(1)
-	// Do NOT call Greet — Verify at cleanup should report violation.
+	// Do NOT call Greet :  Verify at cleanup should report violation.
 	ft.runCleanup()
 	assert.True(t, len(ft.errors) > 0, "expected Verify error at cleanup for unmet expectation")
 }

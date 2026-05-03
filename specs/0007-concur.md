@@ -38,7 +38,7 @@ docs-extract:
 
 <!-- **Public.** One paragraph in end-user voice. The canonical description for the site and README. -->
 
-`concur` is Glacier's concurrency-primitives package: a curated set of ctx-aware sync types that complement Go's standard library `sync` and `golang.org/x/sync/errgroup`. Every primitive matches or beats its stdlib equivalent in production builds — `Mutex` and `RWMutex` are byte-for-byte identical to their stdlib counterparts at runtime; `Semaphore` is atomic-counter-backed with a lock-free fast path. When built with the `glacier_debug` build tag, `Mutex` and `RWMutex` gain hold-timeout diagnostics and caller-stack capture that surface stuck locks as structured slog events — with zero overhead in production. `Group` is an errgroup that collects every goroutine error (not first-wins), caps concurrency by default at `runtime.NumCPU() * 64`, recovers panics as typed `PanicError` values, and offers a non-blocking `TryGo` for back-pressure-aware scheduling. `Pool[T]` and `Once[T]` are generic, type-safe wrappers over `sync.Pool` and Go's once semantics. `WaitGroup` embeds `sync.WaitGroup` and adds a ctx-aware `WaitCtx`. Cancellation is uniform: every blocking operation accepts a `context.Context` and returns `ErrCancelled` on cancel.
+`concur` is Glacier's concurrency-primitives package: a curated set of ctx-aware sync types that complement Go's standard library `sync` and `golang.org/x/sync/errgroup`. Every primitive matches or beats its stdlib equivalent in production builds :  `Mutex` and `RWMutex` are byte-for-byte identical to their stdlib counterparts at runtime; `Semaphore` is atomic-counter-backed with a lock-free fast path. When built with the `glacier_debug` build tag, `Mutex` and `RWMutex` gain hold-timeout diagnostics and caller-stack capture that surface stuck locks as structured slog events :  with zero overhead in production. `Group` is an errgroup that collects every goroutine error (not first-wins), caps concurrency by default at `runtime.NumCPU() * 64`, recovers panics as typed `PanicError` values, and offers a non-blocking `TryGo` for back-pressure-aware scheduling. `Pool[T]` and `Once[T]` are generic, type-safe wrappers over `sync.Pool` and Go's once semantics. `WaitGroup` embeds `sync.WaitGroup` and adds a ctx-aware `WaitCtx`. Cancellation is uniform: every blocking operation accepts a `context.Context` and returns `ErrCancelled` on cancel.
 
 ## Mental Model
 
@@ -48,7 +48,7 @@ There are two modes, and zero cost to choosing wisely:
 
 **Production mode** (default build): `concur.Mutex` is `sync.Mutex` under the hood. There are no extra fields, no goroutines, no timers. `Lock` and `Unlock` are inlined forwarding calls. If you measure performance against a raw `sync.Mutex`, the delta is within noise.
 
-**Debug mode** (`-tags glacier_debug`): the same `Mutex` type gains two extra fields — a caller-stack capture and a hold-timer. When a goroutine holds the lock longer than the configured timeout (default 5 s), a structured slog event fires: who acquired it, who is waiting, how long it has been held. The lock itself is unaffected; diagnostics are observers, not controllers.
+**Debug mode** (`-tags glacier_debug`): the same `Mutex` type gains two extra fields :  a caller-stack capture and a hold-timer. When a goroutine holds the lock longer than the configured timeout (default 5 s), a structured slog event fires: who acquired it, who is waiting, how long it has been held. The lock itself is unaffected; diagnostics are observers, not controllers.
 
 ```
 Default build                      glacier_debug build
@@ -76,9 +76,9 @@ NewGroup(WithLimit(n))
                    (including PanicError for panicking goroutines)
 ```
 
-`Group.Go` after `WaitDone` has returned **panics** — this matches `sync.WaitGroup.Add` after `Wait` and is intentional: reusing a finished Group is a programming error, not a runtime condition.
+`Group.Go` after `WaitDone` has returned **panics** :  this matches `sync.WaitGroup.Add` after `Wait` and is intentional: reusing a finished Group is a programming error, not a runtime condition.
 
-`Semaphore` uses a fast-path atomic CAS when permits are available. The slow path acquires a `sync.Cond` lock and parks. Each slow-path waiter spawns a cancel-watcher goroutine that holds a derived context; on successful acquire, `defer cancel()` cleans up that watcher immediately — no goroutine leak on the happy path or the cancellation path.
+`Semaphore` uses a fast-path atomic CAS when permits are available. The slow path acquires a `sync.Cond` lock and parks. Each slow-path waiter spawns a cancel-watcher goroutine that holds a derived context; on successful acquire, `defer cancel()` cleans up that watcher immediately :  no goroutine leak on the happy path or the cancellation path.
 
 ## Goals
 
@@ -96,12 +96,12 @@ NewGroup(WithLimit(n))
 
 <!-- **Internal.** Bulleted list. What this spec deliberately excludes. -->
 
-- Typed channels, actor frameworks, futures/promises — not in v0; require a separate spec.
-- `OnceErr` — stdlib `sync.OnceValues` covers the use case; adding a duplicate here violates less-code-is-more.
-- Pool with TTL or eviction policy — deferred.
-- Rate-limiter primitives — Semaphore is the building block; a higher-level rate-limiter is a future spec.
-- `sync.Map` wrapper — callers who need a concurrent map should evaluate `sync.Map` directly; an ergonomic wrapper has not been validated by a real consumer use case.
-- Upgrading a read lock to a write lock (`RWMutex` upgrade) — stdlib semantics prohibit this; `concur` follows.
+- Typed channels, actor frameworks, futures/promises :  not in v0; require a separate spec.
+- `OnceErr` :  stdlib `sync.OnceValues` covers the use case; adding a duplicate here violates less-code-is-more.
+- Pool with TTL or eviction policy :  deferred.
+- Rate-limiter primitives :  Semaphore is the building block; a higher-level rate-limiter is a future spec.
+- `sync.Map` wrapper :  callers who need a concurrent map should evaluate `sync.Map` directly; an ergonomic wrapper has not been validated by a real consumer use case.
+- Upgrading a read lock to a write lock (`RWMutex` upgrade) :  stdlib semantics prohibit this; `concur` follows.
 
 ## Architecture
 
@@ -123,7 +123,7 @@ concur/
 ├── errors.go               ErrCancelled + ErrInvalidPermits sentinels
 │
 ├── mutex_test.go           Mutex/RWMutex correctness + LockCtx + race
-├── mutex_debug_test.go     //go:build glacier_debug — hold-timeout slog event capture
+├── mutex_debug_test.go     //go:build glacier_debug :  hold-timeout slog event capture
 ├── mutex_bench_test.go     Lock/Unlock vs stdlib parity (NF1, §23.13)
 ├── group_test.go           Group correctness (Go, TryGo, WaitDone, panic recovery, limit)
 ├── group_panic_test.go     Go-after-WaitDone PANICS (§23.14)
@@ -135,7 +135,7 @@ concur/
 ├── pool_bench_test.go      Allocation parity vs sync.Pool
 ├── once_test.go            Memoization, panic-doesn't-memoize, ctx first-call-only
 ├── waitgroup_test.go       WaitCtx correctness
-├── race_test.go            //go:build race — combined race-detector matrix
+├── race_test.go            //go:build race :  combined race-detector matrix
 ├── lifecycle_doc_test.go   Documents Group has no Close (§23.16)
 └── example_test.go         Godoc examples for every primitive
 ```
@@ -148,7 +148,7 @@ concur/
 concur
   ├─ github.com/nathanbrophy/glacier/errs   (error helpers, sentinels)
   ├─ github.com/nathanbrophy/glacier/option (functional options for Group config)
-  └─ github.com/nathanbrophy/glacier/log    (debug builds only — slog events)
+  └─ github.com/nathanbrophy/glacier/log    (debug builds only :  slog events)
 ```
 
 In non-debug builds, `log` is not imported. The `glacier_debug` build tag gates the `mutex_debug.go` file entirely.
@@ -157,7 +157,7 @@ In non-debug builds, `log` is not imported. The `glacier_debug` build tag gates 
 
 | Type | Has Close? | Idempotent? | errs.Join on errors? | Notes |
 |---|---|---|---|---|
-| `Group` | No | n/a | n/a | `WaitDone` is the lifecycle boundary. After `WaitDone` returns, the Group is terminal — `Go` panics. Rationale: `Group` is a run-to-completion primitive, not a reusable resource. No close needed because it owns no external resources (sockets, files, etc.). |
+| `Group` | No | n/a | n/a | `WaitDone` is the lifecycle boundary. After `WaitDone` returns, the Group is terminal :  `Go` panics. Rationale: `Group` is a run-to-completion primitive, not a reusable resource. No close needed because it owns no external resources (sockets, files, etc.). |
 | `Semaphore` | No | n/a | n/a | Stateless counter. Callers hold permits and release them; no destructor required. |
 | `Pool[T]` | No | n/a | n/a | Wraps `sync.Pool`; GC-managed. |
 | `Once[T]` | No | n/a | n/a | Run-to-completion once; no resources to close. |
@@ -193,7 +193,7 @@ type PanicError struct {
 
 // mutex.go (non-debug, build tag !glacier_debug)
 // Mutex is a mutual-exclusion lock. In default builds it is byte-equivalent to
-// sync.Mutex — the struct layout is a single embedded sync.Mutex with no
+// sync.Mutex :  the struct layout is a single embedded sync.Mutex with no
 // additional fields. LockCtx adds ctx-aware acquisition via a try-lock-with-
 // backoff loop; cancellation is best-effort (up to one backoff window, default
 // 1 ms, may elapse after ctx cancels before the error is returned).
@@ -463,7 +463,7 @@ func (g *Group) TryGo(fn func() error) bool
 //
 // Return value semantics:
 //   - All goroutines finish before ctx fires: returns errs.Join over every
-//     collected error (nil if none). Does NOT return the first error only —
+//     collected error (nil if none). Does NOT return the first error only : 
 //     all errors are preserved.
 //   - ctx fires before all goroutines finish: returns ErrCancelled wrapping
 //     ctx.Err(). Goroutines that were already running continue to completion
@@ -497,7 +497,7 @@ func NewSemaphore(capacity int64) *Semaphore
 // Implementation: fast path is a single atomic CAS (allocation-free, lock-free).
 // Slow path parks on sync.Cond. Each slow-path waiter spawns one cancel-watcher
 // goroutine that holds a derived context; on successful acquire, defer cancel()
-// cleans up the watcher — no goroutine leak on the happy path or cancel path.
+// cleans up the watcher :  no goroutine leak on the happy path or cancel path.
 //
 // Concurrency: goroutine-safe.
 // Blocking: may block until permits are available.
@@ -563,7 +563,7 @@ func (p *Pool[T]) Put(v T)
 // Subsequent calls to Do return the memoized values without invoking fn.
 //
 // ctx is passed to fn on the first call only. Later callers' contexts are
-// ignored — the memoized result is always returned regardless of whether
+// ignored :  the memoized result is always returned regardless of whether
 // those callers' ctxs are cancelled.
 //
 // If fn panics, the panic propagates and Once is not marked "done". The
@@ -601,7 +601,7 @@ type WaitGroup struct {
 //
 // Returns nil if the counter reaches zero before ctx fires.
 // Returns ErrCancelled wrapping ctx.Err() if ctx fires first (the counter
-// may still be > 0 in this case — the goroutines continue running).
+// may still be > 0 in this case :  the goroutines continue running).
 //
 // WaitCtx does NOT cancel any in-flight goroutines.
 //
@@ -621,7 +621,7 @@ func (wg *WaitGroup) WaitCtx(ctx context.Context) error
   Magpie transcludes verbatim into tutorials.
 -->
 
-### Mutex — production lock
+### Mutex :  production lock
 
 ```go
 func ExampleMutex() {
@@ -633,7 +633,7 @@ func ExampleMutex() {
 }
 ```
 
-### Mutex — ctx-aware acquisition
+### Mutex :  ctx-aware acquisition
 
 ```go
 func ExampleMutex_LockCtx() {
@@ -651,7 +651,7 @@ func ExampleMutex_LockCtx() {
 }
 ```
 
-### Group — bounded concurrency pipeline
+### Group :  bounded concurrency pipeline
 
 ```go
 func ExampleNewGroup() {
@@ -673,7 +673,7 @@ func ExampleNewGroup() {
 }
 ```
 
-### Semaphore — rate-limited HTTP
+### Semaphore :  rate-limited HTTP
 
 ```go
 func ExampleSemaphore() {
@@ -696,7 +696,7 @@ func ExampleSemaphore() {
 }
 ```
 
-### Pool[T] — buffer reuse
+### Pool[T] :  buffer reuse
 
 ```go
 func ExampleNewPool() {
@@ -711,7 +711,7 @@ func ExampleNewPool() {
 }
 ```
 
-### Once[T] — one-time async initialization
+### Once[T] :  one-time async initialization
 
 ```go
 var dbOnce concur.Once[*sql.DB]
@@ -723,7 +723,7 @@ func DB(ctx context.Context) (*sql.DB, error) {
 }
 ```
 
-### WaitGroup — ctx-aware shutdown
+### WaitGroup :  ctx-aware shutdown
 
 ```go
 func ExampleWaitGroup_WaitCtx() {
@@ -755,7 +755,7 @@ func ExampleWaitGroup_WaitCtx() {
 | 1 | `TestMutexLockUnlockBasic` | §21.5 F2 | Unit (positive) | Single goroutine Lock→Unlock returns no error. | `assert.NoError`, `assert.True` |
 | 2 | `TestMutexLockCtxAlreadyCancelled` | §21.5 E1 | Unit (negative) | `LockCtx` with already-cancelled ctx returns `ErrCancelled` immediately, never acquires. | `assert.ErrorIs`, `fixture.NewClock` |
 | 3 | `TestMutexLockCtxCancelledMidWait` | §21.5 E2 | Unit (negative) | Mutex held by g1; g2 calls `LockCtx`; ctx cancelled; g2 returns `ErrCancelled` wrapping `ctx.Err()`. | `assert.ErrorIs`, `concur.WaitGroup` |
-| 4 | `TestMutexLockCtxTryLockBackoffWindow` | §23.14 | Unit (concurrency lock-in) | `LockCtx` with quickly-cancelled ctx during backoff window verifies best-effort-cancellation — must observe `ctx.Err()` within 2× configured backoff. | `fixture.NewClock`, `assert.Eventually` |
+| 4 | `TestMutexLockCtxTryLockBackoffWindow` | §23.14 | Unit (concurrency lock-in) | `LockCtx` with quickly-cancelled ctx during backoff window verifies best-effort-cancellation :  must observe `ctx.Err()` within 2× configured backoff. | `fixture.NewClock`, `assert.Eventually` |
 | 5 | `TestMutexLockCtxNoLeakAfterCancel` | §23.14 | Race + leak | Repeated cancelled `LockCtx` leaves no orphan goroutines. | `fixture.GuardLeaks`, `fixture.WatchGoroutines` |
 | 6 | `TestMutexUnlockUnheldPanics` | stdlib parity | Unit (negative) | `Unlock` without prior `Lock` panics with stdlib message. | `assert.Panics` |
 | 7 | `TestMutexDebugHoldTimeoutEmitsSlog` | §21.5 F1, E3 | Unit (`glacier_debug`) | Hold > timeout emits structured slog event with holder caller, waiter caller, elapsed. Lock not released by diagnostic. | `fixture.Capture`, custom slog handler sink, `assert.Contains` |
@@ -805,21 +805,21 @@ func ExampleWaitGroup_WaitCtx() {
 | 51 | `TestWaitGroupWaitCtxAlreadyZero` | §21.5 E14 | Unit (positive) | `WaitCtx` returns nil immediately if counter == 0. | `assert.NoError` |
 | 52 | `TestWaitGroupWaitCtxCancelled` | §21.5 F15 | Unit (negative) | Counter > 0; ctx cancels; returns `ErrCancelled` wrapping `ctx.Err()`. | `assert.ErrorIs` |
 | 53 | `TestWaitGroupWaitCtxNormalCompletion` | §21.5 F15 | Unit (positive) | Counter reaches zero before ctx cancel; returns nil. | `assert.NoError` |
-| 54 | `TestWaitGroupRaceAddDuringWait` | §21.5 E15 | Race (documented) | Documents stdlib semantics — racy `Add` during `WaitCtx`. | `-race` (expected clean since stdlib `sync.WaitGroup` governs) |
+| 54 | `TestWaitGroupRaceAddDuringWait` | §21.5 E15 | Race (documented) | Documents stdlib semantics :  racy `Add` during `WaitCtx`. | `-race` (expected clean since stdlib `sync.WaitGroup` governs) |
 | 55 | `TestErrCancelledIsSentinelStable` | §21.5 F16 | Unit (positive) | `errors.Is(wrapped, concur.ErrCancelled)` is true; pointer equality is false (wrapping). | `assert.ErrorIs` |
 | 56 | `TestErrInvalidPermitsSentinelStable` | §21.5 F17 | Unit (positive) | `errors.Is(err, concur.ErrInvalidPermits)` after `Acquire(ctx, 0)`. | `assert.ErrorIs` |
 | 57 | `TestPanicErrorUnwrapToSynthesized` | §21.5 F18 | Unit (positive) | `PanicError.Unwrap()` returns a synthesized error reflecting `Value`. | `assert.NotNil`, `assert.ErrorAs` |
-| 58 | `TestErrFormatRegisterCompliance` | §21.5 NF6 | Unit (cross-cutting) | Every error string matches `^concur: [a-z]+(?:: [a-z ]+)*$` — lowercase, no period, package prefix. | `assert.Regexp` |
+| 58 | `TestErrFormatRegisterCompliance` | §21.5 NF6 | Unit (cross-cutting) | Every error string matches `^concur: [a-z]+(?:: [a-z ]+)*$` :  lowercase, no period, package prefix. | `assert.Regexp` |
 | 59 | `TestNoOnceErr` | D23 charter | Unit (architecture) | Verify `concur.OnceErr` does NOT exist (`sync.OnceValues` is the answer). | reflection / compile-time guard |
 | 60 | `TestGroupHasNoCloseDocumented` | §23.16 | Unit (lifecycle) | `*Group` does NOT have a `Close()` method. Compile-time and reflection check. | reflection check |
 | 61 | `TestConfPointerSnapshotOrdering` | §23.14 (cross-link conf) | Property | Atomic snapshot accessor in `conf` never returns torn state under contention. Primitive-level invariant lives here. | `concur.Group`, `assert.Equal` |
-| EX1 | `TestGroupReentrantGoSingleRecover` | edge | Unit (edge) | `Group.Go` called from inside `Go`'s own fn (re-entrant) — panic-recovery deferred frame does not double-fire. | `assert.Equal` (panic count) |
-| EX2 | `TestSemaphoreReleaseOverflowPanics` | edge | Unit (negative) | `Semaphore.Release(MaxInt64)` when only 1 acquired — verify panic, not silent overflow. | `assert.PanicsWithMessage` |
-| EX3 | `TestOnceZeroValueMemoized` | edge | Unit (positive) | `Once[T].Do` where fn returns zero value AND non-nil error — second call returns same `(zero, err)`. | `assert.Equal`, `assert.ErrorIs` |
-| EX4 | `TestPoolInterfaceNilNotTypedNil` | edge | Unit (edge) | `Pool[T]` with T = interface — Get on empty pool returns untyped nil, not typed nil. | `assert.Nil` |
-| EX5 | `TestRWMutexUnlockMismatchPanics` | edge | Unit (negative) | `RWMutex.LockCtx` then `Unlock` (not `RUnlock`) — mismatch panics per stdlib semantics. | `assert.Panics` |
-| EX6 | `TestGroupLimitOneSerializes` | edge | Unit (positive) | `Group` with `WithLimit(1)` serializes goroutines — liveness holds. | `assert.Eventually` |
-| EX7 | `TestGroupsIndependentLimits` | edge | Unit (positive) | Two `Group`s sharing nothing — their Semaphore-backed limits are independent. | `assert.NoError` |
+| EX1 | `TestGroupReentrantGoSingleRecover` | edge | Unit (edge) | `Group.Go` called from inside `Go`'s own fn (re-entrant) :  panic-recovery deferred frame does not double-fire. | `assert.Equal` (panic count) |
+| EX2 | `TestSemaphoreReleaseOverflowPanics` | edge | Unit (negative) | `Semaphore.Release(MaxInt64)` when only 1 acquired :  verify panic, not silent overflow. | `assert.PanicsWithMessage` |
+| EX3 | `TestOnceZeroValueMemoized` | edge | Unit (positive) | `Once[T].Do` where fn returns zero value AND non-nil error :  second call returns same `(zero, err)`. | `assert.Equal`, `assert.ErrorIs` |
+| EX4 | `TestPoolInterfaceNilNotTypedNil` | edge | Unit (edge) | `Pool[T]` with T = interface :  Get on empty pool returns untyped nil, not typed nil. | `assert.Nil` |
+| EX5 | `TestRWMutexUnlockMismatchPanics` | edge | Unit (negative) | `RWMutex.LockCtx` then `Unlock` (not `RUnlock`) :  mismatch panics per stdlib semantics. | `assert.Panics` |
+| EX6 | `TestGroupLimitOneSerializes` | edge | Unit (positive) | `Group` with `WithLimit(1)` serializes goroutines :  liveness holds. | `assert.Eventually` |
+| EX7 | `TestGroupsIndependentLimits` | edge | Unit (positive) | Two `Group`s sharing nothing :  their Semaphore-backed limits are independent. | `assert.NoError` |
 | B1 | `BenchmarkMutexLockUnlock` | §21.5 NF1, §23.13 | Benchmark | Bytes/op == 0; ns/op within 5% of `sync.Mutex` baseline. | `testing.B`, `benchstat` |
 | B2 | `BenchmarkRWMutexRLockRUnlock` | §21.5 NF1 | Benchmark | Within 5% of `sync.RWMutex`. | `testing.B` |
 | B3 | `BenchmarkSemaphoreAcquireReleaseUncontended` | §21.5 NF2, §23.13 | Benchmark | ≤ 50 ns/op, zero allocs (via `testing.AllocsPerRun`). | `testing.AllocsPerRun` |
@@ -832,7 +832,7 @@ func ExampleWaitGroup_WaitCtx() {
 
 ### Testing notes
 
-- **Debug-tag tests** (`mutex_debug_test.go`) run in a separate CI job with `-tags glacier_debug`. The hold-timeout test must not flake — use a `fixture.NewClock`-driven internal clock injection seam (exposed test-only via `concur_test` package) OR use generous wall-clock timeouts (50 ms hold vs 10 ms threshold).
+- **Debug-tag tests** (`mutex_debug_test.go`) run in a separate CI job with `-tags glacier_debug`. The hold-timeout test must not flake :  use a `fixture.NewClock`-driven internal clock injection seam (exposed test-only via `concur_test` package) OR use generous wall-clock timeouts (50 ms hold vs 10 ms threshold).
 - **NF1 byte-equivalence** is tested via both `unsafe.Sizeof` AND a `benchstat`-driven alert: `BenchmarkMutexLockUnlock` is compared head-to-head with a sibling `BenchmarkStdlibMutex`; CI fails if delta > 5%.
 - **§23.16 Group lifecycle**: test #60 is a compile-time and reflection-time gate that `*Group` does not expose `Close()`. This is documentation-as-test.
 - **Goroutine-leak tests** (#40, #41, #5) use `fixture.GuardLeaks` with `fixture.WatchGoroutines`. Drain timeout of 500 ms is sufficient to let cancel-watchers clean up on acquire.
@@ -854,7 +854,7 @@ No new direct dependencies. `concur` imports only stdlib and two Glacier kernel 
 
 <!-- **Internal.** Untrusted-input handling, sandboxing implications, secrets handling, vuln-scan considerations. -->
 
-- **PanicError.Value**: the `Value any` field carries whatever value the panicking goroutine passed to `panic()`. In multi-tenant or security-sensitive services this value may contain secrets, PII, or internal implementation details. The `Error()` method formats `Value` via `%v` — callers must redact before logging. Suggested pattern: `log.RedactValue(pe.Value)` before writing to any slog handler in production.
+- **PanicError.Value**: the `Value any` field carries whatever value the panicking goroutine passed to `panic()`. In multi-tenant or security-sensitive services this value may contain secrets, PII, or internal implementation details. The `Error()` method formats `Value` via `%v` :  callers must redact before logging. Suggested pattern: `log.RedactValue(pe.Value)` before writing to any slog handler in production.
 - **Race detector mandatory for Group/Semaphore tests**: all concurrent-path tests run under `-race` in CI. Zero race reports is a hard gate.
 - **No unsafe pointer arithmetic**: the package uses `sync/atomic` via `atomic.Int64` (safe wrapper); no `unsafe.Pointer` manipulation.
 - **No external inputs**: `concur` primitives accept only Go values from the caller's own code. There is no deserialization surface, no file access, and no network I/O. Untrusted-input row is not needed in the register.
@@ -867,23 +867,23 @@ No new direct dependencies. `concur` imports only stdlib and two Glacier kernel 
 
 **Q: Why does Group default to `runtime.NumCPU() * 64` goroutines instead of being truly unlimited?**
 
-An unbounded Group is a goroutine-explosion foot-gun: a tight loop calling `Go` can queue millions of goroutines before the work finishes, exhausting memory. `NumCPU * 64` is generous enough for almost all real workloads (3200+ goroutines on a 50-core machine) while preventing accidental abuse. When you genuinely need unlimited goroutines — because you manage back-pressure externally — pass `WithUnlimited()` and document the rationale at the call site.
+An unbounded Group is a goroutine-explosion foot-gun: a tight loop calling `Go` can queue millions of goroutines before the work finishes, exhausting memory. `NumCPU * 64` is generous enough for almost all real workloads (3200+ goroutines on a 50-core machine) while preventing accidental abuse. When you genuinely need unlimited goroutines :  because you manage back-pressure externally :  pass `WithUnlimited()` and document the rationale at the call site.
 
 **Q: Why does `Group.Go` panic after `WaitDone` instead of returning an error?**
 
 Same reason `sync.WaitGroup.Add` panics after `Wait`: reusing a finished Group after `WaitDone` is a programming error, not a runtime condition. Errors are for expected failure modes; panics are for invariant violations. A panicking call site is unambiguously wrong; an error-returning `Go` would be silently swallowed by code that forgets to check. If you need a re-usable Group, create a new one.
 
-**Q: `Mutex.LockCtx` says "best-effort cancellation" — what does that mean?**
+**Q: `Mutex.LockCtx` says "best-effort cancellation" :  what does that mean?**
 
-`LockCtx` uses a try-lock-with-backoff loop internally. On each iteration it attempts a non-blocking lock acquisition; if that fails and the ctx is still live, it sleeps for a backoff interval (default 1 ms) before retrying. If ctx cancels during a sleep, LockCtx will not detect it until the sleep ends — up to one backoff interval of latency. This is documented behavior. If you need stricter ctx-response, structure your code so the critical section timeout is much larger than the backoff.
+`LockCtx` uses a try-lock-with-backoff loop internally. On each iteration it attempts a non-blocking lock acquisition; if that fails and the ctx is still live, it sleeps for a backoff interval (default 1 ms) before retrying. If ctx cancels during a sleep, LockCtx will not detect it until the sleep ends :  up to one backoff interval of latency. This is documented behavior. If you need stricter ctx-response, structure your code so the critical section timeout is much larger than the backoff.
 
 **Q: Does `Once[T]` memoize an error result?**
 
-Yes. `Once[T].Do` memoizes the `(T, error)` pair returned by fn, including when the error is non-nil and T is the zero value. The second caller receives the same `(zero, err)` as the first — the fn is not retried on error. Only a fn that panics causes a re-attempt. If you need retry-on-error semantics, do not use `Once[T]`; manage the state yourself with a mutex.
+Yes. `Once[T].Do` memoizes the `(T, error)` pair returned by fn, including when the error is non-nil and T is the zero value. The second caller receives the same `(zero, err)` as the first :  the fn is not retried on error. Only a fn that panics causes a re-attempt. If you need retry-on-error semantics, do not use `Once[T]`; manage the state yourself with a mutex.
 
 **Q: Why is there no `Close` on `Semaphore`, `Pool`, or `Once`?**
 
-`Close` implies ownership of an external resource (socket, file, goroutine leak) that must be explicitly freed. None of these types own such resources: `Semaphore` is an in-memory counter, `Pool` is GC-managed by `sync.Pool`, and `Once` is a one-shot state machine. Adding `Close` would create a false expectation that not calling it leaks something. The only type with a natural lifecycle terminal is `Group`, whose terminal state is "all goroutines finished" — signalled by `WaitDone` returning, not a `Close` call.
+`Close` implies ownership of an external resource (socket, file, goroutine leak) that must be explicitly freed. None of these types own such resources: `Semaphore` is an in-memory counter, `Pool` is GC-managed by `sync.Pool`, and `Once` is a one-shot state machine. Adding `Close` would create a false expectation that not calling it leaks something. The only type with a natural lifecycle terminal is `Group`, whose terminal state is "all goroutines finished" :  signalled by `WaitDone` returning, not a `Close` call.
 
 ## Decisions & Rationale
 
@@ -891,25 +891,25 @@ Yes. `Once[T].Do` memoizes the `(T, error)` pair returned by fn, including when 
 
 **DR1: Go-after-WaitDone panics (§23.14 amendment to E4)**
 
-The original plan (§21.5 E4) described Go-after-WaitDone as scheduling the goroutine into an orphaned state ("result error appended to next group's join"). This was ambiguous and surprised reviewers: there is no "next group" concept. The §23.14 amendment locks in the panic semantics matching `sync.WaitGroup.Add`-after-`Wait`. The reasoning: `Group` is a run-to-completion primitive. Once `WaitDone` returns, all goroutines have finished and the group's internal channel is closed. Accepting a new `Go` call after this point would require re-opening closed state or silently dropping work — both wrong. Panicking is the correct response to an unambiguous programming error.
+The original plan (§21.5 E4) described Go-after-WaitDone as scheduling the goroutine into an orphaned state ("result error appended to next group's join"). This was ambiguous and surprised reviewers: there is no "next group" concept. The §23.14 amendment locks in the panic semantics matching `sync.WaitGroup.Add`-after-`Wait`. The reasoning: `Group` is a run-to-completion primitive. Once `WaitDone` returns, all goroutines have finished and the group's internal channel is closed. Accepting a new `Go` call after this point would require re-opening closed state or silently dropping work :  both wrong. Panicking is the correct response to an unambiguous programming error.
 
 **DR2: Default concurrency cap = `runtime.NumCPU() * 64` (§23.14)**
 
-An uncapped Group is a footgun for workloads that loop over large inputs. The cap is not a performance optimization — it is a safety rail. `NumCPU * 64` is empirically generous: Go's scheduler handles thousands of goroutines without degradation on modern hardware. Callers who exceed this and have a genuine reason (I/O-heavy fan-out with external back-pressure) use `WithUnlimited()` and accept the responsibility. The default is documented so it does not surprise callers who observe back-pressure they did not expect.
+An uncapped Group is a footgun for workloads that loop over large inputs. The cap is not a performance optimization :  it is a safety rail. `NumCPU * 64` is empirically generous: Go's scheduler handles thousands of goroutines without degradation on modern hardware. Callers who exceed this and have a genuine reason (I/O-heavy fan-out with external back-pressure) use `WithUnlimited()` and accept the responsibility. The default is documented so it does not surprise callers who observe back-pressure they did not expect.
 
 **DR3: Semaphore cancel-watcher cleanup via `defer cancel()` (§23.14)**
 
-The original design spawned a cancel-watcher goroutine for each slow-path `Acquire`. Without cleanup, a successful acquire that never cancelled would leave the watcher goroutine alive until the per-acquire derived context timed out or was GC'd. At scale (many semaphore acquires per second), this is a goroutine leak. The fix — `defer cancel()` on the derived context at the top of the slow-path block — ensures the watcher goroutine is signalled to exit immediately on successful acquire. `TestSemaphoreCtxWatcherNoLeak` (10k cycles, `fixture.WatchGoroutines`) is the regression guard.
+The original design spawned a cancel-watcher goroutine for each slow-path `Acquire`. Without cleanup, a successful acquire that never cancelled would leave the watcher goroutine alive until the per-acquire derived context timed out or was GC'd. At scale (many semaphore acquires per second), this is a goroutine leak. The fix :  `defer cancel()` on the derived context at the top of the slow-path block :  ensures the watcher goroutine is signalled to exit immediately on successful acquire. `TestSemaphoreCtxWatcherNoLeak` (10k cycles, `fixture.WatchGoroutines`) is the regression guard.
 
 **DR4: No `OnceErr` type; use `sync.OnceValues`**
 
-`sync.OnceValues` (available since Go 1.21) provides exactly the `(T, error)` once-with-result pattern. Adding a parallel `concur.OnceErr` would duplicate stdlib with no differentiation. `concur.Once[T]` adds ctx-pass-through to the first call, which `sync.OnceValues` does not provide — that differentiation justifies the type. `OnceErr` without the ctx affordance would not justify the export.
+`sync.OnceValues` (available since Go 1.21) provides exactly the `(T, error)` once-with-result pattern. Adding a parallel `concur.OnceErr` would duplicate stdlib with no differentiation. `concur.Once[T]` adds ctx-pass-through to the first call, which `sync.OnceValues` does not provide :  that differentiation justifies the type. `OnceErr` without the ctx affordance would not justify the export.
 
 **DR5: Mutex/RWMutex byte-equivalence in production (NF1)**
 
 `concur.Mutex` embeds `sync.Mutex` as its only field in non-debug builds. The compiler inlines the forwarding `Lock`/`Unlock` calls, producing machine code identical to direct `sync.Mutex` usage. Verified by `TestMutexDebugProductionByteEquivalent` (`unsafe.Sizeof` comparison) and `BenchmarkMutexLockUnlock` (`benchstat` ≤ 5% delta).
 
-**DR6: Group has no Close — WaitDone is the lifecycle (§23.16)**
+**DR6: Group has no Close :  WaitDone is the lifecycle (§23.16)**
 
 `Group` owns no external resources (goroutines terminate naturally; the internal Semaphore is in-memory). `Close` would imply a resource-release that does not exist. The lifecycle is `NewGroup → (Go/TryGo)* → WaitDone`; after `WaitDone` returns, the Group is unreachable and GC-eligible. A `Close` would be either a confusing no-op or redundant with the Go-after-WaitDone panic.
 
@@ -919,7 +919,7 @@ The goroutine-plus-channel alternative allocates one goroutine and one channel p
 
 **DR8: `Pool[T]` wraps `sync.Pool` generically (D36)**
 
-Direct `sync.Pool` requires a type assertion (`pool.Get().(*MyType)`) at every call site — not compile-time safe. `Pool[T]` moves the single unavoidable assertion inside `Get()`, which is guaranteed to succeed because `Put` accepts only `T`. The generics-first mandate (D36) applies: when the type is statically known, consumers should not write type assertions by hand.
+Direct `sync.Pool` requires a type assertion (`pool.Get().(*MyType)`) at every call site :  not compile-time safe. `Pool[T]` moves the single unavoidable assertion inside `Get()`, which is guaranteed to succeed because `Put` accepts only `T`. The generics-first mandate (D36) applies: when the type is statically known, consumers should not write type assertions by hand.
 
 ## Open Questions
 
@@ -946,6 +946,6 @@ None.
 6. **Fuzz gate** (`go test ./concur/... -run=FuzzSemaphoreAcquireRelease -fuzz=. -fuzztime=30s`): no crashes, no unrecovered panics, all panics are the documented over-release panic.
 7. **Byte-equivalence** (`go test ./concur/ -run=TestMutexDebugProductionByteEquivalent`): `unsafe.Sizeof(concur.Mutex{}) == unsafe.Sizeof(sync.Mutex{})` in non-debug builds.
 8. **Lifecycle gate** (`go test ./concur/ -run=TestGroupHasNoCloseDocumented`): reflection confirms `*Group` has no `Close` method.
-9. **Layering check** (`go test ./internal/laytest/ -run=TestLayeringInvariants`): F4 holds — `concur` imports no other Tier 1 package.
+9. **Layering check** (`go test ./internal/laytest/ -run=TestLayeringInvariants`): F4 holds :  `concur` imports no other Tier 1 package.
 10. **Error-format gate** (`go test ./concur/ -run=TestErrFormatRegisterCompliance`): every error string matches `^concur: [a-z]+(?:: [a-z ]+)*$`.
 11. **No testify** (`grep -r "github.com/stretchr/testify" ./concur/`): returns zero matches.

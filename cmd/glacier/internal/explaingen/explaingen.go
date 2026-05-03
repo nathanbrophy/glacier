@@ -502,12 +502,12 @@ func configKeyTitle(ck ConfigKeyRow) string {
 // configKeyBody builds the body text for a config key topic.
 func configKeyBody(ck ConfigKeyRow) string {
 	bodies := map[string]string{
-		"github.repo":              "The GitHub repository in owner/repo format used by glacier version when checking for a newer release.\n\nDefault: nathanbrophy/glacier\nEnv override: GLACIER__GITHUB__REPO",
-		"versioncheck.cache_ttl":   "How long the version check result is cached before re-fetching from GitHub Releases. Accepts Go duration syntax.\n\nDefault: 24h\nEnv override: GLACIER__VERSIONCHECK__CACHE_TTL",
-		"versioncheck.enabled":     "Enables or disables the background version check performed by glacier version. Set to false to skip the GitHub Releases request entirely.\n\nDefault: true\nEnv override: GLACIER__VERSIONCHECK__ENABLED",
-		"versioncheck.strict":      "When true, glacier version exits with code 68 if the GitHub Releases API is unreachable. Without this, unreachability exits 0 with an (offline) annotation.\n\nDefault: false\nEnv override: GLACIER__VERSIONCHECK__STRICT",
-		"banner.show_on_help":      "Controls whether the Glacier block-character banner is printed when --help is invoked. Suppress it with --no-banner or NO_COLOR.\n\nDefault: true\nEnv override: GLACIER__BANNER__SHOW_ON_HELP",
-		"palette.override":         "Overrides the active colour palette. Accepted values: 'default', 'accessible', 'none'. 'none' disables all ANSI colour output.\n\nDefault: default\nEnv override: GLACIER__PALETTE__OVERRIDE",
+		"github.repo":            "The GitHub repository in owner/repo format used by glacier version when checking for a newer release.\n\nDefault: nathanbrophy/glacier\nEnv override: GLACIER__GITHUB__REPO",
+		"versioncheck.cache_ttl": "How long the version check result is cached before re-fetching from GitHub Releases. Accepts Go duration syntax.\n\nDefault: 24h\nEnv override: GLACIER__VERSIONCHECK__CACHE_TTL",
+		"versioncheck.enabled":   "Enables or disables the background version check performed by glacier version. Set to false to skip the GitHub Releases request entirely.\n\nDefault: true\nEnv override: GLACIER__VERSIONCHECK__ENABLED",
+		"versioncheck.strict":    "When true, glacier version exits with code 68 if the GitHub Releases API is unreachable. Without this, unreachability exits 0 with an (offline) annotation.\n\nDefault: false\nEnv override: GLACIER__VERSIONCHECK__STRICT",
+		"banner.show_on_help":    "Controls whether the Glacier block-character banner is printed when --help is invoked. Suppress it with --no-banner or NO_COLOR.\n\nDefault: true\nEnv override: GLACIER__BANNER__SHOW_ON_HELP",
+		"palette.override":       "Overrides the active colour palette. Accepted values: 'default', 'accessible', 'none'. 'none' disables all ANSI colour output.\n\nDefault: default\nEnv override: GLACIER__PALETTE__OVERRIDE",
 	}
 	if b, ok := bodies[ck.Key]; ok {
 		return b

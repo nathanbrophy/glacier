@@ -16,9 +16,9 @@ import (
 )
 
 var (
-	nameRe    = regexp.MustCompile(`^[a-z][a-z0-9-]{0,31}$`)
-	envVarRe  = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
-	choiceRe  = regexp.MustCompile(`^[a-z0-9_-]+$`)
+	nameRe     = regexp.MustCompile(`^[a-z][a-z0-9-]{0,31}$`)
+	envVarRe   = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
+	choiceRe   = regexp.MustCompile(`^[a-z0-9_-]+$`)
 	parentSegs = regexp.MustCompile(`^([a-z][a-z0-9-]{0,31}\.)*[a-z][a-z0-9-]{0,31}$`)
 )
 

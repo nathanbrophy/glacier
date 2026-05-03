@@ -31,7 +31,7 @@ Glacier is a Go framework that handles the plumbing so you can focus on what's y
 
 ## Mental Model
 
-The mental model is a single sharp line: code unique to your problem stays on your side; everything generic stays on Glacier's side. You never write your own flag parser. You never invent your own config-layering rules. You never hand-roll a mock for an interface you control. When the boundary feels wrong — when something that *feels* generic is on your side, or something that *feels* unique is on Glacier's side — that's a spec to file.
+The mental model is a single sharp line: code unique to your problem stays on your side; everything generic stays on Glacier's side. You never write your own flag parser. You never invent your own config-layering rules. You never hand-roll a mock for an interface you control. When the boundary feels wrong :  when something that *feels* generic is on your side, or something that *feels* unique is on Glacier's side :  that's a spec to file.
 
 ```mermaid
 flowchart LR
@@ -65,7 +65,7 @@ flowchart LR
 - Lock the typography pairing for the public site.
 - Codify Go and CLI naming conventions referenced by every later spec.
 - Codify error-message conventions across the library and CLI registers.
-- Articulate the Promise — the four user-facing feel-statements every component spec is tested against.
+- Articulate the Promise :  the four user-facing feel-statements every component spec is tested against.
 
 ## Non-Goals
 
@@ -79,7 +79,7 @@ flowchart LR
 
 Identity is a taxonomy and a surface map, not a code architecture.
 
-**Taxonomy** — five identity layers, each owned by a specific artifact in the repo:
+**Taxonomy** :  five identity layers, each owned by a specific artifact in the repo:
 
 | Layer                    | Owned by                            | Surface                                                          |
 | ------------------------ | ----------------------------------- | ---------------------------------------------------------------- |
@@ -90,7 +90,7 @@ Identity is a taxonomy and a surface map, not a code architecture.
 | The Promise              | This spec                           | Acceptance criterion for every component spec                    |
 | User-mascot library      | This spec; art under `cmd/glacier/internal/mascots/` | Six mascots (`polar_bear`, `penguin`, `owl`, `fox`, `otter`, `raccoon`), each in two forms (kaomoji + 5-line block-character banner). User-facing scaffold library only; distinct from Glacier's own polar-bear identity. Added by spec 0032 (Amendment B). |
 
-**Surface map** — where each identity element appears:
+**Surface map** :  where each identity element appears:
 
 ```
 README.md                  → banner ASCII + tagline + Public Summary (extracted by Magpie)
@@ -106,11 +106,11 @@ CLI error output           → CLI error-message style
 
 ## Schema
 
-This spec introduces no Go types. The "schema" of the identity is the semantic-token table for color, the typography table, and the naming-convention tables — all under `## Examples` below, since they are also the most useful didactic content.
+This spec introduces no Go types. The "schema" of the identity is the semantic-token table for color, the typography table, and the naming-convention tables :  all under `## Examples` below, since they are also the most useful didactic content.
 
 ## API
 
-N/A — this spec introduces no Go API. The CLI module spec (later) will introduce APIs governed by the naming conventions defined here.
+N/A :  this spec introduces no Go API. The CLI module spec (later) will introduce APIs governed by the naming conventions defined here.
 
 ## Examples
 
@@ -130,11 +130,11 @@ The banner pairs a small block-character polar bear mascot ("Glacier the Bear") 
 
 The mascot is "Glacier the Bear" (D44): Variant A wide-and-friendly polar bear, 5 lines × ~14 cols, drawn in block characters (`▟ ▀ ▙ █ ● ▼`). Block characters render cleanly in any monospace terminal; the 5-line form aligns with the wordmark's 6-line height (one line of leading at top). The wordmark uses ANSI Shadow style with Unicode box-drawing characters; the I letterform uses a serif variant (8 chars wide) for legibility between adjacent letters. The tagline sits centered beneath the wordmark.
 
-Mascot tiny form (D43): `ʕ•ᴥ•ʔ` — single-line kaomoji used for prompt prefixes, status bars, and inline references in docs and CLI output.
+Mascot tiny form (D43): `ʕ•ᴥ•ʔ` :  single-line kaomoji used for prompt prefixes, status bars, and inline references in docs and CLI output.
 
 ### Compact wordmark (canonical)
 
-The compact wordmark is wordmark + tagline only — no mascot. It's the form rendered by `glacier --version`. Committed verbatim to `assets/logo/wordmark.txt`:
+The compact wordmark is wordmark + tagline only :  no mascot. It's the form rendered by `glacier --version`. Committed verbatim to `assets/logo/wordmark.txt`:
 
 ```text
  ██████╗ ██╗      █████╗  ██████╗███████╗███████╗██████╗
@@ -182,7 +182,7 @@ The palette is dark-first. Each token is bound to a role; colors are never used 
 | `--mg-cyan-700`   | `#0891B2` | Gradient stop (mid-deep)    | Wordmark gradient line 4; reserved for deeper cyan needs.                                |
 | `--mg-teal-700`   | `#0D9488` | Gradient stop (deepest)     | Wordmark gradient line 6; reserved for deep teal accents.                                |
 
-**Color theory.** The palette is cool-on-cool: cyan and teal accents on a near-black background. To prevent the cold, sterile look of pure cyan-on-black, the primary text token is a *warm* off-white (`#E6EDF3`, with slight pink-yellow lift). State colors (success, warning, error, info) are deliberately desaturated relative to the brand accents so they don't compete when shown alongside. Cyan (`#22D3EE`) and teal (`#2DD4BF`) are split-complementary within the cool spectrum — enough variation to distinguish primary from secondary without fighting each other. Contrast: `--mg-text` on `--mg-bg` is 15.9:1 (AAA, well above 7:1); `--mg-cyan` on `--mg-bg` is 9.6:1 (AAA). Every token meets WCAG AA at minimum.
+**Color theory.** The palette is cool-on-cool: cyan and teal accents on a near-black background. To prevent the cold, sterile look of pure cyan-on-black, the primary text token is a *warm* off-white (`#E6EDF3`, with slight pink-yellow lift). State colors (success, warning, error, info) are deliberately desaturated relative to the brand accents so they don't compete when shown alongside. Cyan (`#22D3EE`) and teal (`#2DD4BF`) are split-complementary within the cool spectrum :  enough variation to distinguish primary from secondary without fighting each other. Contrast: `--mg-text` on `--mg-bg` is 15.9:1 (AAA, well above 7:1); `--mg-cyan` on `--mg-bg` is 9.6:1 (AAA). Every token meets WCAG AA at minimum.
 
 The three gradient tokens (`--mg-cyan-100`, `--mg-cyan-700`, `--mg-teal-700`) are bound to their gradient-stop role. Use outside the wordmark gradient requires future-spec justification.
 
@@ -194,7 +194,7 @@ The three gradient tokens (`--mg-cyan-100`, `--mg-cyan-700`, `--mg-teal-700`) ar
 | Body / UI          | Inter          | 400, 500, 600 | rsms.me, SIL OFL            |
 | Code               | JetBrains Mono | 400, 700      | jetbrains.com/mono, SIL OFL |
 
-All three are vendored when the public site lands — never CDN-loaded. The site spec will commit the actual font files.
+All three are vendored when the public site lands :  never CDN-loaded. The site spec will commit the actual font files.
 
 ### Sample Go following the conventions
 
@@ -244,14 +244,14 @@ $ glacier --help
 
 Verbs are imperative and lowercase. Flags use `--long-kebab-case`. Boolean flags use the `--enable-x` / `--disable-x` form, never `--x=true`. Short flags exist only for the most common operations.
 
-A CLI error follows the user-facing register — capitalized, problem + cause + actionable next step, ends with a period:
+A CLI error follows the user-facing register :  capitalized, problem + cause + actionable next step, ends with a period:
 
 ```text
 Error: Cannot bind to port 8080: address already in use.
        Try a different port with --port, or stop the process holding 8080.
 ```
 
-The same condition surfaced as a *library* error to a Go caller follows the library register — lowercase, no trailing punctuation, `package: action: cause`:
+The same condition surfaced as a *library* error to a Go caller follows the library register :  lowercase, no trailing punctuation, `package: action: cause`:
 
 ```go
 err := server.Listen(ctx, ":8080")
@@ -295,7 +295,7 @@ When a developer uses Glacier, they should be able to say each of these truthful
 3. *"The error tells me what to do next."*
 4. *"Tests are easy because the framework helps."*
 
-Every component spec — CLI, mocks, HTTP transport, sandbox, primitives — is reviewed against these four statements. If the design doesn't deliver them, the design is wrong.
+Every component spec :  CLI, mocks, HTTP transport, sandbox, primitives :  is reviewed against these four statements. If the design doesn't deliver them, the design is wrong.
 
 ## Test Matrix
 
@@ -347,16 +347,16 @@ The amendment narrows, rather than broadens, the `## Non-Goals` exclusion of "ex
 ## FAQ
 
 **Why is the project named "Glacier"?**
-Because a glacier is a keeper of geological time — stable, deep, and shaped by forces that move slowly and surely. That maps directly to all four Promises: the stable foundation you trust the defaults on; the iceberg-principle depth that keeps only what's yours visible at the surface; the frozen determinism that makes tests easy; the predictable flow that tells you what to do next. The marketing abbreviation **GDK** doubles as Glacier Development Kit *and* Go Development Kit.
+Because a glacier is a keeper of geological time :  stable, deep, and shaped by forces that move slowly and surely. That maps directly to all four Promises: the stable foundation you trust the defaults on; the iceberg-principle depth that keeps only what's yours visible at the surface; the frozen determinism that makes tests easy; the predictable flow that tells you what to do next. The marketing abbreviation **GDK** doubles as Glacier Development Kit *and* Go Development Kit.
 
 **Why dark-first?**
 Glacier is a developer tool. Most developers live in dark terminals and dark IDEs. A dark-first identity is native to the environment the framework runs in. Light mode will be defined by the site spec when the site is built; dark is the source of truth.
 
 **Why these specific naming conventions?**
-They're not bespoke — they're Effective Go and the Go standard library, codified in one place so contributors and agents have a single canonical reference. Glacier has zero novel naming conventions.
+They're not bespoke :  they're Effective Go and the Go standard library, codified in one place so contributors and agents have a single canonical reference. Glacier has zero novel naming conventions.
 
 **Can I theme the CLI output?**
-Yes — when the CLI module spec lands, the palette tokens will be exposed as terminal-color overrides. Default behavior uses the dark-first cyan/teal palette; users can set `GLACIER_NO_COLOR=1` to disable, or override individual tokens via env vars.
+Yes :  when the CLI module spec lands, the palette tokens will be exposed as terminal-color overrides. Default behavior uses the dark-first cyan/teal palette; users can set `GLACIER_NO_COLOR=1` to disable, or override individual tokens via env vars.
 
 **Why ban superlatives?**
 Because "blazing fast" doesn't tell a developer anything. "Parses 50,000 flags per second on an M2 Air" does. The ban forces specifics. Specifics are what make documentation useful.
@@ -365,34 +365,34 @@ Because "blazing fast" doesn't tell a developer anything. "Parses 50,000 flags p
 Because `--version` output is a tight context (one or two terminal screens) and a full banner with a mascot would dominate it. The compact wordmark fits gracefully there. The full banner has room to breathe in the README header and the site hero.
 
 **Does Glacier's own CLI use the Glacier CLI module?**
-Yes — it must. Glacier ships a `glacier` CLI binary built entirely with its own CLI module. Anywhere the banner is rendered at runtime — `glacier --version`, welcome screens, error contexts — that rendering goes through the CLI module's banner feature, never via bespoke code. If the CLI module can't render the banner correctly, that's a bug in the CLI module, surfaced immediately by Glacier's own tooling. Dogfooding is the project's strongest credibility signal.
+Yes :  it must. Glacier ships a `glacier` CLI binary built entirely with its own CLI module. Anywhere the banner is rendered at runtime :  `glacier --version`, welcome screens, error contexts :  that rendering goes through the CLI module's banner feature, never via bespoke code. If the CLI module can't render the banner correctly, that's a bug in the CLI module, surfaced immediately by Glacier's own tooling. Dogfooding is the project's strongest credibility signal.
 
 ## Decisions & Rationale
 
 This spec was authored from a fully-resolved plan. Each decision is recorded with its rationale.
 
-- **D1 — Name angle: the keeper.** The Glacier-as-keeper framing maps cleanly to the framework's promise and avoids competitor framing (which is forbidden by the bootstrap).
-- **D2 — Tagline: "Less plumbing. More Go."** Two short noun phrases, strong rhythm, says exactly what the framework does.
-- **D3 — Two ASCII logo variants.** Banner for spacious contexts (README, site hero), compact wordmark for tight contexts (`--version`).
-- **D4 — Wordmark style: ANSI Shadow.** High visual weight; renders identically in any modern monospace terminal.
-- **D5 — Mascot: "Glacier the Bear."** Variant A wide-and-friendly polar bear in block characters (`▟ ▀ ▙ █ ● ▼`); 5 lines × ~14 cols. Block characters render cleanly in any monospace terminal; the 5-line form aligns with the wordmark's 6-line height.
-- **D6 — Palette: dark-first cyan/teal accents, encoded as semantic tokens.** Each token bound to a role, never used decoratively. Light-mode tokens deferred to the site spec.
-- **D7 — Typography: Inter, Space Grotesk, JetBrains Mono.** Open-source, performant, dev-tool-native, complementary personalities.
-- **D8 — Go naming conventions.** Effective Go and the standard library, codified here as the single canonical reference.
-- **D9 — CLI naming conventions.** Patterns developers expect from `git`, `kubectl`, `cargo`. POSIX/GNU long-option compatible.
-- **D10 — Error-message conventions, two registers.** Library errors and CLI errors serve different audiences; consistent style within each.
-- **D11 — Voice & tone.** Direct, second person, examples-first, honest about tradeoffs, no superlatives. The ban on superlatives forces specifics.
-- **D12 — The Promise.** Four developer-feel statements that every component spec is reviewed against. The user-facing translation of the mission.
-- **D13 — Logo art committed as plaintext under `assets/logo/`.** Single source of truth; no regeneration at build time. Future CLI module embeds via `//go:embed`.
-- **D14 — Identity adds zero Go dependencies.** Fonts are vendored when the site is built, not loaded from a third-party CDN.
-- **D15 — Dogfooding is a project commitment.** Glacier ships a `glacier` CLI binary built with its own CLI module. The brand-identity assets are consumed by that binary via the CLI module's banner feature; bespoke rendering is forbidden.
-- **D37 — Project name: Glacier.** Capital G in prose; lowercase in import paths (`github.com/nathanbrophy/glacier`) and identifiers. The "mongoose" name and original mascot are retired.
-- **D40 — Wordmark: "GLACIER" in ANSI Shadow style.** 6 lines × ~52 cols. The I letterform uses a serif variant (8 chars wide) for legibility between adjacent letters.
-- **D41 — Wordmark vertical 6-stop ice gradient.** Applied at render time via 24-bit ANSI SGR escapes; raw file remains plain ASCII for universal compatibility.
-- **D42 — Three new palette tokens.** `--mg-cyan-100`, `--mg-cyan-700`, `--mg-teal-700` added as gradient stops; each bound to a role per spec-0001 color rules.
-- **D43 — Mascot tiny form: `ʕ•ᴥ•ʔ` kaomoji.** Single-line; used for prompt prefixes, status bars, inline references.
-- **D44 — Mascot banner form: "Glacier the Bear."** Variant A wide-and-friendly polar bear, 5 lines × ~14 cols, block characters.
-- **D45 — Expression-shifting mascot for state cues.** Calm `ʕ•ᴥ•ʔ` (INFO/DEBUG); Confident `ʕ⌐■-■ʔ` (NOTICE); Thinking `ʕ•_•ʔ`; Alarmed `ʕ◉_◉ʔ` (WARN); Error `ʕ× ×ʔ`.
+- **D1 :  Name angle: the keeper.** The Glacier-as-keeper framing maps cleanly to the framework's promise and avoids competitor framing (which is forbidden by the bootstrap).
+- **D2 :  Tagline: "Less plumbing. More Go."** Two short noun phrases, strong rhythm, says exactly what the framework does.
+- **D3 :  Two ASCII logo variants.** Banner for spacious contexts (README, site hero), compact wordmark for tight contexts (`--version`).
+- **D4 :  Wordmark style: ANSI Shadow.** High visual weight; renders identically in any modern monospace terminal.
+- **D5 :  Mascot: "Glacier the Bear."** Variant A wide-and-friendly polar bear in block characters (`▟ ▀ ▙ █ ● ▼`); 5 lines × ~14 cols. Block characters render cleanly in any monospace terminal; the 5-line form aligns with the wordmark's 6-line height.
+- **D6 :  Palette: dark-first cyan/teal accents, encoded as semantic tokens.** Each token bound to a role, never used decoratively. Light-mode tokens deferred to the site spec.
+- **D7 :  Typography: Inter, Space Grotesk, JetBrains Mono.** Open-source, performant, dev-tool-native, complementary personalities.
+- **D8 :  Go naming conventions.** Effective Go and the standard library, codified here as the single canonical reference.
+- **D9 :  CLI naming conventions.** Patterns developers expect from `git`, `kubectl`, `cargo`. POSIX/GNU long-option compatible.
+- **D10 :  Error-message conventions, two registers.** Library errors and CLI errors serve different audiences; consistent style within each.
+- **D11 :  Voice & tone.** Direct, second person, examples-first, honest about tradeoffs, no superlatives. The ban on superlatives forces specifics.
+- **D12 :  The Promise.** Four developer-feel statements that every component spec is reviewed against. The user-facing translation of the mission.
+- **D13 :  Logo art committed as plaintext under `assets/logo/`.** Single source of truth; no regeneration at build time. Future CLI module embeds via `//go:embed`.
+- **D14 :  Identity adds zero Go dependencies.** Fonts are vendored when the site is built, not loaded from a third-party CDN.
+- **D15 :  Dogfooding is a project commitment.** Glacier ships a `glacier` CLI binary built with its own CLI module. The brand-identity assets are consumed by that binary via the CLI module's banner feature; bespoke rendering is forbidden.
+- **D37 :  Project name: Glacier.** Capital G in prose; lowercase in import paths (`github.com/nathanbrophy/glacier`) and identifiers. The "mongoose" name and original mascot are retired.
+- **D40 :  Wordmark: "GLACIER" in ANSI Shadow style.** 6 lines × ~52 cols. The I letterform uses a serif variant (8 chars wide) for legibility between adjacent letters.
+- **D41 :  Wordmark vertical 6-stop ice gradient.** Applied at render time via 24-bit ANSI SGR escapes; raw file remains plain ASCII for universal compatibility.
+- **D42 :  Three new palette tokens.** `--mg-cyan-100`, `--mg-cyan-700`, `--mg-teal-700` added as gradient stops; each bound to a role per spec-0001 color rules.
+- **D43 :  Mascot tiny form: `ʕ•ᴥ•ʔ` kaomoji.** Single-line; used for prompt prefixes, status bars, inline references.
+- **D44 :  Mascot banner form: "Glacier the Bear."** Variant A wide-and-friendly polar bear, 5 lines × ~14 cols, block characters.
+- **D45 :  Expression-shifting mascot for state cues.** Calm `ʕ•ᴥ•ʔ` (INFO/DEBUG); Confident `ʕ⌐■-■ʔ` (NOTICE); Thinking `ʕ•_•ʔ`; Alarmed `ʕ◉_◉ʔ` (WARN); Error `ʕ× ×ʔ`.
 
 ## Open Questions
 

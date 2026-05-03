@@ -21,7 +21,7 @@ type registry struct {
 type registration struct {
 	path     string
 	defaults any
-	store    func(any) // atomically stores a new *T
+	store    func(any)  // atomically stores a new *T
 	load     func() any // atomically loads the current *T as any
 }
 

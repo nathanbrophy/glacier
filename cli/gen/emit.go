@@ -98,7 +98,7 @@ func emitRegistrations(w io.Writer, pkgName string, commands []DiscoveredCommand
 			opts = append(opts, "cli.WithAlias("+strconv.Quote(pr.Cmd.Alias)+")")
 		}
 
-		// Field-level markers — sort field names for determinism.
+		// Field-level markers :  sort field names for determinism.
 		fieldNames := make([]string, 0, len(pr.Fields))
 		for fn := range pr.Fields {
 			fieldNames = append(fieldNames, fn)

@@ -289,6 +289,20 @@ func (c *TestCmd) Run(ctx context.Context) error {
 
 	sum := buildSummary(results, coverage, wallSeconds, len(packageSet), c.Slowest)
 
+	// Harvest benchmark result lines from per-test output. With go test -json,
+	// the bench result line "BenchmarkFoo-N  iter ns/op B/op allocs/op" is
+	// frequently split across multiple "output" events; accumulating the
+	// full per-test buffer and parsing it whole avoids partial lines.
+	for k, b := range testOutputs {
+		// Only consider tests whose name starts with "Benchmark" to keep
+		// non-bench test output out of the bench parser.
+		idx := strings.LastIndex(k, "/")
+		if idx < 0 || !strings.HasPrefix(k[idx+1:], "Benchmark") {
+			continue
+		}
+		benchLines = append(benchLines, b.String())
+	}
+
 	// Benchmark baseline compare / update.
 	benchEntries := benchcmp.Parse(strings.Join(benchLines, "\n"))
 
@@ -296,6 +310,14 @@ func (c *TestCmd) Run(ctx context.Context) error {
 		if wErr := writeBaseline(c.Baseline, benchEntries); wErr != nil {
 			return fmt.Errorf("test: write baseline: %w", wErr)
 		}
+	}
+
+	if c.Bench != "" && len(benchEntries) > 0 {
+		// Always print a human-readable bench summary when benchmarks ran.
+		// Without this, only the bare go-test output and a regression block
+		// on failure were visible; passing benchmarks were silent.
+		baseline, _ := loadBaseline(c.Baseline)
+		printBenchSummary(os.Stderr, benchEntries, baseline)
 	}
 
 	if c.Bench != "" && !c.UpdateBaseline && len(benchEntries) > 0 {
@@ -451,6 +473,206 @@ func parseCoverage(lines []string) float64 {
 	return 0
 }
 
+// printBenchSummary renders a human-readable benchmark summary box to w.
+// Each entry shows ns/op, B/op, and allocs/op aligned in columns. When a
+// baseline is supplied, an extra column shows the delta vs baseline as a
+// percentage with green / yellow / red coloring (faster / similar / slower).
+func printBenchSummary(w io.Writer, current, baseline []benchcmp.BenchEntry) {
+	useColor := term.ShouldColor(w)
+	const (
+		reset       = "\x1b[0m"
+		bold        = "\x1b[1m"
+		dim         = "\x1b[2m"
+		labelDim    = "\x1b[2;38;5;87m"
+		nameMagenta = "\x1b[38;5;213m"
+		green       = "\x1b[38;5;84m"
+		yellow      = "\x1b[38;5;228m"
+		red         = "\x1b[38;5;203m"
+		cyan        = "\x1b[38;5;87m"
+	)
+	wrap := func(prefix, s string) string {
+		if !useColor {
+			return s
+		}
+		return prefix + s + reset
+	}
+	// padLeft pads s to width n by prepending spaces. Always operates on
+	// visible content (no ANSI), so callers should pad BEFORE wrapping color.
+	padLeft := func(s string, n int) string {
+		if len(s) >= n {
+			return s
+		}
+		return strings.Repeat(" ", n-len(s)) + s
+	}
+	// padRight pads s to width n by appending spaces.
+	padRight := func(s string, n int) string {
+		if len(s) >= n {
+			return s
+		}
+		return s + strings.Repeat(" ", n-len(s))
+	}
+
+	// Index baseline by name for quick lookup.
+	base := make(map[string]benchcmp.BenchEntry, len(baseline))
+	for _, b := range baseline {
+		base[b.Name] = b
+	}
+
+	// Compute column widths for alignment from VISIBLE strings.
+	type row struct {
+		name, ns, b, alloc, delta string
+		deltaColor                string
+	}
+	rows := make([]row, 0, len(current))
+	const sep = "   "
+	colW := struct {
+		name, ns, b, alloc, delta int
+	}{
+		name: len("name"), ns: len("ns/op"), b: len("B/op"),
+		alloc: len("allocs/op"), delta: len("vs base"),
+	}
+	hasBaseline := len(baseline) > 0
+	for _, e := range current {
+		r := row{
+			name:  e.Name,
+			ns:    formatNs(e.NsPerOp),
+			b:     fmt.Sprintf("%d", e.BPerOp),
+			alloc: fmt.Sprintf("%d", e.AllocsPerOp),
+		}
+		if hasBaseline {
+			if be, ok := base[e.Name]; ok && be.NsPerOp > 0 {
+				delta := (e.NsPerOp - be.NsPerOp) / be.NsPerOp * 100.0
+				r.delta = fmt.Sprintf("%+6.1f%%", delta)
+				switch {
+				case delta < -1.0:
+					r.deltaColor = green
+				case delta > 5.0:
+					r.deltaColor = red
+				case delta > 1.0:
+					r.deltaColor = yellow
+				default:
+					r.deltaColor = labelDim
+				}
+			} else {
+				r.delta = "(new)"
+				r.deltaColor = labelDim
+			}
+		}
+		if len(r.name) > colW.name {
+			colW.name = len(r.name)
+		}
+		if len(r.ns) > colW.ns {
+			colW.ns = len(r.ns)
+		}
+		if len(r.b) > colW.b {
+			colW.b = len(r.b)
+		}
+		if len(r.alloc) > colW.alloc {
+			colW.alloc = len(r.alloc)
+		}
+		if len(r.delta) > colW.delta {
+			colW.delta = len(r.delta)
+		}
+		rows = append(rows, r)
+	}
+
+	var sb strings.Builder
+
+	// Header row: pad first, then color, so column widths match.
+	hdrName := padRight("name", colW.name)
+	hdrNs := padLeft("ns/op", colW.ns)
+	hdrB := padLeft("B/op", colW.b)
+	hdrAlloc := padLeft("allocs/op", colW.alloc)
+	headerLine := wrap(bold+cyan, hdrName) + sep +
+		wrap(bold+cyan, hdrNs) + sep +
+		wrap(bold+cyan, hdrB) + sep +
+		wrap(bold+cyan, hdrAlloc)
+	if hasBaseline {
+		headerLine += sep + wrap(bold+cyan, padLeft("vs base", colW.delta))
+	}
+	sb.WriteString(headerLine)
+	sb.WriteString("\n")
+
+	// Underline.
+	totalVis := colW.name + colW.ns + colW.b + colW.alloc + 3*len(sep)
+	if hasBaseline {
+		totalVis += colW.delta + len(sep)
+	}
+	sb.WriteString(wrap(dim+cyan, strings.Repeat("─", totalVis)))
+	sb.WriteString("\n")
+
+	for _, r := range rows {
+		line := wrap(nameMagenta, padRight(r.name, colW.name)) + sep +
+			wrap(cyan, padLeft(r.ns, colW.ns)) + sep +
+			wrap(cyan, padLeft(r.b, colW.b)) + sep +
+			wrap(cyan, padLeft(r.alloc, colW.alloc))
+		if hasBaseline {
+			line += sep + wrap(r.deltaColor, padLeft(r.delta, colW.delta))
+		}
+		sb.WriteString(line)
+		sb.WriteString("\n")
+	}
+
+	sb.WriteString("\n")
+	if hasBaseline {
+		sb.WriteString(wrap(labelDim, "baseline: "+relativeBaselinePath()))
+	} else {
+		sb.WriteString(wrap(labelDim, "no baseline yet; run with --update-baseline to record"))
+	}
+	sb.WriteString("\n")
+
+	box := term.Box(
+		sb.String(),
+		term.WithTitle(fmt.Sprintf("bench results  %d benchmark(s)", len(current))),
+		term.WithRoundedCorners(),
+		term.WithPadding(1, 2, 1, 2),
+	)
+	fmt.Fprintln(w, box)
+}
+
+// formatNs formats a ns/op value at human-readable scale (ns / µs / ms / s).
+func formatNs(ns float64) string {
+	switch {
+	case ns < 1e3:
+		return fmt.Sprintf("%.1f ns", ns)
+	case ns < 1e6:
+		return fmt.Sprintf("%.2f µs", ns/1e3)
+	case ns < 1e9:
+		return fmt.Sprintf("%.2f ms", ns/1e6)
+	default:
+		return fmt.Sprintf("%.2f s", ns/1e9)
+	}
+}
+
+// relativeBaselinePath returns the bench baseline file path relative to the
+// current working directory if possible, falling back to the absolute path.
+func relativeBaselinePath() string {
+	const def = ".glacier/bench-baseline.json"
+	if _, err := os.Stat(def); err == nil {
+		return def
+	}
+	return def
+}
+
+// lenVisible returns the visible character count of s after stripping ANSI
+// escapes. Local helper because the term package's visibleWidth is unexported
+// at the package boundary; this duplicates the small CSI-strip logic.
+func lenVisible(s string) int {
+	n := 0
+	for i := 0; i < len(s); i++ {
+		if s[i] == 0x1b && i+1 < len(s) && s[i+1] == '[' {
+			// Skip until final byte 0x40..0x7E
+			i += 2
+			for i < len(s) && (s[i] < 0x40 || s[i] > 0x7E) {
+				i++
+			}
+			continue
+		}
+		n++
+	}
+	return n
+}
+
 // emitPackageResultLine writes one streaming "PKG (Xs)" line per completed
 // package, colored by pass/fail/skip semantics.
 func emitPackageResultLine(w io.Writer, action, pkg string, elapsed float64) {
@@ -583,9 +805,9 @@ func printTestSummary(sum Summary) {
 // summaryColors holds the styled-string functions used by printTestSummary.
 // Centralized so the same palette is consistent across pass/fail/skip lines.
 type summaryColors struct {
-	pass, fail, skip, warn, dim                 func(string) string
-	pkg, testName, label, numNeutral, heading   func(string) string
-	cmd                                         func(string) string
+	pass, fail, skip, warn, dim               func(string) string
+	pkg, testName, label, numNeutral, heading func(string) string
+	cmd                                       func(string) string
 }
 
 func newSummaryColors(useColor bool) summaryColors {

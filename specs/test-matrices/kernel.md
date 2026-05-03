@@ -1,20 +1,20 @@
 # Lynx Kernel-Tier Test Matrix (option, errs, log, assert, term)
 
-> **Scope:** §21.1, §21.2, §21.3, §21.4, §21.14 — five Tier-0 kernel packages — plus the §23.4/.5/.13/.14/.16/.17 amendments that override them.
+> **Scope:** §21.1, §21.2, §21.3, §21.4, §21.14 :  five Tier-0 kernel packages :  plus the §23.4/.5/.13/.14/.16/.17 amendments that override them.
 > **Standard:** `go test ./...` against the kernel must give 100% release confidence with zero manual verification.
-> **Helper rule:** Once the bootstrap subset is proven, every later test uses `assert/`, `assert/require/`, `fixture/`, and `mock/` — never bare `if got != want`, never testify, never hand-rolled stubs. Bootstrap exception is documented per package below.
+> **Helper rule:** Once the bootstrap subset is proven, every later test uses `assert/`, `assert/require/`, `fixture/`, and `mock/` :  never bare `if got != want`, never testify, never hand-rolled stubs. Bootstrap exception is documented per package below.
 
 ---
 
 ## Package: `option/`
 
 ### Test files
-- `option/option_test.go` — unit tests (Apply, Validate, Required, OptionFunc, Mode/Strict)
-- `option/option_bench_test.go` — benchmarks for the recalibrated D35 targets and the NF1 zero-alloc claim
-- `option/option_fuzz_test.go` — fuzz `Required`'s `name` argument round-trip in error formatting
-- `option/option_property_test.go` — algebraic-property tests (idempotency, last-wins, nil-skip)
-- `option/option_concurrent_test.go` — race-detector tests for stateless concurrency claim (NF2)
-- `option/example_test.go` — runnable `Example*` functions per NF7
+- `option/option_test.go` :  unit tests (Apply, Validate, Required, OptionFunc, Mode/Strict)
+- `option/option_bench_test.go` :  benchmarks for the recalibrated D35 targets and the NF1 zero-alloc claim
+- `option/option_fuzz_test.go` :  fuzz `Required`'s `name` argument round-trip in error formatting
+- `option/option_property_test.go` :  algebraic-property tests (idempotency, last-wins, nil-skip)
+- `option/option_concurrent_test.go` :  race-detector tests for stateless concurrency claim (NF2)
+- `option/example_test.go` :  runnable `Example*` functions per NF7
 
 ### Test matrix
 
@@ -36,8 +36,8 @@
 | 14 | TestApplyOnNonStructT | §21.1 E12 | unit | T is a `[]string` slice; option appends. | `assert.Equal` |
 | 15 | TestApplyOptionPanicsPropagates | §21.1 E10 | unit | An option that calls `panic("x")` → Apply does not recover; panic visible. | `assert.Panics` (via runtime helper, see Bootstrap subset note below) |
 | 16 | TestApplyOptionMutateThenError | §21.1 E9 | unit | Documented behavior: option mutates state then errors → partial state visible (transactional violation accepted). | `assert.NotEqual` (T != zero) |
-| 17 | TestOptionFuncSatisfiesOption | §21.1 F2 | unit | `var _ Option[T] = OptionFunc[T](nil)` — interface conformance. | bare type assertion |
-| 18 | TestOptionFuncTypedNilApplyPanics | §21.1 F2 | unit | Calling `apply` on a `OptionFunc` whose underlying func is nil panics. (Edge — added by Lynx.) | `assert.Panics` |
+| 17 | TestOptionFuncSatisfiesOption | §21.1 F2 | unit | `var _ Option[T] = OptionFunc[T](nil)` :  interface conformance. | bare type assertion |
+| 18 | TestOptionFuncTypedNilApplyPanics | §21.1 F2 | unit | Calling `apply` on a `OptionFunc` whose underlying func is nil panics. (Edge :  added by Lynx.) | `assert.Panics` |
 | 19 | TestStrictReturnsStrictMode | §21.1 F5 | unit | `Strict().strict == true` (verified indirectly via Apply behavior since field unexported). | composition with TestApplyStrictMultipleErrors |
 | 20 | TestValidateNoValidators | §21.1 F7 | unit | `Validate(&t)` with empty validators → nil. | `assert.NoError` |
 | 21 | TestValidateAllPass | §21.1 F7 | unit | Three validators all return nil → nil. | `assert.NoError` |
@@ -58,7 +58,7 @@
 | 36 | BenchmarkApplyStrictWithFailures | §21.1 F5 | bench | Strict 10 options, 5 fail; allocates the join + errs slice. Documented expected number. | `testing.B` |
 | 37 | BenchmarkValidate | §21.1 F7 | bench | 5 validators, all pass; per-op ns. | `testing.B` |
 | 38 | BenchmarkRequired | §21.1 F8 | bench | Required validator hot path. | `testing.B` |
-| 39 | TestApplyConcurrent | §21.1 NF2 | race | 100 goroutines call `Apply(samepts)` against local T each; runs under `-race`. | `concur.WaitGroup` is leaf-tier — use stdlib `sync.WaitGroup`; `assert.NoError` |
+| 39 | TestApplyConcurrent | §21.1 NF2 | race | 100 goroutines call `Apply(samepts)` against local T each; runs under `-race`. | `concur.WaitGroup` is leaf-tier :  use stdlib `sync.WaitGroup`; `assert.NoError` |
 | 40 | TestValidateConcurrent | §21.1 NF2 | race | 100 goroutines call `Validate(&t, vs...)` on independent t. | stdlib `sync.WaitGroup`, `assert.NoError` |
 | 41 | PropertyApplyIdempotent | §21.1 F11 | property | For any list of pure idempotent options, `Apply(opts).Apply(opts)` == `Apply(opts)`. (Generative table-driven.) | `fixture/random` (kernel-allowed seedable rand), `assert.Equal` |
 | 42 | PropertyApplyNilSkipPermutation | §21.1 F9 | property | Inserting nils anywhere in opts produces same result as opts without nils. | `assert.Equal` over permutations |
@@ -73,7 +73,7 @@
 `option` does not depend on `assert`, but its tests will use `assert`. Since `assert` (in turn) imports `option` for its `EqualOption` types, **we have a circular `_test` problem**: `assert`'s tests should not depend on `option`-with-assert-tests being green. The resolution:
 
 - `option`'s tests use `assert` freely. The cycle is broken at the **`_test.go` boundary**: `assert/equal_test.go` does NOT import `option/` for setup of its own correctness; it uses bare `if` for the bootstrap.
-- For `TestApplyOptionPanicsPropagates` (T#15) and similar panic checks, `assert.Panics` is itself in the bootstrap subset — but those tests can be written with bare `defer func() { if r := recover(); r == nil { t.Fatal("expected panic") } }()`.
+- For `TestApplyOptionPanicsPropagates` (T#15) and similar panic checks, `assert.Panics` is itself in the bootstrap subset :  but those tests can be written with bare `defer func() { if r := recover(); r == nil { t.Fatal("expected panic") } }()`.
 
 ### Coverage target
 - **Line coverage:** 100% (the package is ~200 LOC; everything is reachable)
@@ -86,24 +86,24 @@
 - **L-add-2:** `Apply` with options that close over a goroutine-shared variable, racing under `-race` → covered by T#39, but with a write-then-read variant inside the option to catch any unintended sharing in the implementation.
 - **L-add-3:** `Validate` on a target whose pointer changes mid-validation (validator that swaps `*t` to a new value) → documented as "validator should not mutate t"; assert it does not crash even if violated.
 - **L-add-4:** `Required` with `name == ""` → produces `option: required: field "" not set`. Allowed; documented; tested.
-- **L-add-5:** `Apply` with 10,000 nil-only options — should remain O(n) and not allocate (NF1).
-- **L-add-6:** Memory: `Apply`'s `errs` slice in default mode should remain `nil` (never allocated) when no error occurs — verified by `AllocsPerRun == 0`.
+- **L-add-5:** `Apply` with 10,000 nil-only options :  should remain O(n) and not allocate (NF1).
+- **L-add-6:** Memory: `Apply`'s `errs` slice in default mode should remain `nil` (never allocated) when no error occurs :  verified by `AllocsPerRun == 0`.
 
 ---
 
 ## Package: `errs/`
 
 ### Test files
-- `errs/wrap_test.go` — Wrap, WithStackTrace, StackOf, *Wrapper
-- `errs/join_test.go` — Join semantics
-- `errs/chain_test.go` — Chain iterator over the error tree
-- `errs/sentinel_test.go` — Sentinel + register validator (incl. fuzz)
+- `errs/wrap_test.go` :  Wrap, WithStackTrace, StackOf, *Wrapper
+- `errs/join_test.go` :  Join semantics
+- `errs/chain_test.go` :  Chain iterator over the error tree
+- `errs/sentinel_test.go` :  Sentinel + register validator (incl. fuzz)
 - `errs/isany_test.go`
 - `errs/retryable_test.go`
 - `errs/coded_test.go`
-- `errs/fuzz_test.go` — `FuzzSentinelRegister`
-- `errs/property_test.go` — Chain DFS, Wrap idempotency
-- `errs/bench_test.go` — Wrap allocations, Chain throughput
+- `errs/fuzz_test.go` :  `FuzzSentinelRegister`
+- `errs/property_test.go` :  Chain DFS, Wrap idempotency
+- `errs/bench_test.go` :  Wrap allocations, Chain throughput
 - `errs/example_test.go`
 
 ### Test matrix
@@ -136,14 +136,14 @@
 | 24 | TestChainOverErrorsJoin | §21.2 F6, E12 | unit | `Chain(errors.Join(a, b, c))` yields the join, then a, b, c (DFS). | `assert.Equal` over slice |
 | 25 | TestChainNestedJoinDFS | §21.2 F6 | unit | `errors.Join(a, errors.Join(b, c))` → DFS yields `[join, a, innerJoin, b, c]`. | `assert.Equal` |
 | 26 | TestChainEarlyTermination | §21.2 F6, NF3, E13 | unit | Receiver returns false after 2 yields → exactly 2 yields seen. | counter + `assert.Equal(2)` |
-| 27 | TestChainComposesWithFluentTake | §21.2 NF3 | unit | (Cross-package smoke; lives in `fluent_integration_test.go`.) Bound iteration. | `assert.Len` after `fluent.Take(Chain(err), 5)` — but fluent is leaf; for kernel test, simulate with a hand-rolled `for ... break`. |
+| 27 | TestChainComposesWithFluentTake | §21.2 NF3 | unit | (Cross-package smoke; lives in `fluent_integration_test.go`.) Bound iteration. | `assert.Len` after `fluent.Take(Chain(err), 5)` :  but fluent is leaf; for kernel test, simulate with a hand-rolled `for ... break`. |
 | 28 | TestSentinelValid | §21.2 F7, E16 | unit | `Sentinel("pkg: cause")` constructs without panic; `.Error() == "pkg: cause"`. | `assert.NotPanics`, `assert.Equal` |
 | 29 | TestSentinelTrailingEmptyAction | §21.2 E16 | unit | `Sentinel("pkg:")` valid (lowercase, has colon, no period). | `assert.NotPanics` |
 | 30 | TestSentinelUppercasePanics | §21.2 E14, F7 | unit | `Sentinel("Pkg: cause")` → panics with explanatory text including `mongoose library register`. | `assert.PanicsWithMessage(contains "register")` |
 | 31 | TestSentinelTrailingPeriodPanics | §21.2 E15 | unit | `Sentinel("pkg: cause.")` panics. | `assert.Panics` |
 | 32 | TestSentinelNoColonPanics | §21.2 E15 | unit | `Sentinel("nocolon")` panics. | `assert.Panics` |
 | 33 | TestSentinelEmptyPanics | §21.2 F7 | unit | `Sentinel("")` panics. | `assert.Panics` |
-| 34 | TestSentinelNonAsciiUppercase | §21.2 F7 | unit | `Sentinel("pkg: Ünicode")` — Ü is not ASCII A-Z; doc explicitly ASCII rule; should NOT panic. (Edge: confirms the implementation uses ASCII-only check, not Unicode.) | `assert.NotPanics` |
+| 34 | TestSentinelNonAsciiUppercase | §21.2 F7 | unit | `Sentinel("pkg: Ünicode")` :  Ü is not ASCII A-Z; doc explicitly ASCII rule; should NOT panic. (Edge: confirms the implementation uses ASCII-only check, not Unicode.) | `assert.NotPanics` |
 | 35 | FuzzSentinelRegister | §21.2 F7 | fuzz | Fuzz `validRegister` invariants: never accepts uppercase ASCII; never accepts trailing period; accepts iff pattern is satisfied. Confirms panic-vs-not is consistent. | `testing.F`, seed corpus from spec examples |
 | 36 | TestIsAnyMatches | §21.2 F8 | unit | `IsAny(io.EOF, fs.ErrNotExist, io.EOF) == true`. | `assert.True` |
 | 37 | TestIsAnyNoMatch | §21.2 F8, E18 | unit | `IsAny(io.EOF, fs.ErrNotExist) == false`. | `assert.False` |
@@ -187,7 +187,7 @@
 | 75 | TestSurfaceClosed_ErrsPackage | §21.2 NF8 | unit | API snapshot: 12 exports (Wrap, *Wrapper, *Wrapper.{Error,Unwrap,WithStackTrace}, StackOf, Join, Chain, Sentinel, IsAny, MarkRetryable, Retryable, Coded, Code). | `fixture/golden` snapshot |
 
 ### Bootstrap subset
-`errs` does not depend on `assert` directly; safe to use `assert` for all tests. The only nuance: panic-detection tests (`TestSentinelUppercasePanics` etc.) — `assert.Panics` is bootstrap-tested itself, so for `errs` we can rely on it. **No bare-`if` needed.**
+`errs` does not depend on `assert` directly; safe to use `assert` for all tests. The only nuance: panic-detection tests (`TestSentinelUppercasePanics` etc.) :  `assert.Panics` is bootstrap-tested itself, so for `errs` we can rely on it. **No bare-`if` needed.**
 
 ### Coverage target
 - **Line coverage:** 100% (~250 LOC; everything reachable)
@@ -196,12 +196,12 @@
 - `validRegister` (unexported) must be 100% covered via `TestSentinel*` tests.
 
 ### Edge cases not in the spec but worth testing
-- **L-add-1:** `Wrap(err, prefix)` where `prefix` contains a colon already (e.g., `"pkg: act:"`) — does the "rejoin" produce a register-conforming string? Documented and tested.
+- **L-add-1:** `Wrap(err, prefix)` where `prefix` contains a colon already (e.g., `"pkg: act:"`) :  does the "rejoin" produce a register-conforming string? Documented and tested.
 - **L-add-2:** `Sentinel` with NUL byte in text → currently passes the validator (no rule against NUL). Spec gap; recommend adding NUL rejection to register or document allowance. Test fails-loud either way.
-- **L-add-3:** `WithStackTrace()` called from a deferred function vs from main path — frame[0] differs; documented and tested.
+- **L-add-3:** `WithStackTrace()` called from a deferred function vs from main path :  frame[0] differs; documented and tested.
 - **L-add-4:** `Chain` over a self-referential cycle (custom error whose `Unwrap()` returns itself) → infinite loop currently. Spec is silent. **Recommend cycle detection in `Chain`** matching `assert.Equal`'s discipline. New edge case for spec amendment.
-- **L-add-5:** `MarkRetryable(MarkRetryable(e))` — double-wrap. `Retryable` finds true on outer; `errors.Is(_, e) == true`; does double-wrap leak unbounded memory if applied in a retry loop? Test bounds it.
-- **L-add-6:** Sentinel constructed from a string literal vs runtime-built `fmt.Sprintf` — both should be supported; both valid-register strings should not panic. Tested.
+- **L-add-5:** `MarkRetryable(MarkRetryable(e))` :  double-wrap. `Retryable` finds true on outer; `errors.Is(_, e) == true`; does double-wrap leak unbounded memory if applied in a retry loop? Test bounds it.
+- **L-add-6:** Sentinel constructed from a string literal vs runtime-built `fmt.Sprintf` :  both should be supported; both valid-register strings should not panic. Tested.
 
 ---
 
@@ -209,16 +209,16 @@
 
 ### Test files
 - `log/level_test.go`
-- `log/logger_test.go` — Default, SetDefault, From, Inject
-- `log/with_test.go` — context-attached attrs
-- `log/handler_test.go` — NewHandler attribute order, color, etc.
+- `log/logger_test.go` :  Default, SetDefault, From, Inject
+- `log/with_test.go` :  context-attached attrs
+- `log/handler_test.go` :  NewHandler attribute order, color, etc.
 - `log/json_handler_test.go`
 - `log/redact_test.go`
-- `log/color_test.go` — ColorMode + env-var precedence
-- `log/concurrent_test.go` — race-detector tests
-- `log/bench_test.go` — D35 benchmarks
+- `log/color_test.go` :  ColorMode + env-var precedence
+- `log/concurrent_test.go` :  race-detector tests
+- `log/bench_test.go` :  D35 benchmarks
 - `log/example_test.go`
-- `log/golden_test.go` — golden-file output for handler format
+- `log/golden_test.go` :  golden-file output for handler format
 
 ### Test matrix
 
@@ -255,7 +255,7 @@
 | 29 | TestWithSourceAddsSource | §21.3 F8, T8 | unit | Source attr present in output. | `assert.Contains "source"` |
 | 30 | TestWithColorAlways | §21.3 F8, F9 | unit | ColorAlways → ANSI escapes present even when writer is buffer. | `assert.Contains "\x1b["` |
 | 31 | TestWithColorNever | §21.3 F9 | unit | ColorNever → no ANSI escapes. | `assert.NotContains "\x1b["` |
-| 32 | TestColorAutoOnTTY | §21.3 F9, T3 | unit | TTY detected via fixture pty → escapes present. | `fixture/term.NewPTY` (in fixture pkg, leaf-allowed for kernel test? — see Bootstrap discipline below) |
+| 32 | TestColorAutoOnTTY | §21.3 F9, T3 | unit | TTY detected via fixture pty → escapes present. | `fixture/term.NewPTY` (in fixture pkg, leaf-allowed for kernel test? :  see Bootstrap discipline below) |
 | 33 | TestColorAutoOffNonTTY | §21.3 E7, E15, T4 | unit | `bytes.Buffer` writer → no escapes. | `assert.NotContains "\x1b["` |
 | 34 | TestNoColorEnvSuppresses | §21.3 F12, T5 | unit | `NO_COLOR=1` → escapes off even with ColorAlways requested. | `t.Setenv` (stdlib), buffer |
 | 35 | TestGlacierNoColorEnvSuppresses | §21.3 F12, T6 | unit | `GLACIER_NO_COLOR=1` → escapes off. (Note: §23.18 renamed `MONGOOSE_NO_COLOR` → `GLACIER_NO_COLOR`.) | `t.Setenv`, buffer |
@@ -292,7 +292,7 @@
 | 66 | TestHandlerCloseDiscipline | §23.16 | unit | log's handlers don't appear in §23.16 Close audit (they're stateless wrappers around `slog.Handler`). Confirm no `Close()` method on `*MongooseHandler` to enforce statelessness; if added, lifecycle-test it. | reflect-based check |
 
 ### Bootstrap subset
-`log` imports `option` and `term` (post-§23.2). `log`'s tests use `assert` and `fixture` freely. **One care point:** if `term` color is mocked for color tests, the mock comes from `term/`'s own test fakes — but kernel-tier rule means we use real `term` (proven by its own tests). For `TestColorAutoOnTTY` we need a PTY fixture; that lives in `fixture/term`. **Resolution:** kernel tests for log use a buffer for non-TTY assertions; the TTY case is covered by an integration test that lives in `term/` itself (or in `fixture/`).
+`log` imports `option` and `term` (post-§23.2). `log`'s tests use `assert` and `fixture` freely. **One care point:** if `term` color is mocked for color tests, the mock comes from `term/`'s own test fakes :  but kernel-tier rule means we use real `term` (proven by its own tests). For `TestColorAutoOnTTY` we need a PTY fixture; that lives in `fixture/term`. **Resolution:** kernel tests for log use a buffer for non-TTY assertions; the TTY case is covered by an integration test that lives in `term/` itself (or in `fixture/`).
 
 ### Coverage target
 - **Line coverage:** ≥95% (some Windows-only / Unix-only paths are platform-skipped on the other)
@@ -302,10 +302,10 @@
 
 ### Edge cases not in the spec but worth testing
 - **L-add-1:** A handler constructed with `WithLevel(slog.Leveler)` where Leveler is dynamic (changes mid-run): must respect new level on the next call. (Spec implies but doesn't test.)
-- **L-add-2:** `With(ctx, slog.Group("nested", slog.String("k","v")))` — group attrs round-trip correctly.
-- **L-add-3:** Ctx attached attrs interaction with `slog.Logger.WithGroup("foo")` — does the group prefix apply to ctx attrs too? Spec gap; needs explicit decision in test.
+- **L-add-2:** `With(ctx, slog.Group("nested", slog.String("k","v")))` :  group attrs round-trip correctly.
+- **L-add-3:** Ctx attached attrs interaction with `slog.Logger.WithGroup("foo")` :  does the group prefix apply to ctx attrs too? Spec gap; needs explicit decision in test.
 - **L-add-4:** A goroutine logs with ctx; ctx is cancelled; record still emits with attached attrs (ctx cancellation has no effect on log emission). Tested.
-- **L-add-5:** `Redact(time.Time)` — time has special slog handling; redact must override.
+- **L-add-5:** `Redact(time.Time)` :  time has special slog handling; redact must override.
 - **L-add-6:** Color-on-pipe-with-`isatty`-mocked-true: confirm we use the writer-fd-based check, not a global one. (Cross-platform.)
 - **L-add-7:** Handler's `Enabled(ctx, level)` correctly returns false for filtered levels (so callers can `if h.Enabled(...)` cheaply).
 
@@ -314,10 +314,10 @@
 ## Package: `assert/` and `assert/require/`
 
 ### Test files
-- `assert/equal_test.go` — Equal across all type kinds (~30 cases; bootstrap-tested with bare-`if`)
-- `assert/equal_options_test.go` — IgnoreOrder, IgnoreCase, IgnoreWhitespace, WithDelta, IgnoreFields
-- `assert/match_test.go` — glob, regex, ignore-case
-- `assert/ordering_test.go` — Greater, Less, GreaterOrEqual, LessOrEqual
+- `assert/equal_test.go` :  Equal across all type kinds (~30 cases; bootstrap-tested with bare-`if`)
+- `assert/equal_options_test.go` :  IgnoreOrder, IgnoreCase, IgnoreWhitespace, WithDelta, IgnoreFields
+- `assert/match_test.go` :  glob, regex, ignore-case
+- `assert/ordering_test.go` :  Greater, Less, GreaterOrEqual, LessOrEqual
 - `assert/indelta_test.go`
 - `assert/jsoneq_test.go`
 - `assert/bytes_test.go`
@@ -325,24 +325,24 @@
 - `assert/contains_test.go`
 - `assert/len_test.go`
 - `assert/eventually_test.go`
-- `assert/error_test.go` — Error, NoError, ErrorIs, ErrorAs
-- `assert/nil_test.go` — Nil, NotNil
-- `assert/bool_test.go` — True, False
+- `assert/error_test.go` :  Error, NoError, ErrorIs, ErrorAs
+- `assert/nil_test.go` :  Nil, NotNil
+- `assert/bool_test.go` :  True, False
 - `assert/halt_test.go`
 - `assert/must_test.go`
-- `assert/diff_test.go` — failure-message diffs
+- `assert/diff_test.go` :  failure-message diffs
 - `assert/concurrent_test.go`
-- `assert/bench_test.go` — D35 + §23.13 fast-path benchmarks
-- `assert/fuzz_test.go` — `FuzzMatchGlob`, `FuzzMatchRegex`
-- `assert/property_test.go` — reflexivity, symmetry
-- `assert/require/require_test.go` — every mirror function halts on failure
+- `assert/bench_test.go` :  D35 + §23.13 fast-path benchmarks
+- `assert/fuzz_test.go` :  `FuzzMatchGlob`, `FuzzMatchRegex`
+- `assert/property_test.go` :  reflexivity, symmetry
+- `assert/require/require_test.go` :  every mirror function halts on failure
 - `assert/example_test.go`
 
 ### Test matrix (assert)
 
 | #  | Name | Spec ref | Type | Description | Test helpers used |
 |----|------|----------|------|-------------|-------------------|
-| **Equal — bootstrap subset (uses bare-`if`)** ||||||
+| **Equal :  bootstrap subset (uses bare-`if`)** ||||||
 | 1  | TestEqual_Bootstrap_PrimitiveInt | §21.4 F2, F11; §23.5 | unit (bootstrap) | `Equal(t, 5, 5)` returns true; mockTB.errors == 0. Bare-`if` only. | mockTB recording, bare `if` |
 | 2  | TestEqual_Bootstrap_PrimitiveString | §21.4 F2; §23.5 | unit (bootstrap) | `Equal(t, "a", "a") == true`. | mockTB, bare `if` |
 | 3  | TestEqual_Bootstrap_NilNil | §21.4 E1 | unit (bootstrap) | `Equal(t, nil, nil) == true`. | bare `if` |
@@ -351,7 +351,7 @@
 | 6  | TestEqual_Bootstrap_TypeMismatchAtTop | §21.4 E3 | unit (bootstrap; via `any`) | `Equal[any](t, (*A)(nil), (*B)(nil)) == false`. (Generic shell does not require T to be `any` here; tested with explicit `any`.) | bare `if` |
 | 7  | TestPrimitiveFastPathBypass | §23.5, §23.13, §23.17 | bench | `BenchmarkEqualPrimitiveFastPath`: 50 ns/op, 0 allocs/op. Uses `testing.AllocsPerRun` to PROVE primitives bypass smart-equal. | `testing.AllocsPerRun == 0`, `testing.B.ReportAllocs` |
 | 8  | TestPrimitiveFastPathTypeNotComparable | §23.5 | unit | If T is not comparable (e.g., `[]int`), the fast path is NOT taken; the slow path is exercised. Verified via instrumenting a sentinel inside slow-path. | mockTB; instrumentation hook (test-only) |
-| **Equal — composition tests (use `assert` itself)** ||||||
+| **Equal :  composition tests (use `assert` itself)** ||||||
 | 9  | TestEqualPointerDeref | §21.4 F11, E4, E5 | unit | `Equal(t, &T{x:1}, &T{x:1}) == true`; `&T{x:1}, &T{x:2} == false`. | `assert.True`, `assert.False`, mockTB |
 | 10 | TestEqualSliceOrdered | §21.4 E6 | unit | `[]int{1,2,3}` vs `[]int{3,2,1}` → false default. | mockTB |
 | 11 | TestEqualSliceIgnoreOrder | §21.4 F12, E6 | unit | Same with `IgnoreOrder()` → true. | mockTB |
@@ -406,7 +406,7 @@
 | 55 | TestMatchRegex | §21.4 F4, E16 | unit | "abc" matches `^[a-c]+$` with `MatchRegex()`. | mockTB |
 | 56 | TestMatchIgnoreCase | §21.4 F4, E15 | unit | "Hello" matches "hello" with `MatchIgnoreCase()`. | mockTB |
 | 57 | TestMatchInvalidRegex | §21.4 F4 | unit | `MatchRegex()` with malformed pattern → reports compile error. | mockTB |
-| 58 | TestMatchSpecialCharsEscapedInGlob | §21.4 F4 | unit | "a.b" does NOT match "a.b" as glob (`.` is literal in glob, but the fixture should use a glob that treats it literally — confirm). | mockTB |
+| 58 | TestMatchSpecialCharsEscapedInGlob | §21.4 F4 | unit | "a.b" does NOT match "a.b" as glob (`.` is literal in glob, but the fixture should use a glob that treats it literally :  confirm). | mockTB |
 | 59 | FuzzMatchGlob | §21.4 F4 | fuzz | Random pattern + input pairs; never panics, returns deterministic bool. | `testing.F` |
 | 60 | FuzzMatchRegex | §21.4 F4 | fuzz | Random regex + input; if compile fails, reports cleanly; never panics. | `testing.F` |
 | **Ordering + Tolerance** ||||||
@@ -469,7 +469,7 @@
 | 112 | PropertyEqualReflexive | §21.4 F2 | property | For any x: `Equal(t, x, x) == true`. (Random values across types.) | random gen |
 | 113 | PropertyEqualSymmetric | §21.4 F2 | property | `Equal(t, x, y) == Equal(t, y, x)`. | random gen |
 | 114 | PropertyEqualTransitiveOnPrimitives | §21.4 F2 | property | If `Equal(a,b) && Equal(b,c)` then `Equal(a,c)`. | random gen |
-| 115 | PropertyMatchEmptyPatternNeverMatches | §21.4 F4 | property | `Match(t, anyString, "")` returns false (or — per spec — empty pattern = empty match-only). Pin the behavior in the test. | random strings |
+| 115 | PropertyMatchEmptyPatternNeverMatches | §21.4 F4 | property | `Match(t, anyString, "")` returns false (or :  per spec :  empty pattern = empty match-only). Pin the behavior in the test. | random strings |
 | 116 | PropertySubsetReflexive | §21.4 F9 | property | `Subset(t, x, x) == true`. | random gen |
 | 117 | PropertyJSONEqEqualToReorderedSerialization | §21.4 F7 | property | Marshal a struct twice; reorder keys; `JSONEq == true`. | random struct gen |
 | 118 | TestSurfaceClosed_AssertPackage | §21.4 NF11 | unit | API snapshot. | `fixture/golden` |
@@ -487,7 +487,7 @@
 | R1 | TestRequireEqualHaltsOnFailure | §21.4 F22, E24, T20 | unit | `require.Equal(mockTB, 1, 2)` calls `mockTB.Errorf` then `mockTB.FailNow`. Subsequent code in the test goroutine does not run. | mockTB; spy on FailNow + sub-goroutine to verify halt |
 | R2 | TestRequireEqualPassNoHalt | §21.4 F22 | unit | `require.Equal(t, 1, 1)` returns true; no FailNow called. | mockTB |
 | R3 | TestRequireForEveryAssertMirror | §21.4 F22, §23.17 | unit | Generated table-driven test: for each assert.X there's a require.X with identical signature; both behave equivalently on pass; require halts on fail. | reflection over package symbols |
-| R4 | TestRequireEqualGenericMirror | §23.17 | unit | `require.Equal[int]`, `require.Equal[string]` — verify generic-for-generic mirror per §23.17. | composition |
+| R4 | TestRequireEqualGenericMirror | §23.17 | unit | `require.Equal[int]`, `require.Equal[string]` :  verify generic-for-generic mirror per §23.17. | composition |
 | R5 | TestRequireGreater | §21.4 F22 | unit | Mirror. | mockTB |
 | R6 | TestRequireMatch | §21.4 F22 | unit | Mirror. | mockTB |
 | R7 | TestRequireJSONEq | §21.4 F22 | unit | Mirror. | mockTB |
@@ -498,7 +498,7 @@
 
 Testing assert with assert is the chicken-and-egg. Resolution:
 
-1. **Bootstrap subset** — these tests use **bare-`if`** + a hand-rolled `mockTB`:
+1. **Bootstrap subset** :  these tests use **bare-`if`** + a hand-rolled `mockTB`:
    - `TestEqual_Bootstrap_PrimitiveInt` (#1)
    - `TestEqual_Bootstrap_PrimitiveString` (#2)
    - `TestEqual_Bootstrap_NilNil` (#3)
@@ -522,55 +522,55 @@ Testing assert with assert is the chicken-and-egg. Resolution:
 
 4. **`require` tests** can use `assert.Equal` freely (since require is built on assert and assert is bootstrap-tested).
 
-5. **`Must/Must2/Mustf` tests** use bare `defer recover()` for panic detection (since `assert.Panics` is part of the bootstrap-tested assertion family — written but tested with bare `if` in the bootstrap layer).
+5. **`Must/Must2/Mustf` tests** use bare `defer recover()` for panic detection (since `assert.Panics` is part of the bootstrap-tested assertion family :  written but tested with bare `if` in the bootstrap layer).
 
 ### Coverage target
 - **Line coverage:** 100% (the package is the test-helper kernel; gaps are unacceptable)
 - **Branch coverage:** ≥98% (some unreachable defensive branches in smart-equal kind switch)
-- **Public-API coverage:** 100% — explicitly verified per #R3 reflection table.
+- **Public-API coverage:** 100% :  explicitly verified per #R3 reflection table.
 - **Smart-equal kind coverage:** every `reflect.Kind` reachable from a typed value has at least one test (Pointer, Map, Slice, Array, Struct, String, Float32, Float64, Int*, Uint*, Bool, Interface, Chan, Func).
 
 ### Edge cases not in the spec but worth testing
-- **L-add-1:** `Equal` on `unsafe.Pointer` — Spec is silent. Document and test.
-- **L-add-2:** `Equal` on a struct with unexported fields — `reflect.DeepEqual` comparison rules apply; document.
-- **L-add-3:** `Equal` on a map with `NaN` keys — `NaN` keys are unreachable in regular maps; document and test panic / no-panic.
+- **L-add-1:** `Equal` on `unsafe.Pointer` :  Spec is silent. Document and test.
+- **L-add-2:** `Equal` on a struct with unexported fields :  `reflect.DeepEqual` comparison rules apply; document.
+- **L-add-3:** `Equal` on a map with `NaN` keys :  `NaN` keys are unreachable in regular maps; document and test panic / no-panic.
 - **L-add-4:** Smart equal on a slice of `*T` where pointers differ but values equal → smart equal dereferences (recursion). Test.
 - **L-add-5:** `IgnoreFields` with field name that doesn't exist on the struct → silently ignored or error? Spec gap. **Recommend explicit error**, test it.
 - **L-add-6:** `WithDelta(d)` where `d < 0` → use absolute value or reject? Spec gap. Test the chosen behavior.
 - **L-add-7:** `Eventually` where `fn` panics → propagate or treat as condition-false? Spec gap. Test.
-- **L-add-8:** `Match(t, "", "")` — empty pattern + empty string. Pin behavior.
-- **L-add-9:** Concurrent `assert.Equal(t, ...)` from goroutines on the SAME `*testing.T` — `t.Errorf` is documented goroutine-safe; verify our wrapper doesn't introduce races (T#101).
-- **L-add-10:** `Must` with `err` that wraps a panic-caused error — does the panic value carry the wrap chain? Test that `errors.Is(recover()-err, originalErr)` works.
-- **L-add-11:** `Must2` generic instantiation with same type for A and B (`Must2[int, int]`) — confirm compiles and works.
-- **L-add-12:** `assert.Len(t, (chan int)(nil), 0)` — nil channel; len returns 0; test it doesn't panic.
-- **L-add-13:** `assert.JSONEq` with embedded `null` values vs missing keys — JSON semantic distinction. Pin.
+- **L-add-8:** `Match(t, "", "")` :  empty pattern + empty string. Pin behavior.
+- **L-add-9:** Concurrent `assert.Equal(t, ...)` from goroutines on the SAME `*testing.T` :  `t.Errorf` is documented goroutine-safe; verify our wrapper doesn't introduce races (T#101).
+- **L-add-10:** `Must` with `err` that wraps a panic-caused error :  does the panic value carry the wrap chain? Test that `errors.Is(recover()-err, originalErr)` works.
+- **L-add-11:** `Must2` generic instantiation with same type for A and B (`Must2[int, int]`) :  confirm compiles and works.
+- **L-add-12:** `assert.Len(t, (chan int)(nil), 0)` :  nil channel; len returns 0; test it doesn't panic.
+- **L-add-13:** `assert.JSONEq` with embedded `null` values vs missing keys :  JSON semantic distinction. Pin.
 
 ---
 
 ## Package: `term/`
 
 ### Test files
-- `term/capability_test.go` — Capability detection across writers and env vars
-- `term/color_test.go` — RGB, Hex, named colors
-- `term/style_test.go` — chaining, Render, Sprint, Fprint
-- `term/glyph_test.go` — registry, fallback, register-glyph, fuzz
-- `term/box_test.go` — beauty: Box options
-- `term/beauty_test.go` — Center, Justify, Pad, Truncate, Wrap, Columns, Banner
-- `term/prompt_test.go` — Prompt, Password, Confirm, Select, MultiSelect (PTY-driven)
-- `term/animator_test.go` — frame loop, log buffering, back-pressure
+- `term/capability_test.go` :  Capability detection across writers and env vars
+- `term/color_test.go` :  RGB, Hex, named colors
+- `term/style_test.go` :  chaining, Render, Sprint, Fprint
+- `term/glyph_test.go` :  registry, fallback, register-glyph, fuzz
+- `term/box_test.go` :  beauty: Box options
+- `term/beauty_test.go` :  Center, Justify, Pad, Truncate, Wrap, Columns, Banner
+- `term/prompt_test.go` :  Prompt, Password, Confirm, Select, MultiSelect (PTY-driven)
+- `term/animator_test.go` :  frame loop, log buffering, back-pressure
 - `term/spinner_test.go`
 - `term/progress_test.go`
 - `term/statusbar_test.go`
 - `term/download_test.go`
-- `term/concurrent_test.go` — race-detector tests
-- `term/lifecycle_test.go` — Close idempotency per §23.16
-- `term/fuzz_test.go` — `FuzzGlyphLookup`, `FuzzAnsiInjection`
-- `term/property_test.go` — Style.Render round-trip, capability invariants
-- `term/bench_test.go` — D35 benchmarks
-- `term/golden_test.go` — Box / Banner / Progress visual goldens
+- `term/concurrent_test.go` :  race-detector tests
+- `term/lifecycle_test.go` :  Close idempotency per §23.16
+- `term/fuzz_test.go` :  `FuzzGlyphLookup`, `FuzzAnsiInjection`
+- `term/property_test.go` :  Style.Render round-trip, capability invariants
+- `term/bench_test.go` :  D35 benchmarks
+- `term/golden_test.go` :  Box / Banner / Progress visual goldens
 - `term/example_test.go`
-- `term/cross_platform_test.go` — Linux/macOS/Windows-specific paths
-- `term/raw_mode_test.go` — terminal raw-mode discipline
+- `term/cross_platform_test.go` :  Linux/macOS/Windows-specific paths
+- `term/raw_mode_test.go` :  terminal raw-mode discipline
 
 ### Test matrix
 
@@ -596,7 +596,7 @@ Testing assert with assert is the chicken-and-egg. Resolution:
 | 16 | TestHexConstructorValid | §21.14 F4 | unit | `Hex("#22D3EE")` → Color matching Cyan. | `assert.NoError`, `assert.Equal` |
 | 17 | TestHexConstructorShortForm | §21.14 F4 | unit | `Hex("#fff")` → 0xFF, 0xFF, 0xFF. | `assert.Equal` |
 | 18 | TestHexConstructorInvalid | §21.14 F4 | unit | `Hex("not-a-color")` → typed error in register format. | `assert.ErrorContains "term:"` |
-| 19 | TestHexConstructorMissingHash | §21.14 F4 | unit | `Hex("22D3EE")` — accept or reject? Spec gap. Pin behavior. | `assert.Error` or `assert.NoError` per pinned |
+| 19 | TestHexConstructorMissingHash | §21.14 F4 | unit | `Hex("22D3EE")` :  accept or reject? Spec gap. Pin behavior. | `assert.Error` or `assert.NoError` per pinned |
 | 20 | TestNamedColorsMatchSpec0001 | §21.14 F5 | unit | `Cyan`, `Teal`, etc. match the spec-0001 hex codes. | `assert.Equal` (compare via Hex round-trip) |
 | 21 | TestGradientStops | §21.14 F5 | unit | `Cyan100`, `Cyan700`, etc. exist and have distinct values. | `assert.NotEqual` |
 | **Style** ||||||
@@ -622,7 +622,7 @@ Testing assert with assert is the chicken-and-egg. Resolution:
 | 40 | TestRegisterGlyphDuplicate | §21.14 F12, E4 | unit | Re-register → typed error `term: glyph "<name>" already registered`. | `assert.ErrorContains` |
 | 41 | TestRegisterGlyphInvalidName | §23.9 #26 | unit | Names not matching `^[a-z][a-z0-9_]*$` → typed error. | `assert.Error` |
 | 42 | TestRegisterGlyphLengthCap | §23.9 #26 | unit | Names > 64 bytes → typed error. | `assert.Error` |
-| 43 | FuzzGlyphRegistration | §21.14 F12; §23.9 #26 | fuzz | Random names — never panics; only valid-pattern names succeed. | `testing.F`, seed corpus |
+| 43 | FuzzGlyphRegistration | §21.14 F12; §23.9 #26 | fuzz | Random names :  never panics; only valid-pattern names succeed. | `testing.F`, seed corpus |
 | 44 | FuzzGlyphLookup | §21.14 F10 | fuzz | Random names → never panics; returns empty for unregistered. | `testing.F` |
 | 45 | TestGlyphsEnumeration | §21.14 F13 | unit | `Glyphs()` returns all built-in + registered. | `assert.GreaterOrEqual(len, 30)` |
 | 46 | TestRegisterGlyphConcurrent | §21.14 NF5 | race | 50 goroutines register distinct glyphs concurrently → all succeed; no race. | stdlib `sync.WaitGroup` |
@@ -643,7 +643,7 @@ Testing assert with assert is the chicken-and-egg. Resolution:
 | 60 | TestTruncate | §21.14 F18 | unit | "hello world" with width 8 → "hello w…". | `assert.Equal` |
 | 61 | TestTruncateASCIIFallback | §21.14 F18 | unit | Non-UTF8 → "hello..." (3-char ellipsis). | `assert.Equal` |
 | 62 | TestWrapAtWordBoundary | §21.14 F19 | unit | Wrap respects word boundaries. | golden |
-| 63 | TestWrapLongUnbreakableWord | §21.14 F19 | unit | A single word longer than width — wrap mid-word? Pin behavior. | `assert.Equal` |
+| 63 | TestWrapLongUnbreakableWord | §21.14 F19 | unit | A single word longer than width :  wrap mid-word? Pin behavior. | `assert.Equal` |
 | 64 | TestColumnsAutoSize | §21.14 F20, T8 | unit | Auto-width. | golden |
 | 65 | TestColumnsExplicitGap | §21.14 F20 | unit | `WithColumnGap(4)` honored. | golden |
 | 66 | TestColumnsAlignment | §21.14 F20 | unit | Per-column alignment (left, center, right). | golden |
@@ -656,7 +656,7 @@ Testing assert with assert is the chicken-and-egg. Resolution:
 | 72 | TestPromptCtxCancel | §21.14 E7, T13 | unit (PTY) | ctx cancelled mid-input → returns `term.ErrCancelled`; terminal restored. | `assert.ErrorIs` |
 | 73 | TestPromptTimeout | §21.14 F27 | unit (PTY) | `WithTimeout(d)` honored; returns `term.ErrTimeout`. | `assert.ErrorIs` |
 | 74 | TestPromptOnNonTTY | §21.14 E6 | unit | Piped stdin → reads line without raw-mode; suitable for tests. | string reader, no PTY |
-| 75 | TestPasswordEcho | §21.14 F23, T10 | unit (PTY) | Password input — output buffer does NOT contain the typed chars. | PTY tap on output, `assert.NotContains` |
+| 75 | TestPasswordEcho | §21.14 F23, T10 | unit (PTY) | Password input :  output buffer does NOT contain the typed chars. | PTY tap on output, `assert.NotContains` |
 | 76 | TestPasswordCtxCancelRestoresMode | §21.14 NF7 | unit (PTY) | Password ctx cancel → terminal cooked-mode restored. | PTY state inspection |
 | 77 | TestConfirmDefaultNo | §21.14 F24, T11 | unit (PTY) | Default-No confirm; empty input → false. | PTY |
 | 78 | TestConfirmDefaultYes | §21.14 F24 | unit (PTY) | `WithDefaultYes()`; empty → true. | PTY |
@@ -723,7 +723,7 @@ Testing assert with assert is the chicken-and-egg. Resolution:
 | 135 | TestAnimatorCloseAfterRun | §23.16 | unit | Close after Run finishes naturally → no error. | `assert.NoError` |
 | 136 | TestAnimatorCloseDuringRun | §23.16 | unit | Close while Run is active → cancels, restores handler, joins errors. | `assert.NoError`, handler check |
 | 137 | TestAnimatorCloseOnError | §23.16 | unit | An animation's Render returns an error mid-Run → Close still cleans up. | `assert.ErrorIs` |
-| 138 | TestStatusBarCloseIdempotent | §23.16 | unit | StatusBar (if Closeable per audit) — same pattern. | `assert.NoError` |
+| 138 | TestStatusBarCloseIdempotent | §23.16 | unit | StatusBar (if Closeable per audit) :  same pattern. | `assert.NoError` |
 | 139 | TestStatusBarCloseAfterUse | §23.16 | unit | After SetSection / Render, Close → clean. | `assert.NoError` |
 | 140 | TestProgressNoCloseRequired | §23.16 | unit | Progress is not Closeable per audit; verify. | reflect-based check |
 | **Cross-platform** ||||||
@@ -757,7 +757,7 @@ Testing assert with assert is the chicken-and-egg. Resolution:
 | 165 | BenchmarkCapability | §21.14 NF6 | bench | First call vs cached call. | benchstat |
 | 166 | BenchmarkAnimatorFrameWithLogs | §21.14 NF1, NF3 | bench | Frame render with N buffered records. | benchstat |
 | **Surface + golden** ||||||
-| 167 | TestSurfaceClosed_TermPackage | §21.14 NF12 | unit | API snapshot — every PascalCase export listed. | `fixture/golden` |
+| 167 | TestSurfaceClosed_TermPackage | §21.14 NF12 | unit | API snapshot :  every PascalCase export listed. | `fixture/golden` |
 | 168 | TestRenderGoldensAcrossPlatforms | §21.14 (visual) | golden | Box, Banner, StatusBar, Progress goldens for both UTF-8 and ASCII fallback. | `fixture.Golden` |
 | **Examples** ||||||
 | 169 | ExampleStyle | example | example | Runnable. | match |
@@ -778,20 +778,20 @@ Testing assert with assert is the chicken-and-egg. Resolution:
 
 ### Edge cases not in the spec but worth testing
 - **L-add-1:** `RegisterGlyph` with an empty UTF-8 or empty ASCII string → typed error (otherwise falls through to "" output with no warning).
-- **L-add-2:** `Box` with a title longer than the box width — truncate or expand? Pin behavior.
-- **L-add-3:** `Wrap` on text containing ANSI escapes — rune counting must skip escape bytes; otherwise wrap-points are wrong.
-- **L-add-4:** `Center` / `Justify` / `Truncate` on text with combining characters (é = `e\u0301`) — width counting must use grapheme clusters or document the limitation.
+- **L-add-2:** `Box` with a title longer than the box width :  truncate or expand? Pin behavior.
+- **L-add-3:** `Wrap` on text containing ANSI escapes :  rune counting must skip escape bytes; otherwise wrap-points are wrong.
+- **L-add-4:** `Center` / `Justify` / `Truncate` on text with combining characters (é = `e\u0301`) :  width counting must use grapheme clusters or document the limitation.
 - **L-add-5:** `Animator.Run` invoked twice → second call's behavior. Pin: should error or restart? **Spec gap; recommend explicit `term: animator: already running` error**.
 - **L-add-6:** `Animator` with an animation whose `Render` returns lines containing newlines internally → counted correctly for cursor-up?
 - **L-add-7:** `Animator` while terminal is detached / TTY closed during Run (e.g., user closes ssh session) → write errors handled, Run returns wrapped error.
-- **L-add-8:** `Progress.Set(negative)` — clamp to 0 or accept? Pin.
+- **L-add-8:** `Progress.Set(negative)` :  clamp to 0 or accept? Pin.
 - **L-add-9:** `DownloadProgress.Read` after `Done()` called → still works or returns error? Pin.
 - **L-add-10:** `Capability(w)` where w changes capabilities mid-program (rare but possible: `os.Stdout` reassigned) → cache is per-pointer; document.
-- **L-add-11:** `Prompt` with very rapid keystrokes — line buffer overflows? 4 KiB cap per §23.9 #25.
-- **L-add-12:** ANSI escape injection in `Style.Render(userInput)` — user-supplied text containing `\x1b[31m` should NOT be treated as a style. Pin: render emits the user's bytes verbatim, sandwiched between the style escape and reset. Document risk; covered by `FuzzAnsiInjection`.
-- **L-add-13:** Animator where the supplied logger's handler is itself an animator's interception handler (double-wrap) — detected, returns error, or wraps once? Pin.
-- **L-add-14:** `Banner` with a single-line input — degrades gracefully.
-- **L-add-15:** Glyph registry mutation from a `RegisterGlyph` call AFTER `Glyphs()` was iterated — does the iterator see the new entry or not? Document iterator-snapshot semantics.
+- **L-add-11:** `Prompt` with very rapid keystrokes :  line buffer overflows? 4 KiB cap per §23.9 #25.
+- **L-add-12:** ANSI escape injection in `Style.Render(userInput)` :  user-supplied text containing `\x1b[31m` should NOT be treated as a style. Pin: render emits the user's bytes verbatim, sandwiched between the style escape and reset. Document risk; covered by `FuzzAnsiInjection`.
+- **L-add-13:** Animator where the supplied logger's handler is itself an animator's interception handler (double-wrap) :  detected, returns error, or wraps once? Pin.
+- **L-add-14:** `Banner` with a single-line input :  degrades gracefully.
+- **L-add-15:** Glyph registry mutation from a `RegisterGlyph` call AFTER `Glyphs()` was iterated :  does the iterator see the new entry or not? Document iterator-snapshot semantics.
 
 ---
 
@@ -803,7 +803,7 @@ These live in a sibling test directory `kernel_integration_test/` (or use `inter
 |----|------|----------|------|-------------|-------------------|
 | K1 | TestErrsWithLog | §21.2 + §21.3 | integration | `slog.ErrorContext(ctx, "fail", slog.Any("error", errs.Wrap(io.EOF, "pkg: act")))` → output contains `"error":"pkg: act: EOF"`; `errors.Is` from a captured record retains chain. | buffer + `assert.Contains`, `assert.ErrorIs` |
 | K2 | TestErrsCodedWithLog | §21.2 F11/F12 + §21.3 | integration | Coded error logged → JSON output contains `"code":"E_..."`. | `assert.JSONEq` |
-| K3 | TestOptionWithErrs | §21.1 + §21.2 | integration | Option that returns `errs.Wrap(...)` — Apply propagates wrapped error; ErrorIs works. | `assert.ErrorIs` |
+| K3 | TestOptionWithErrs | §21.1 + §21.2 | integration | Option that returns `errs.Wrap(...)` :  Apply propagates wrapped error; ErrorIs works. | `assert.ErrorIs` |
 | K4 | TestOptionStrictWithErrsJoin | §21.1 F5 + §21.2 F5 | integration | Strict mode collects multiple errs.Wrap'd errors; final join is walkable via `errs.Chain`. | `assert.Subset` over Chain output |
 | K5 | TestAssertWithErrsErrorIs | §21.4 F3 + §21.2 | integration | `assert.ErrorIs` walks a chain that includes `errs.Wrap`'d sentinels. | `assert.True` |
 | K6 | TestLogWithTermColorIntegration | §21.3 NF6 + §21.14 F4-F9 | integration | `log.NewHandler(stderr, WithColor(ColorAlways))` produces escapes byte-equal to those produced by `term.New().Foreground(...).Render`. | `assert.Equal` on byte sequences |
@@ -812,7 +812,7 @@ These live in a sibling test directory `kernel_integration_test/` (or use `inter
 | K9 | TestTermAnimatorWithLog | §21.14 F30-F37 + §21.3 | integration | NewAnimator(slog.New(log.NewHandler(...))).Run(ctx); slog.Info during animation → buffered then flushed above progress bar. | buffer inspection |
 | K10 | TestTermAnimatorWithLogCtxAttrs | §21.14 + §21.3 F5/F11 | integration | `log.With(ctx, attr)` then `slog.InfoContext(ctx, ...)` during animation → buffered record retains ctx-attrs. | `assert.Contains` |
 | K11 | TestKernelLibraryRegisterCrossPackage | §21.1 NF3 + §21.2 NF4 + §21.14 sentinels | integration | Lint test: every kernel-package error string matches `^[a-z][^A-Z.]*$` (library register). Walks every Sentinel + every typed `Error()` example. | regex over package-symbol scan |
-| K12 | TestKernelDAGNoForbiddenImports | §6 F1-F3 + §21.14 F3a/b/c | integration | `go list -deps` over each kernel package — confirms `option` imports nothing from glacier; `errs` doesn't import `log`; `term` doesn't import `log` or `assert`. | `os/exec` go list |
+| K12 | TestKernelDAGNoForbiddenImports | §6 F1-F3 + §21.14 F3a/b/c | integration | `go list -deps` over each kernel package :  confirms `option` imports nothing from glacier; `errs` doesn't import `log`; `term` doesn't import `log` or `assert`. | `os/exec` go list |
 | K13 | TestSurfaceClosedKernelTotal | NF8 of each | integration | Aggregate API snapshot: 8 + 12 + 11 + (~70) + (~60) symbols. Drift fails CI. | `fixture/golden` package-level |
 | K14 | TestKernelGoroutineLeakFreeUnderRace | §23.14 + §21.14 NF5 | integration | Run a representative kernel scenario (Animator.Run + multiple goroutines logging) under `-race` with `fixture.WatchGoroutines()` confirming no leaks. | `fixture.WatchGoroutines` |
 | K15 | TestAssertEqualUsingErrsCoded | §21.4 F11 + §21.2 F11 | integration | `assert.Equal` of two errors implementing Coded → uses Coded's `Code()` if both have it; matched value-equality. (Lynx-defined behavior; pin.) | `assert.True` |
@@ -823,17 +823,17 @@ These live in a sibling test directory `kernel_integration_test/` (or use `inter
 
 The kernel has three chicken-and-egg loops:
 
-1. **`assert/` ↔ itself** — assert's own tests cannot use assert.Equal to validate assert.Equal's correctness without circular logic. **Resolution:** `TestEqual_Bootstrap_*` tests (#1–#6) use bare `if` and a hand-rolled `mockTB`. Once those pass, all other assert tests use `assert.X` freely. **The bootstrap subset is exactly six tests** (primitive int, primitive string, nil/nil, typed-nil/typed-nil, mismatch, type-mismatch-at-top). Plus `mockTB`'s own bare-`if` tests.
+1. **`assert/` ↔ itself** :  assert's own tests cannot use assert.Equal to validate assert.Equal's correctness without circular logic. **Resolution:** `TestEqual_Bootstrap_*` tests (#1–#6) use bare `if` and a hand-rolled `mockTB`. Once those pass, all other assert tests use `assert.X` freely. **The bootstrap subset is exactly six tests** (primitive int, primitive string, nil/nil, typed-nil/typed-nil, mismatch, type-mismatch-at-top). Plus `mockTB`'s own bare-`if` tests.
 
-2. **`assert/` ↔ `term/`** — assert uses term for failure-message color; term uses assert for its own tests. **Resolution:** the cycle is broken because term's tests use the *non-color* parts of assert (`assert.Equal`, `assert.NoError`, etc.) which do not touch term. Color-related assert behavior is tested without term (using direct ANSI byte comparison). The full-color integration test K8 lives in cross-package integration, not in either package's own test suite.
+2. **`assert/` ↔ `term/`** :  assert uses term for failure-message color; term uses assert for its own tests. **Resolution:** the cycle is broken because term's tests use the *non-color* parts of assert (`assert.Equal`, `assert.NoError`, etc.) which do not touch term. Color-related assert behavior is tested without term (using direct ANSI byte comparison). The full-color integration test K8 lives in cross-package integration, not in either package's own test suite.
 
-3. **`log/` ↔ `term/`** — log imports term; term doesn't import log. The animator wraps a user-supplied logger but does not import log. **No bootstrap issue.**
+3. **`log/` ↔ `term/`** :  log imports term; term doesn't import log. The animator wraps a user-supplied logger but does not import log. **No bootstrap issue.**
 
 **`fixture/` usage in kernel:** `fixture/` is leaf-tier and imports kernel. Kernel tests cannot import `fixture/` directly (it would create a circular import). **Resolution:** kernel tests use `fixture` via the `_test` package (a separate Go package built only for testing), which CAN import fixture without creating a production-code cycle. This is documented in spec 0002 §Architecture as the **"_test package fixture exception"**. Tests like `TestColorAutoOnTTY` live in `package log_test` (not `package log`) and import `fixture/term` for PTYs.
 
-**`mock/` usage in kernel:** Same exception — kernel tests can use `mock/` from a `_test` package. Usage examples: T#107 uses a mock slog handler to capture warning output; T#88 uses `mock` to wrap a slog handler.
+**`mock/` usage in kernel:** Same exception :  kernel tests can use `mock/` from a `_test` package. Usage examples: T#107 uses a mock slog handler to capture warning output; T#88 uses `mock` to wrap a slog handler.
 
-**`assert/require/` in kernel tests:** Once `assert/` is bootstrap-tested, `require/` is also available. Kernel tests use `require.NoError` for setup-must-succeed lines and `assert.X` for stack-of-assertions in test bodies — exactly per the spec contract.
+**`assert/require/` in kernel tests:** Once `assert/` is bootstrap-tested, `require/` is also available. Kernel tests use `require.NoError` for setup-must-succeed lines and `assert.X` for stack-of-assertions in test bodies :  exactly per the spec contract.
 
 ---
 
@@ -842,8 +842,8 @@ The kernel has three chicken-and-egg loops:
 The kernel-tier test matrix is **complete and signed off** when ALL of the following hold:
 
 1. **All listed tests are written and passing** on Linux, macOS, Windows.
-2. **`go test -race ./...`** passes for every kernel package — every concurrent path tested under the race detector.
-3. **`go test -count=10 -race ./...`** passes — flake-free under repetition (catches timing-sensitive bugs in animator and Eventually).
+2. **`go test -race ./...`** passes for every kernel package :  every concurrent path tested under the race detector.
+3. **`go test -count=10 -race ./...`** passes :  flake-free under repetition (catches timing-sensitive bugs in animator and Eventually).
 4. **`go test -bench=. -benchmem -count=10 ./...`** runs to completion; benchstat against the baseline shows no regression > 5% per §23.12 / §23.13.
 5. **All §23.13 recalibrated targets met**:
    - log: ≤ 3 allocs beyond stdlib slog baseline
@@ -859,12 +859,12 @@ The kernel-tier test matrix is **complete and signed off** when ALL of the follo
    - `term/`: ≥ 92% line per platform (union 100% across platforms), ≥ 90% branch, 100% public API
 8. **All §21.X edge cases (E1–EN per package) have a named test** in the matrix above. Verified by Lynx walking every E-row.
 9. **All §23.14 concurrency lock-ins exercised**:
-   - `concur.Mutex.LockCtx` cancel-leak — covered by concur tests (mid-tier; not in scope here, but kernel-side: `TestAssertConcurrent` and `TestAnimatorConcurrentLogWrites` exercise concurrent test-helper paths)
-   - `concur.Group.Go` after `WaitDone` panics — concur (mid-tier scope)
-   - `mock`/`httpmock` `Times(1)` race — kernel-side parallel: `TestTBConcurrentErrorf` (#101)
+   - `concur.Mutex.LockCtx` cancel-leak :  covered by concur tests (mid-tier; not in scope here, but kernel-side: `TestAssertConcurrent` and `TestAnimatorConcurrentLogWrites` exercise concurrent test-helper paths)
+   - `concur.Group.Go` after `WaitDone` panics :  concur (mid-tier scope)
+   - `mock`/`httpmock` `Times(1)` race :  kernel-side parallel: `TestTBConcurrentErrorf` (#101)
 10. **All §23.16 lifecycle tests** for kernel stateful types complete: `term.Animator` (T#134-137) and `term.StatusBar` (T#138-139). `Progress` confirmed not-Closeable per audit (T#140).
 11. **All §23.17 generics fixes verified**:
-    - `assert.Equal[T]` primitive fast-path bypass: `TestPrimitiveFastPathBypass` (#7) — `AllocsPerRun == 0` PROVES the fast path is taken
+    - `assert.Equal[T]` primitive fast-path bypass: `TestPrimitiveFastPathBypass` (#7) :  `AllocsPerRun == 0` PROVES the fast path is taken
     - `assert.Equal[T]` slow-path: `TestPrimitiveFastPathTypeNotComparable` (#8)
     - `option.Required[T]` getter form: `TestRequiredGenericTLoadBearing` (#30)
     - `assert.Len` non-generic per §23.17: T#44–T#48
@@ -875,7 +875,7 @@ The kernel-tier test matrix is **complete and signed off** when ALL of the follo
 15. **Every test function carries a comment citing the spec section / decision ID it verifies**: `// §21.1 F11; §23.4` style. Lint enforced by a custom `cmd/specreflint` tool that grep-walks every `func Test*`.
 16. **Spec-traceability matrix**: Lynx publishes a matrix mapping every §21.X F-number, NF-number, E-number, T-number, and §23.X decision ID to the test names that cover it. Empty cells are blocking.
 17. **`Example*` functions all run to completion** under `go test -run='^Example'`.
-18. **API surface snapshots** (`TestSurfaceClosed_*`) all pass — surface drift requires a spec amendment first.
+18. **API surface snapshots** (`TestSurfaceClosed_*`) all pass :  surface drift requires a spec amendment first.
 19. **Cross-package integration tests** (K1-K15) all pass.
 20. **CI gates green**: `codegen-drift`, `mod-hygiene`, `toolchain-pin-check`, `sbom-generate` per §23.12 (these are framework-wide; the kernel must not break them).
 

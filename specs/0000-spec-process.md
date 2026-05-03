@@ -23,11 +23,11 @@ docs-extract:
 
 ## Public Summary
 
-Glacier is built spec-first. Every change to the framework — code, identity, or process — begins as a spec in `/specs/`. A spec moves through five statuses: `proposed`, `in-review`, `accepted`, `implemented`, `verified`. Implementation may not begin until the spec reaches `accepted`. Specs are also the single source of truth for Glacier's public documentation: the Docs & Identity agent generates site content by extraction from accepted specs, so engineering and docs cannot drift.
+Glacier is built spec-first. Every change to the framework :  code, identity, or process :  begins as a spec in `/specs/`. A spec moves through five statuses: `proposed`, `in-review`, `accepted`, `implemented`, `verified`. Implementation may not begin until the spec reaches `accepted`. Specs are also the single source of truth for Glacier's public documentation: the Docs & Identity agent generates site content by extraction from accepted specs, so engineering and docs cannot drift.
 
 ## Mental Model
 
-A spec is a contract. The author and reviewers negotiate it during `proposed` and `in-review`. Once it reaches `accepted`, implementation is execution against a fixed contract — not redesign. Open questions are not deferred; they are resolved before acceptance.
+A spec is a contract. The author and reviewers negotiate it during `proposed` and `in-review`. Once it reaches `accepted`, implementation is execution against a fixed contract :  not redesign. Open questions are not deferred; they are resolved before acceptance.
 
 ```mermaid
 stateDiagram-v2
@@ -93,9 +93,9 @@ A spec moves to `accepted` only when every required reviewer for its type has be
 | Identity / brand / voice | Magpie (owner), Otter | Octopus (if user research informs it) |
 | Framework architecture / cross-cutting | Otter (owner), Lynx, Falcon | Magpie (if naming or voice changes), Octopus |
 | Component (CLI, mock, httpmock, sandbox, primitives) | Otter (owner), Lynx, Falcon | Magpie (if exported names or user-facing strings change), Octopus (if UX-shaped) |
-| Testing infrastructure (mocks, transport, sandbox harness) | Lynx (owner), Otter, Falcon | — |
+| Testing infrastructure (mocks, transport, sandbox harness) | Lynx (owner), Otter, Falcon | :  |
 | Process / governance change (this category) | Otter (owner), Magpie | All other agents on request |
-| Research artifact (lives in `research/`) | Owner only — no gate | Anyone |
+| Research artifact (lives in `research/`) | Owner only :  no gate | Anyone |
 
 ### Open-questions rule
 
@@ -107,8 +107,8 @@ Magpie generates public-facing documentation by extraction from accepted specs. 
 
 - Magpie reads only sections marked **Public** in `_template.md` plus any section listed in the front-matter `docs-extract`.
 - Section headings are stable anchors. Renaming or reordering them is itself a process change requiring a spec.
-- API signatures and doc comments are extracted verbatim — Magpie does not paraphrase.
-- Fenced ```go blocks in `## Examples` are transcluded verbatim — Magpie may add surrounding prose but does not edit the code.
+- API signatures and doc comments are extracted verbatim :  Magpie does not paraphrase.
+- Fenced ```go blocks in `## Examples` are transcluded verbatim :  Magpie may add surrounding prose but does not edit the code.
 - If Magpie cannot produce a quality public page from a spec, the fix is to update the spec, not to write docs creatively. Otter's review explicitly checks this question.
 
 ## Schema
@@ -220,7 +220,7 @@ Research is exploratory by nature. Gating it would slow the inputs that improve 
 Disagreement is recorded in the spec's `## Decisions & Rationale` section with the disagreeing reviewer's reasoning. If the owner and reviewers cannot reach consensus, the spec stays in `in-review` until they do, or it is withdrawn. There is no override mechanism.
 
 **Can a spec be authored and accepted in a single PR?**
-Yes — for trivial cases. The spec, all required reviewer sign-offs, and the implementation may all land in one PR, provided every required reviewer signs off in the front matter and every other rule is honored. The lifecycle is conceptual, not necessarily commit-by-commit.
+Yes :  for trivial cases. The spec, all required reviewer sign-offs, and the implementation may all land in one PR, provided every required reviewer signs off in the front matter and every other rule is honored. The lifecycle is conceptual, not necessarily commit-by-commit.
 
 **What if the implementation reveals a flaw in the spec?**
 Stop coding. Open a PR that updates the spec (returning it to `in-review` for the affected sections), get the required reviewers' new sign-off, then resume. Implementation may not deviate from an `accepted` spec.
@@ -240,7 +240,7 @@ The decisions codified here trace to Glacier's lifecycle bootstrap (committed al
 - **Plans (the meta-artifact above specs) must be exhaustive and fully resolved.** Per the project rule: plans are executable contracts, not discussion documents. Open questions in plans propagate ambiguity into specs.
 - **Open Questions block acceptance.** Same rationale, applied to specs.
 - **Stable section anchors.** Doc extraction by Magpie depends on header stability. Reordering or renaming headers is a governance change requiring its own spec.
-- **Zero-padded four-digit IDs, never reused.** Stable identifiers; the historical record is preserved instead of overwritten. Four digits gives 10,000 slots — enough that running out is not a near-term concern.
+- **Zero-padded four-digit IDs, never reused.** Stable identifiers; the historical record is preserved instead of overwritten. Four digits gives 10,000 slots :  enough that running out is not a near-term concern.
 - **Research artifacts ungated.** Surveys, comparisons, and exploratory writing improve gated specs and should not themselves block on architecture review.
 
 ## Open Questions

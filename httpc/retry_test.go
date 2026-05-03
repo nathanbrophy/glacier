@@ -81,7 +81,7 @@ func TestRetryOnCustom(t *testing.T) {
 	_, err := c.Get(ctx, "http://example.com/",
 		httpc.WithRetry(httpc.MaxAttempts(3), httpc.RetryOn(418)),
 	)
-	// 503 is not in custom list, so no retry — just StatusError on first attempt.
+	// 503 is not in custom list, so no retry :  just StatusError on first attempt.
 	assert.Error(t, err)
 	assert.Equal(t, 1, count)
 }
@@ -208,7 +208,6 @@ func TestRetryIfAndRetryOnCombine(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 3, count)
 }
-
 
 func TestRetryShortCircuitsOnCtxCancel(t *testing.T) {
 	t.Parallel()
