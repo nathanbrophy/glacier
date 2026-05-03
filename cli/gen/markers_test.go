@@ -3,6 +3,7 @@
 package gen_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/nathanbrophy/glacier/assert"
@@ -164,6 +165,38 @@ func TestMarkerInjectionAttempt_Newlines(t *testing.T) {
 	// The env regex won't match because of the newline content — but the line is
 	// passed as-is from the caller. The injection is prevented by the regex.
 	_ = errs
+}
+
+func TestFieldMarkerHelp_Basic(t *testing.T) {
+	t.Parallel()
+	lines := []string{
+		"Check fetches the latest release from GitHub and compares with the running version.",
+		"",
+		"+glacier:default false",
+	}
+	fm, errs := gen.ParseFieldMarkers("Check", lines)
+	assert.Equal(t, 0, len(errs))
+	assert.Equal(t, "Fetches the latest release from GitHub and compares with the running version", fm.Help)
+}
+
+func TestFieldMarkerHelp_MarkerLinesExcluded(t *testing.T) {
+	t.Parallel()
+	lines := []string{
+		"+glacier:short p",
+		"+glacier:env MY_PORT",
+	}
+	fm, errs := gen.ParseFieldMarkers("Port", lines)
+	assert.Equal(t, 0, len(errs))
+	assert.Equal(t, "", fm.Help)
+}
+
+func TestFieldMarkerHelp_Truncation(t *testing.T) {
+	t.Parallel()
+	// "Field" is the leading word (stripped), followed by 200 x's — exceeds 120 chars.
+	payload := "Field " + strings.Repeat("x", 200)
+	fm, errs := gen.ParseFieldMarkers("F", []string{payload})
+	assert.Equal(t, 0, len(errs))
+	assert.Equal(t, true, len(fm.Help) <= 123) // 120 chars + "..."
 }
 
 func joinChoices(choices []string) string {

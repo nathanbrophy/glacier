@@ -2,56 +2,78 @@
 title: glacier explain
 ---
 
-# glacier explain    [ SDK ]
+# glacier explain
 
-[ View source spec → ](../../../specs/0032-sdk.md#commands-explain)
+**Synopsis.** Print a boxed explanation for a Glacier marker, exit code, or config key.
+
 **Other commands:** [vibe](./vibe.md) [version](./version.md) [generate](./generate.md) [lint](./lint.md) [test](./test.md) [init](./init.md) [new](./new.md) [completions](./completions.md)
 
-<!-- magpie:extract source=specs/0032-sdk.md section=commands subsection=explain source-checksum=<TODO> -->
-**Synopsis.** Print an explanation for a marker, exit code, or config key.
-
-**Mental model.** `explain <topic>` reads from an `embed.FS` of pre-rendered topic files at `cmd/glacier/internal/explain/topics/<slug>.md`. The files are generated at build time by `cmd/glacier/internal/explaingen/` from spec sections; CI byte-equality check ensures spec-to-impl freshness. The command renders the topic as a `term.Box` with title, body, and a "see also" rows block. The kaomoji on the title row reflects category (marker, exit code, config key). `--list` prints all topics.
-
-**Argument.**
+## Argument
 
 ```
 glacier explain <topic>
 glacier explain --list
 ```
 
-`<topic>` is one of: a marker name (e.g. `+glacier:command`), an exit code (e.g. `66`), or a config key (e.g. `versioncheck.cache_ttl`).
+`<topic>` is one of:
 
-**Flags.**
+- a marker name: `+glacier:command`, `+glacier:mock`, `+glacier:positional`, etc.
+- an exit code: `64`, `65`, `66`, `67`, `68`, `69`, `70`, `130`, `143`
+- a config key: `github.repo`, `versioncheck.cache_ttl`, `versioncheck.enabled`, `versioncheck.strict`, `banner.show_on_help`
+
+## Flags
 
 | Flag | Default | Description |
 |---|---|---|
-| `--list` | `false` | Enumerate all topics and exit. |
+| `--list` | `false` | Print all available topics grouped by category and exit. |
 
-**Exit codes.** `0` success; `2` unknown topic (with did-you-mean hint if Levenshtein distance <= 2); `1` stdout write failure.
-<!-- /magpie:extract -->
+## Examples
 
-## Try it
+Explain an exit code:
 
-```
-$ glacier explain 66
-╭─ ʕ× ×ʔ exit code 66 ─────────────────────────────────────────────────╮
-│                                                                       │
-│ One or more tests failed, OR a benchmark regressed by more than       │
-│ the configured threshold (default 5%).                                │
-│                                                                       │
-│ Common next steps:                                                    │
-│   - Run the failing test in isolation: `glacier test ./<pkg> -run X`  │
-│   - Inspect the bench delta: `glacier test --bench=. --baseline=...`  │
-│   - Update the baseline if the regression is intended:                │
-│     `glacier test --bench=. --update-baseline`                        │
-│                                                                       │
-│ See also:                                                             │
-│   exit code 65 (lint findings)                                        │
-│   exit code 70 (subprocess failure)                                   │
-│   key test.regression_pct                                             │
-╰───────────────────────────────────────────────────────────────────────╯
+```sh
+glacier explain 66
 ```
 
-## Related commands
+Explain a marker:
 
-[version](./version.md) [lint](./lint.md) [test](./test.md) [completions](./completions.md)
+```sh
+glacier explain +glacier:command
+```
+
+Explain a config key:
+
+```sh
+glacier explain versioncheck.cache_ttl
+```
+
+List all available topics:
+
+```sh
+glacier explain --list
+```
+
+Look up without typing the full slug (did-you-mean kicks in for close matches):
+
+```sh
+glacier explain verison  # suggests "versioncheck.enabled" or exit codes
+```
+
+## What it does under the hood
+
+`explain` reads from an embedded `embed.FS` of pre-rendered topic files at `cmd/glacier/internal/explain/topics/<slug>.md`. The files are generated at build time by `cmd/glacier/internal/explaingen`. When the topic is found, it is rendered inside a `term.Box` with rounded corners; the title kaomoji reflects the category (`ʕ•_•ʔ` for markers, `ʕ× ×ʔ` for exit codes, `ʕ⌐■-■ʔ` for config keys). When the topic is not found, Levenshtein distance up to 2 produces a "did you mean?" suggestion. `--list` prints all topics to stdout grouped by category with no box rendering.
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| 0 | Topic found and printed, or `--list` completed |
+| 1 | stdout write failure |
+| 2 | Unknown topic (with did-you-mean hint when available) |
+
+## See also
+
+- [`glacier version`](./version.md) - uses the explain topic for exit 68
+- [`glacier lint`](./lint.md) - uses the explain topic for exit 65
+- [`glacier test`](./test.md) - uses the explain topic for exit 66
+- [`glacier completions`](./completions.md)

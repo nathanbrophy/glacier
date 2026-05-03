@@ -56,6 +56,7 @@ type FieldMarker struct {
 	Validate   string
 	Default    string
 	HasDefault bool
+	Help       string // extracted from non-marker doc lines
 }
 
 // ParseResult is the result of parsing markers from a single type.
@@ -92,6 +93,7 @@ func ParseMarkers(typeName string, lines []string) (*ParseResult, []error) {
 }
 
 // ParseFieldMarkers parses +glacier:* marker lines from a field's doc comment.
+// Non-marker lines are joined into a description stored in FieldMarker.Help.
 func ParseFieldMarkers(fieldName string, lines []string) (*FieldMarker, []error) {
 	fm := &FieldMarker{FieldName: fieldName}
 	var errs []error
@@ -106,7 +108,40 @@ func ParseFieldMarkers(fieldName string, lines []string) (*FieldMarker, []error)
 		}
 	}
 
+	fm.Help = extractFieldDesc(lines)
 	return fm, errs
+}
+
+// extractFieldDesc builds a description string from doc comment lines that are
+// not +glacier: markers. Lines are trimmed and joined with a single space.
+// The opening "<FieldName> " prefix is stripped and the first letter capitalised.
+// A trailing period is removed. Strings longer than 120 chars are truncated.
+func extractFieldDesc(lines []string) string {
+	var parts []string
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "+glacier:") {
+			continue
+		}
+		parts = append(parts, line)
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	desc := strings.Join(parts, " ")
+	// Strip the leading "<Word> " that matches Go doc convention (field name first).
+	if idx := strings.Index(desc, " "); idx > 0 {
+		rest := desc[idx+1:]
+		if len(rest) > 0 {
+			desc = strings.ToUpper(rest[:1]) + rest[1:]
+		}
+	}
+	desc = strings.TrimRight(desc, ".")
+	const maxLen = 120
+	if len(desc) > maxLen {
+		desc = desc[:maxLen] + "..."
+	}
+	return desc
 }
 
 func parseLine(r *ParseResult, line string) error {

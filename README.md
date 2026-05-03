@@ -24,7 +24,7 @@ Glacier is in early design. The repo currently holds the development lifecycle a
 
 ## Glacier SDK
 
-The Glacier SDK is a CLI binary, `glacier`, that demonstrates the framework in production. Nine commands cover the developer day.
+The Glacier SDK is a CLI binary, `glacier`, built on every Glacier framework package. It is the framework's longest-running integration test and the fastest way to start a new Glacier project.
 
 ### Install
 
@@ -32,25 +32,35 @@ The Glacier SDK is a CLI binary, `glacier`, that demonstrates the framework in p
 go install github.com/nathanbrophy/glacier/cmd/glacier@latest
 ```
 
-### What ships
+Requires Go 1.25 or later. Confirm the binary is on your PATH:
 
-| Command | Description |
-|---|---|
-| `glacier init` | Scaffold a new Glacier project |
-| `glacier new` | Add a package, command, or option to an existing project |
-| `glacier generate` | Run code generators (cli, mock, httpmock) |
-| `glacier lint` | gofmt, vet, staticcheck, and Glacier-specific lints |
-| `glacier test` | Live status panel and summary |
-| `glacier vibe` | Glacier vibes animation |
-| `glacier version` | Print version; `--check` compares against latest |
-| `glacier explain` | Explain a marker, exit code, or config key |
-| `glacier completions` | Shell completions (bash, zsh, fish, pwsh) |
+```sh
+glacier version
+```
+
+### Commands
+
+| Command | Group | Description |
+|---|---|---|
+| `glacier init` | CREATE | Scaffold a new Glacier project |
+| `glacier new` | CREATE | Add a package, command, or option to an existing project |
+| `glacier generate` | DEVELOP | Run code generators (cli, mock, httpmock) |
+| `glacier lint` | DEVELOP | gofmt, vet, staticcheck, and Glacier-specific lints |
+| `glacier test` | DEVELOP | Live status panel and aggregated summary |
+| `glacier version` | INSPECT | Print version; `--check` compares against latest |
+| `glacier explain` | INSPECT | Explain a marker, exit code, or config key |
+| `glacier vibe` | UTILITY | Glacier vibes animation |
+| `glacier completions` | UTILITY | Shell completions (bash, zsh, fish, pwsh) |
+
+### Color and logging
+
+Color is on by default. Pass `--no-color` or set `NO_COLOR` to disable. Pass `--force-color` to keep color when piping to `less -R`. The default log level is Warn; use `-V` for Debug or `--very-verbose` for Trace.
 
 ### Why dogfood
 
-The SDK is the framework's longest-running integration test. Every Glacier package is exercised by at least one SDK command. A Lynx-owned coverage row fails CI if any package falls out of use. Bugs in the framework surface immediately, before they reach framework consumers.
+Every Glacier framework package is exercised by at least one SDK command. A Lynx-owned coverage row fails CI if any package falls out of use.
 
-[Read the SDK reference](https://nathanbrophy.github.io/glacier/sdk/)
+[Read the SDK docs](https://nathanbrophy.github.io/glacier/sdk/)
 
 ## The Promise
 

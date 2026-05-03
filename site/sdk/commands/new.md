@@ -2,61 +2,95 @@
 title: glacier new
 ---
 
-# glacier new    [ SDK ]
+# glacier new
 
-[ View source spec → ](../../../specs/0032-sdk.md#commands-new)
+**Synopsis.** Add a package, command, or functional-option constructor to an existing Glacier project.
+
 **Other commands:** [vibe](./vibe.md) [version](./version.md) [generate](./generate.md) [lint](./lint.md) [test](./test.md) [init](./init.md) [completions](./completions.md) [explain](./explain.md)
 
-<!-- magpie:extract source=specs/0032-sdk.md section=commands subsection=new source-checksum=<TODO> -->
-**Synopsis.** Add a package, command, or option to an existing Glacier project.
-
-**Mental model.** `new` is the dual to `init`. It walks the current module via `go/packages`, finds the existing command tree, and writes one or more new files plus surgical AST edits to existing files via `go/ast` + `go/format`. After writing, `new command` invokes `cli/gen.Generate` in-process so the user's tree is in a working state. `--dry-run` prints the plan with per-file unified diffs; no file is written.
-
-**Subcommands.**
+## Subcommands
 
 | Subcommand | Description |
 |---|---|
-| `glacier new package <name>` | Create a new Go package skeleton. |
-| `glacier new command <name>` | Create a new `+glacier:command` struct and re-run cligen. |
-| `glacier new option <TypeName>` | Append a functional-option constructor in the chosen package. |
+| `glacier new package <name>` | Create a new Go package skeleton (`doc.go`, `<name>.go`, `<name>_test.go`) |
+| `glacier new command <name>` | Create a new `+glacier:command` struct and re-run `cli/gen.Generate` |
+| `glacier new option <TypeName>` | Append a functional-option constructor to `options.go` in the target package |
 
-**Common flags.**
+## Flags for `new package`
 
 | Flag | Default | Description |
 |---|---|---|
-| `--dry-run` | `false` | Print the plan with diffs; no files written. |
-| `--force` | `false` | Overwrite colliding files. |
-| `--package` | | Disambiguate when multiple packages match. |
+| `<name>` | (required) | Package directory name |
+| `--pkg` | (same as name) | Go package name if different from the directory name |
+| `--dry-run` | `false` | Print what would be created without writing any files |
+| `--force` | `false` | Overwrite existing files |
 
-**Exit codes.** `0` success; `2` ambiguous `--package`; `64` codegen re-run failed; `67` no module, collision without `--force`, AST parse failure, invalid name, path violation; `130` SIGINT.
-<!-- /magpie:extract -->
+## Flags for `new command`
 
-## Try it
+| Flag | Default | Description |
+|---|---|---|
+| `<name>` | (required) | Command name (becomes the verb) |
+| `--parent` | `root` | Parent command name in the tree |
+| `--dry-run` | `false` | Print the plan without writing files |
+| `--force` | `false` | Overwrite existing files |
 
-```
-$ glacier new command pause --dry-run
-ʕ•_•ʔ glacier new command pause --dry-run
+## Flags for `new option`
 
-Plan:
-  + cmd/myapp/pause.go                  ( 24 lines)
-  ~ cmd/myapp/zz_generated_cli.go       (+1, -0)
+| Flag | Default | Description |
+|---|---|---|
+| `<TypeName>` | (required) | The type the option configures |
+| `--pkg` | `.` | Package path where `options.go` lives |
+| `--dry-run` | `false` | Print the generated code without writing it |
+| `--force` | `false` | Overwrite existing files |
 
-─── cmd/myapp/pause.go (new) ───────────────────────────────────────
-  // PauseCmd pauses the running server.
-  //
-  // +glacier:command name=pause parent=myapp
-  type PauseCmd struct {
-      // Force pauses without graceful shutdown.
-      //
-      // +glacier:short f
-      Force bool
-  }
-  // [...]
-─────────────────────────────────────────────────────────────────────
+## Examples
 
-ʕ•ᴥ•ʔ dry run: no files written. Re-run without --dry-run to apply.
+Create a new package skeleton:
+
+```sh
+glacier new package auth
 ```
 
-## Related commands
+Preview a new command without writing it:
 
-[init](./init.md) [generate](./generate.md) [explain](./explain.md)
+```sh
+glacier new command pause --dry-run
+```
+
+Add a command under a specific parent:
+
+```sh
+glacier new command pause --parent=serve
+```
+
+Generate a functional-option constructor for `ServerConfig`:
+
+```sh
+glacier new option ServerConfig
+```
+
+Preview the option code without writing:
+
+```sh
+glacier new option ServerConfig --dry-run
+```
+
+## What it does under the hood
+
+`new package` validates the name as a Go identifier, walks to the module root by finding `go.mod`, and writes three files atomically via `internal/safefile`. `new command` locates the directory containing `zz_generated_cli.go` by walking the module tree, writes the command stub, then calls `cli/gen.Generate` in-process to regenerate the wiring. `new option` reads the existing package name from a sibling `.go` file, generates the `<TypeName>Option` type and `With<TypeName>` constructor, formats with `go/format`, and appends to `options.go` (creating it if absent).
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| 0 | Success |
+| 2 | Usage error |
+| 64 | Codegen re-run failed after `new command` |
+| 67 | No module found, file collision without `--force`, invalid name, or write failure |
+| 130 | SIGINT |
+
+## See also
+
+- [`glacier init`](./init.md) - scaffold a brand-new project
+- [`glacier generate`](./generate.md) - re-run all generators after adding annotations
+- [`glacier explain +glacier:command`](./explain.md) - annotation reference

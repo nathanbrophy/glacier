@@ -2,43 +2,70 @@
 title: glacier generate
 ---
 
-# glacier generate    [ SDK ]
+# glacier generate
 
-[ View source spec → ](../../../specs/0032-sdk.md#commands-generate)
-**Other commands:** [vibe](./vibe.md) [version](./version.md) [lint](./lint.md) [test](./test.md) [init](./init.md) [new](./new.md) [completions](./completions.md) [explain](./explain.md)
-
-<!-- magpie:extract source=specs/0032-sdk.md section=commands subsection=generate source-checksum=<TODO> -->
 **Synopsis.** Run every Glacier code generator (cli, mock, httpmock) over the current module.
 
-**Mental model.** `generate` is the umbrella over Glacier's three v0 generators. The generator registry is an explicit list of (`name`, `fn`) pairs; functions are direct references to `cli/gen.Generate`, `mock/gen.Generate`, `httpmock/gen.Generate`. No reflection. Each generator runs in a `concur.Group` slot, owns one row in a `term.StatusBar`, and reports progress through a thin channel. `--check` mode swaps the panel for a check-list and emits unified diffs for every stale file. Exit 64 on generator failure; exit 69 on drift detected by `--check`.
+**Other commands:** [vibe](./vibe.md) [version](./version.md) [lint](./lint.md) [test](./test.md) [init](./init.md) [new](./new.md) [completions](./completions.md) [explain](./explain.md)
 
-**Flags.**
+## Flags
 
 | Flag | Default | Description |
 |---|---|---|
-| `[patterns]` | `./...` | go/packages patterns to scan. |
-| `--check` | `false` | Drift-detection mode: no files written; exit 69 on drift. |
-| `--only` | (all) | Restrict generators by name. Values: `cli`, `mock`, `httpmock`. |
-| `--parallel` | `0` | Cap concurrent generators. `0` resolves to `min(GOMAXPROCS, 8)`. |
-| `--no-status` | `false` | Suppress the live status panel. |
+| `[patterns]` | `./...` | go/packages patterns to scan. Pass one or more to restrict to a subtree. |
+| `--check` | `false` | Drift-detection mode: no files are written; exits 69 if any generated file is stale. |
+| `--only` | (all) | Comma-separated subset of generators to run. Values: `cli`, `mock`, `httpmock`. |
+| `--parallel` | `0` | Cap the number of concurrent generators. `0` uses `GOMAXPROCS`. |
+| `--no-status` | `false` | Suppress the live status panel animation. |
 
-**Use in CI.** Run `glacier generate --check` as a gate to catch drift between source annotations and generated files.
+## Examples
 
-**Exit codes.** `0` success; `2` usage error (bad pattern or unknown generator); `64` generator failure; `69` drift detected.
-<!-- /magpie:extract -->
+Run all generators over the entire module:
 
-## Try it
-
-```asciinema
-site/public/casts/generate.cast
+```sh
+glacier generate
 ```
 
-The cast shows a full run followed by `--check` with one stale file.
+Check for drift without writing (CI gate):
 
-## Codegen gallery
+```sh
+glacier generate --check
+```
 
-See the [codegen gallery](../codegen/index.md) for annotated input/output examples for each generator.
+Regenerate only mock stubs:
 
-## Related commands
+```sh
+glacier generate --only=mock
+```
 
-[lint](./lint.md) [test](./test.md) [new](./new.md) [explain](./explain.md)
+Regenerate cli and mock in parallel, capped at 2:
+
+```sh
+glacier generate --only=cli,mock --parallel=2
+```
+
+Run against a single package:
+
+```sh
+glacier generate ./cmd/myapp/...
+```
+
+## What it does under the hood
+
+`generate` runs three generators: `cli/gen.Generate`, `mock/gen.Generate`, and `httpmock/gen.Generate`. Each generator is a direct function reference; there is no reflection or plugin system. Generators run concurrently in a `concur.Group`, each owning one row in a `term.StatusBar` rendered by a `term.Animator`. With `--only`, the generator list is filtered before dispatch. With `--check`, the generators run in read-only mode and return an error containing the word "stale" for any drift; the command collects those errors, prints a summary, and exits 69.
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| 0 | All generators succeeded |
+| 2 | Usage error (bad pattern or unknown generator name) |
+| 64 | At least one generator failed |
+| 69 | Drift detected in `--check` mode |
+
+## See also
+
+- [`glacier lint`](./lint.md) - run after generate to catch style issues
+- [`glacier test`](./test.md)
+- [`glacier new`](./new.md)
+- [`glacier explain +glacier:command`](./explain.md) - marker reference

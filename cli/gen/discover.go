@@ -245,10 +245,10 @@ func parseFieldMarkers(pkg *packages.Package, named *types.Named, pr *ParseResul
 	}
 }
 
-// hasAnyMarker returns true if fm has any marker set.
+// hasAnyMarker returns true if fm has any marker or description set.
 func hasAnyMarker(fm *FieldMarker) bool {
 	return fm.HasShort || fm.Env != "" || fm.Required || len(fm.Choices) > 0 ||
-		fm.HasDepr || fm.Validate != "" || fm.HasDefault
+		fm.HasDepr || fm.Validate != "" || fm.HasDefault || fm.Help != ""
 }
 
 // extractFieldDocLines extracts doc comment lines for a field of a named struct.

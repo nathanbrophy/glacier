@@ -2,57 +2,82 @@
 title: glacier lint
 ---
 
-# glacier lint    [ SDK ]
+# glacier lint
 
-[ View source spec → ](../../../specs/0032-sdk.md#commands-lint)
+**Synopsis.** Run gofmt, go vet, staticcheck (when on PATH), and six Glacier-specific lints.
+
 **Other commands:** [vibe](./vibe.md) [version](./version.md) [generate](./generate.md) [test](./test.md) [init](./init.md) [new](./new.md) [completions](./completions.md) [explain](./explain.md)
 
-<!-- magpie:extract source=specs/0032-sdk.md section=commands subsection=lint source-checksum=<TODO> -->
-**Synopsis.** Run gofmt, go vet, staticcheck, and Glacier-specific lints.
-
-**Mental model.** `lint` runs an in-process suite for the cheap lints (gofmt via `go/format`, go vet via `golang.org/x/tools/go/analysis`, plus the six Glacier-specific lints) and shells out to `staticcheck` if it's on PATH. A content-hash cache at `<repo>/.glacier/lint-cache.json` reuses results across runs. Findings are grouped by severity (errors first), then by file. On capable terminals each `file:line` is an OSC-8 hyperlink. `--fix` auto-fixes gofmt + no-em-dash + marker normalization; other lints get a manual-fix hint. Exit 65 on findings >= severity threshold; exit 70 on subprocess failure.
-
-**Flags.**
+## Flags
 
 | Flag | Default | Description |
 |---|---|---|
 | `[patterns]` | `./...` | go/packages patterns to scan. |
-| `--fix` | `false` | Apply auto-fixable lint fixes in place. |
-| `--severity` | `warning` | Minimum severity to report. Values: `error`, `warning`, `info`. |
+| `--fix` | `false` | Apply auto-fixable lint fixes in place (gofmt, `no-em-dash`, marker normalization). |
+| `--severity` | `warning` | Minimum severity to report and gate on. Values: `error`, `warning`, `info`. |
 | `--format` | `text` | Output format. Values: `text`, `json`, `sarif`. |
-| `--no-cache` | `false` | Ignore the lint result cache. |
+| `--no-cache` | `false` | Ignore the per-file content-hash cache (`.glacier/lint-cache.json`). |
 
-**Glacier-specific lints.**
+## Examples
 
-| Name | Severity | Description |
+Run the full lint suite:
+
+```sh
+glacier lint
+```
+
+Auto-fix gofmt violations and em-dash characters in one pass:
+
+```sh
+glacier lint --fix
+```
+
+Report only errors (skip warnings):
+
+```sh
+glacier lint --severity=error
+```
+
+Emit SARIF for upload to GitHub Code Scanning:
+
+```sh
+glacier lint --format=sarif > lint.sarif
+```
+
+Lint a single package and show JSON output:
+
+```sh
+glacier lint ./cli/... --format=json
+```
+
+## Glacier-specific lints
+
+| Rule | Severity | What it checks |
 |---|---|---|
-| `exported-doc-comment` | warning | Every exported symbol has a doc comment starting with the symbol name. |
-| `package-example-test` | warning | Every package has at least one `Example*` function. |
-| `panic-in-library` | error | No `panic(...)` outside `_test.go` in non-`cmd/` packages. |
-| `no-em-dash` | error | No U+2014 in any `.go`, `.md`, `.txt` file. |
-| `library-error-register` | error | Every exported `*Error` type's `Error()` matches `^[a-z][^.]*$`. |
-| `naked-any` | warning (opt-in) | Type-parameter constraint of `any` where a more specific constraint would do. |
+| `no-em-dash` | error | No U+2014 in `.go`, `.md`, or `.txt` files |
+| `panic-in-library` | error | No `panic(` outside `_test.go` in non-`cmd/` packages |
+| `library-error-register` | error | Exported `*Error.Error()` strings match `^[a-z][^.]*$` |
+| `exported-doc-comment` | warning | Every exported symbol has a doc comment starting with the symbol name |
+| `package-example-test` | warning | Every non-internal package has at least one `Example*` function |
+| `naked-any` | warning (opt-in) | Function signatures use named interfaces rather than bare `any`/`interface{}` |
 
-**Exit codes.** `0` clean; `2` bad pattern; `65` findings at or above severity threshold; `70` subprocess failure.
-<!-- /magpie:extract -->
+The `naked-any` rule is off by default. Enable it via `lint.naked_any.enabled = true` in the config file.
 
-## Try it
+## What it does under the hood
 
-```
-$ glacier lint ./...
-ʕ•ᴥ•ʔ glacier lint ./...
-ʕ× ×ʔ ERRORS
-  cli/app.go:142  panic-in-library     panic in non-test, non-cmd package: panic("unreachable")
-  cli/gen/parse.go:67  no-em-dash      em-dash character (U+2014) found
+`lint` runs gofmt in-process via `go/format`, shells out to `go vet` for each pattern, and optionally shells out to `staticcheck` when it is found on PATH (skipped silently otherwise). The six Glacier-specific rules run in-process via the `Linter` interface, walking the file tree with `filepath.WalkDir`. Results are cached by content hash in `.glacier/lint-cache.json`; a file that has not changed since the last run reuses its cached findings. Findings are grouped by severity (errors first), then by file. `--fix` rewrites gofmt violations, replaces U+2014 em-dashes with `: `, and normalizes `// +glacier: directive` spacing.
 
-ʕ◉_◉ʔ WARNINGS
-  cli/app.go:88   exported-doc-comment  exported func App.Lookup has no doc comment
-  conf/conf.go:51 package-example-test  package conf has no Example* function
+## Exit codes
 
-ʕ•ᴥ•ʔ 3 findings: 2 errors, 1 warning.
-exit 65
-```
+| Code | Meaning |
+|---|---|
+| 0 | No findings at or above the severity threshold |
+| 2 | Bad pattern |
+| 65 | One or more findings at or above the severity threshold |
+| 70 | Subprocess failure (go vet or staticcheck failed to start) |
 
-## Related commands
+## See also
 
-[generate](./generate.md) [test](./test.md) [explain](./explain.md)
+- [`glacier generate`](./generate.md) - run before lint after editing annotations
+- [`glacier test`](./test.md)
+- [`glacier explain 65`](./explain.md) - exit code 65 details

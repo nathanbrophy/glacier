@@ -4,40 +4,54 @@ title: SDK Configuration
 
 # SDK Configuration
 
-The SDK loads configuration from four sources, in order of increasing precedence:
+Configuration is layered. Later sources win:
 
 ```
-defaults  <  config file  <  env vars (GLACIER__*)  <  flags
+defaults  <  config file  <  environment variables  <  flags
 ```
 
 ## Config file
 
-`<UserConfigDir>/glacier/config.json`
+Location by OS:
 
-On Linux: `~/.config/glacier/config.json`
-On macOS: `~/Library/Application Support/glacier/config.json`
-On Windows: `%AppData%/glacier/config.json`
+| OS | Path |
+|---|---|
+| Linux | `~/.config/glacier/config.json` |
+| macOS | `~/Library/Application Support/glacier/config.json` |
+| Windows | `%AppData%\glacier\config.json` |
 
 All keys are optional. The SDK runs with no config file present.
+
+**Minimal example:**
+
+```json
+{
+  "versioncheck": {
+    "cache_ttl": "1h"
+  }
+}
+```
 
 ## Config keys
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `github.repo` | string | `nathanbrophy/glacier` | Repo used by `version --check` for the latest-release lookup. |
-| `versioncheck.cache_ttl` | duration | `24h` | TTL for the cached latest-release result. |
-| `versioncheck.enabled` | bool | `true` | Disable the `version --check` network call entirely. |
-| `versioncheck.strict` | bool | `false` | When true, a network failure during `--check` exits 68 instead of 0. |
-| `banner.show_on_help` | bool | `true` | Show the banner when `glacier --help` is run. |
-| `palette.override` | object | `{}` | Per-token color overrides (e.g. `{"--mg-cyan": "#00ffff"}`). |
+| `github.repo` | string | `nathanbrophy/glacier` | Repository used by `version --check` for the latest-release lookup. |
+| `versioncheck.cache_ttl` | duration | `24h` | TTL for the cached latest-release result. Accepts Go duration strings: `1h`, `30m`, `24h`. |
+| `versioncheck.enabled` | bool | `true` | Set to `false` to disable the `version --check` network call entirely. |
+| `versioncheck.strict` | bool | `false` | When `true`, a network failure during `--check` exits 68 instead of degrading gracefully. |
+| `banner.show_on_help` | bool | `true` | Show the banner when `glacier --help` is invoked. |
+| `palette.override` | object | `{}` | Per-token color overrides. Keys are CSS custom property names (e.g. `"--mg-cyan": "#00ffff"`). |
 
-The `telemetry` key is hard-coded to false; setting it has no effect. The SDK never phones home.
+The `telemetry` key is hard-coded to `false`. Setting it has no effect. The SDK never phones home.
 
 ## Environment variables
 
-Every config key maps to an env var with the `GLACIER__` prefix and double-underscore separators:
+### Config key overrides
 
-| Key | Env var |
+Every config key maps to an environment variable with the `GLACIER__` prefix and double-underscore separators:
+
+| Config key | Environment variable |
 |---|---|
 | `github.repo` | `GLACIER__GITHUB__REPO` |
 | `versioncheck.cache_ttl` | `GLACIER__VERSIONCHECK__CACHE_TTL` |
@@ -45,45 +59,75 @@ Every config key maps to an env var with the `GLACIER__` prefix and double-under
 | `versioncheck.strict` | `GLACIER__VERSIONCHECK__STRICT` |
 | `banner.show_on_help` | `GLACIER__BANNER__SHOW_ON_HELP` |
 
-Two standard env vars are also honored:
+### Color control
 
-| Var | Effect |
+| Variable | Effect |
 |---|---|
-| `NO_COLOR` | Suppress all ANSI color output; wordmark renders as plain ASCII. |
+| `NO_COLOR` | Suppress all ANSI color; equivalent to `--no-color`. Honored by all ANSI-aware tools. |
 | `GLACIER_NO_COLOR` | Same as `NO_COLOR`, scoped to the Glacier SDK only. |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | When set, the SDK initializes `obs` and emits per-command spans and counters to this endpoint. The SDK never sends telemetry when this var is unset. |
+| `FORCE_COLOR` | Force color even when stdout is not a TTY. |
+| `GLACIER_FORCE_COLOR` | Same as `FORCE_COLOR`, scoped to the Glacier SDK only. |
+
+### Logging and verbosity
+
+| Variable | Effect |
+|---|---|
+| `GLACIER_VERBOSE` | Equivalent to `--verbose` (`-V`): raises log level to Debug. |
+| `GLACIER_DEBUG` | Equivalent to `--very-verbose`: raises log level to Trace. |
+
+### Telemetry (opt-in)
+
+| Variable | Effect |
+|---|---|
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | When set, the SDK initializes `obs` and emits per-command spans and counters to this endpoint. No data is sent when this variable is unset. |
 
 ## Global flags
 
-These flags are available on every command. See [Commands](./commands/index.md#global-flags) for descriptions.
+These flags are accepted by every command and take precedence over all other sources.
 
-`--help` / `-h`, `--version` / `-v`, `--quiet` / `-q`, `--verbose` / `-V`, `--very-verbose`, `--no-animate`, `--no-banner`, `--profile`, `--otel-endpoint`
+| Flag | Short | Description |
+|---|---|---|
+| `--help` | `-h` | Print help text |
+| `--quiet` | `-q` | Suppress non-error output and animations; keep the final summary |
+| `--verbose` | `-V` | Raise log level to Debug |
+| `--very-verbose` | | Raise log level to Trace |
+| `--no-animate` | | Force plain output even on a TTY |
+| `--no-banner` | | Suppress the banner on this invocation |
+| `--no-color` | | Disable all ANSI color output |
+| `--force-color` | | Force color output even when output is not a TTY |
+| `--profile` | | Write pprof CPU, heap, and goroutine profiles |
+| `--otel-endpoint` | | Override `OTEL_EXPORTER_OTLP_ENDPOINT` for this invocation |
+
+`--quiet` and `--verbose` / `--very-verbose` are mutually exclusive. Combining them exits 2.
+
+`-v` is reserved for `--version` on the root command.
 
 ## Exit codes
 
 | Code | Meaning |
 |---|---|
 | 0 | Success |
-| 1 | Generic failure not better classified |
+| 1 | Generic failure |
 | 2 | Usage error |
-| 64 | Generate failed |
-| 65 | Lint reported findings >= severity threshold |
-| 66 | Tests failed (or any benchmark regressed > 5%) |
-| 67 | Init or new template/scaffolding failed |
-| 68 | Version-check unreachable when `--strict` |
+| 64 | Generator failure (`generate`) |
+| 65 | Lint findings at or above the severity threshold (`lint`) |
+| 66 | Tests failed or benchmark regression detected (`test`) |
+| 67 | Scaffolding failure (`init`, `new`) |
+| 68 | Version-check unreachable when `--strict` is set (`version --check --strict`) |
 | 69 | Codegen drift detected (`generate --check`) |
-| 70 | Subprocess failure (wrapped tool exited non-zero non-test-failure) |
+| 70 | Subprocess failure (wrapped tool exited non-zero) |
 | 130 | SIGINT / Ctrl-C |
 | 143 | SIGTERM |
 
-Exit codes are stable across SDK versions. Use `glacier explain <code>` for the full description and next steps.
+Exit codes are stable across SDK versions. Use `glacier explain <code>` to read the full description and suggested next steps.
 
 ## Cache files
 
-| File | Owner | Purpose |
+| File | Owner command | Purpose |
 |---|---|---|
-| `<UserCacheDir>/glacier/versioncheck.json` | `version` | Latest-release lookup cache |
+| `<UserCacheDir>/glacier/versioncheck.json` | `version` | Latest-release lookup result, cached with TTL |
 | `<repo>/.glacier/lint-cache.json` | `lint` | Per-file content-hash result cache |
-| `<repo>/.glacier/bench-baseline.json` | `test --bench` | benchstat baseline |
+| `<repo>/.glacier/bench-baseline.json` | `test --bench` | Benchmark baseline for regression gating |
+| `<repo>/.glacier/coverage.out` | `test --cover` | Coverage profile |
 
-`<repo>/.glacier/` is added to the `.gitignore` generated by `glacier init`. All writes route through `internal/safefile`.
+`<repo>/.glacier/` is added to the `.gitignore` generated by `glacier init`. All cache writes route through `internal/safefile` for atomic replacement.

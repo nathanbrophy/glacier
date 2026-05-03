@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/nathanbrophy/glacier/cmd/glacier/internal/report"
+	"github.com/nathanbrophy/glacier/cmd/glacier/internal/shimmer"
 	"github.com/nathanbrophy/glacier/cmd/glacier/internal/vibetips"
 	"github.com/nathanbrophy/glacier/term"
 )
@@ -137,7 +138,9 @@ type vibeAnimation struct {
 }
 
 // Render implements term.Animation. It cycles bear expressions every 3 seconds
-// and rotates the tip line every 5 seconds.
+// and rotates the tip line every 5 seconds. The wordmark shimmer advances
+// one gradient stop per tick (100 ms), completing a full 6-stop aurora cycle
+// every 600 ms per spec 0032 D-S58.
 func (v *vibeAnimation) Render() ([]string, bool) {
 	t := v.tick.Add(1)
 
@@ -153,8 +156,15 @@ func (v *vibeAnimation) Render() ([]string, bool) {
 		tip = bearKaomoji + " " + v.tips[tipIdx].Body
 	}
 
+	// Shimmer phase: one stop per tick, full cycle every 6 ticks (600 ms).
+	caps := term.Capability(os.Stderr)
+	phase := int(t % 6)
+	c24 := term.ShouldColor(os.Stderr) && caps.SupportsColor >= term.Color24Bit
+	c256 := term.ShouldColor(os.Stderr) && !c24 && caps.SupportsColor >= term.Color256
+	wm := shimmer.Wordmark(phase, c24, c256)
+
 	var content strings.Builder
-	content.WriteString(bearKaomoji + "  GLACIER\n\n")
+	content.WriteString(bearKaomoji + "  " + wm + "\n\n")
 	content.WriteString("Less plumbing. More Go.\n")
 	if tip != "" {
 		content.WriteString("\n" + tip + "\n")

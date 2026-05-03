@@ -2,37 +2,65 @@
 title: glacier version
 ---
 
-# glacier version    [ SDK ]
+# glacier version
 
-[ View source spec → ](../../../specs/0032-sdk.md#commands-version)
+**Synopsis.** Print the Glacier SDK version, Go toolchain, and OS/arch. With `--check`, compare against the latest published release.
+
 **Other commands:** [vibe](./vibe.md) [generate](./generate.md) [lint](./lint.md) [test](./test.md) [init](./init.md) [new](./new.md) [completions](./completions.md) [explain](./explain.md)
 
-<!-- magpie:extract source=specs/0032-sdk.md section=commands subsection=version source-checksum=<TODO> -->
-**Synopsis.** Print the Glacier SDK version. With `--check`, compare against the latest published release.
-
-**Mental model.** `version` reads its own version (baked at build time via `-ldflags`; falls back to `runtime/debug.ReadBuildInfo` for `go run` builds), the Go toolchain version, and the OS/arch. `--check` adds a GitHub Releases lookup via `httpc`. The lookup is cached in `<UserCacheDir>/glacier/versioncheck.json` with a 24-hour TTL. Network failures degrade gracefully: stale cache is returned with a `(stale)` annotation; no cache available means `latest: unknown (offline)`. Exit 0 unless `--strict` opts into exit 68 on network failure.
-
-**Flags.**
+## Flags
 
 | Flag | Default | Description |
 |---|---|---|
-| `--check` | `false` | Contact GitHub Releases for the latest tag. |
-| `--strict` | `false` | Make a network failure during `--check` exit 68. |
-| `--json` | `false` | Emit a single JSON object instead of human-readable lines. |
+| `--check` | `false` | Fetch the latest release from GitHub and compare against the running version. |
+| `--strict` | `false` | When combined with `--check`, exit 68 if the GitHub endpoint is unreachable instead of degrading gracefully. |
+| `--json` | `false` | Emit a single JSON object to stdout instead of human-readable lines. |
 
-**Output destination.** Version output writes to stdout. This means `glacier version --json | jq .latest` works correctly.
+## Examples
 
-**Exit codes.** `0` success or offline with default behavior; `68` network failure when `--strict` is set; `130` SIGINT during network call.
-<!-- /magpie:extract -->
+Print the current version:
 
-## Try it
-
-```asciinema
-site/public/casts/version.cast
+```sh
+glacier version
 ```
 
-The cast shows `glacier version` followed by `glacier version --check`.
+Check whether a newer release is available:
 
-## Related commands
+```sh
+glacier version --check
+```
 
-[explain](./explain.md) [completions](./completions.md)
+Machine-readable output for scripting:
+
+```sh
+glacier version --json
+```
+
+Fail the script if the version check cannot reach GitHub:
+
+```sh
+glacier version --check --strict
+```
+
+Parse the latest tag with jq:
+
+```sh
+glacier version --check --json | jq -r '.latest.tag'
+```
+
+## What it does under the hood
+
+`version` reads its own version string from a value baked in at build time via `-ldflags`; when that is empty or `"dev"` it falls back to `runtime/debug.ReadBuildInfo`. With `--check`, it looks up the latest release via `cmd/glacier/internal/ghreleases` using `httpc.Default`. The lookup result is cached in a layered cache (in-memory primary backed by `<UserCacheDir>/glacier/`) with a 24-hour TTL configured by `versioncheck.cache_ttl`. A network failure without `--strict` prints `latest: unknown (offline)` and exits 0. All version output writes to stdout so `glacier version --json | jq .latest` works correctly.
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| 0 | Success, or offline without `--strict` |
+| 68 | Network failure during `--check` when `--strict` is set |
+| 130 | SIGINT during the network call |
+
+## See also
+
+- [`glacier explain versioncheck.cache_ttl`](./explain.md) - cache TTL config key
+- [`glacier completions`](./completions.md)

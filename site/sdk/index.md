@@ -8,50 +8,67 @@ title: Glacier SDK
   <MascotSprite state="wave" :size="96" />
 </div>
 
-[ View source spec → ](../../specs/0032-sdk.md)
+ʕ•ᴥ•ʔ One command to install. Nine to cover the developer day.
 
-<!-- magpie:extract source=specs/0032-sdk.md section=public-summary source-checksum=<TODO> -->
-The Glacier SDK is a CLI binary, `glacier`, built on every Glacier framework package. It is the framework's longest-running integration test, its public face for new developers, and the source of the "batteries included" experience every project scaffolded by `glacier init` inherits. Nine commands cover the developer day: `vibe`, `version`, `generate`, `lint`, `test`, `init`, `new`, `completions`, `explain`. Each is built with the `cli` package and its codegen tool. Animations route through `term.Animator`. HTTP calls route through `httpc`. Configuration loads through `conf`. Logs flow through `log` with kaomoji-prefixed status messages at command boundaries. Telemetry is opt-in only: when `OTEL_EXPORTER_OTLP_ENDPOINT` is set the SDK emits per-command spans and counters via `obs`. The SDK never phones home and never auto-updates. It demonstrates the Glacier promise that every line you do not write is one Glacier handles for you.
-<!-- /magpie:extract -->
+The Glacier SDK is a CLI binary, `glacier`, built on every Glacier framework package. It scaffolds new projects, runs code generators, lints, tests, and explains the framework to you as you go. It is also the framework's longest-running integration test: every package Glacier ships is exercised by at least one SDK command, and a CI row fails if any package falls out of use.
 
-## Mental model
+## What ships
 
-<!-- magpie:extract source=specs/0032-sdk.md section=mental-model source-checksum=<TODO> -->
-The Glacier SDK is two things at once. To a Glacier developer it is a productivity tool: scaffold a project, generate boilerplate, lint, test, ship. To the framework itself it is a stress test: every package shipped by Glacier is exercised by at least one SDK command, and a Lynx-owned coverage row fails CI if any package falls out of use. The SDK and the framework move in lockstep.
-<!-- /magpie:extract -->
+### CREATE
 
-## Get started
+| Command | Description |
+|---|---|
+| [`glacier init`](./commands/init.md) | Scaffold a new Glacier project with signals, banner, version, completions, and OTEL wired from day one |
+| [`glacier new`](./commands/new.md) | Add a package, command, or functional-option constructor to an existing project |
+
+### DEVELOP
+
+| Command | Description |
+|---|---|
+| [`glacier generate`](./commands/generate.md) | Run all three Glacier code generators (cli, mock, httpmock) concurrently |
+| [`glacier lint`](./commands/lint.md) | gofmt, go vet, staticcheck, and six Glacier-specific lints with an optional auto-fix pass |
+| [`glacier test`](./commands/test.md) | Wrap `go test -json` with a live status panel, a color-coded summary, and benchmark regression gating |
+
+### INSPECT
+
+| Command | Description |
+|---|---|
+| [`glacier version`](./commands/version.md) | Print version, Go toolchain, and OS/arch; `--check` fetches the latest release from GitHub |
+| [`glacier explain`](./commands/explain.md) | Print a boxed explanation for any marker, exit code, or config key |
+
+### UTILITY
+
+| Command | Description |
+|---|---|
+| [`glacier vibe`](./commands/vibe.md) | Animated polar-bear banner with rotating tips; static fallback on non-TTY |
+| [`glacier completions`](./commands/completions.md) | Print a shell-completion script for bash, zsh, fish, or PowerShell |
+
+## Quickstart
+
+Install the binary:
 
 ```sh
 go install github.com/nathanbrophy/glacier/cmd/glacier@latest
-glacier init my-app --yes
-cd my-app && go mod tidy
 ```
 
-See [Install](./install.md) for per-OS instructions and shell-completion setup.
+Scaffold a project:
 
-## Commands
+```sh
+glacier init my-app --yes
+cd my-app
+```
 
-| Command | What it does |
-|---|---|
-| [`glacier vibe`](./commands/vibe.md) | Glacier vibes animation |
-| [`glacier version`](./commands/version.md) | Print version; `--check` compares against latest |
-| [`glacier generate`](./commands/generate.md) | Run all code generators |
-| [`glacier lint`](./commands/lint.md) | gofmt, vet, staticcheck, Glacier-specific lints |
-| [`glacier test`](./commands/test.md) | Live status panel and summary |
-| [`glacier init`](./commands/init.md) | Scaffold a new Glacier project |
-| [`glacier new`](./commands/new.md) | Add a package, command, or option |
-| [`glacier completions`](./commands/completions.md) | Shell completions |
-| [`glacier explain`](./commands/explain.md) | Explain a marker, exit code, or config key |
+Run the generators and tests to confirm the scaffold is wired:
 
-Full command index: [Commands](./commands/index.md)
+```sh
+glacier generate
+glacier test
+```
 
-## Codegen gallery
+That is a working Glacier app. The `main.go` is six lines; all wiring lives in the generated `zz_generated_cli.go`.
 
-Nine annotated examples show the three Glacier generators in action. Each exhibit is a self-contained `in.go` + `out.go` pair that CI keeps byte-exact.
+## Where to go next
 
-[Browse the codegen gallery](./codegen/index.md)
-
-## Configuration
-
-Config file, environment variables, global flags, and exit-code table: [Configuration](./configuration.md)
+- [Install](./install.md) - per-platform install instructions, PATH setup, and shell completions
+- [Commands](./commands/index.md) - all nine commands with flag tables and examples
+- [Configuration](./configuration.md) - config file keys, environment variables, exit codes

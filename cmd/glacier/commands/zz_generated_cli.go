@@ -10,41 +10,71 @@ func init() {
 	if err := cli.Default.Register(&GlacierCmd{},
 		cli.WithRoot(),
 		cli.WithName("glacier"),
+		cli.WithFlagHelp("ForceColor", "Forces ANSI color emission even when output is not a TTY. Useful for piping into less -R or capturing colored logs to a ..."),
+		cli.WithFlagHelp("NoAnimate", "Disables all animations even on a TTY"),
+		cli.WithFlagHelp("NoBanner", "Suppresses the banner on --help"),
+		cli.WithFlagHelp("NoColor", "Disables ANSI color output. Equivalent to setting NO_COLOR in the environment"),
 		cli.WithFlagEnv("OtelEndpoint", "OTEL_EXPORTER_OTLP_ENDPOINT"),
+		cli.WithFlagHelp("OtelEndpoint", "Overrides OTEL_EXPORTER_OTLP_ENDPOINT for this invocation"),
+		cli.WithFlagHelp("Profile", "Writes pprof files to <Profile>.cpu/.heap/.goroutine"),
 		cli.WithFlagShort("Quiet", 'q'),
+		cli.WithFlagHelp("Quiet", "Lowers log level to Warn; suppresses animations; keeps final summary"),
 		cli.WithFlagShort("Verbose", 'V'),
+		cli.WithFlagHelp("Verbose", "Raises log level to Debug"),
+		cli.WithFlagHelp("VeryVerbose", "Raises log level to Trace level (custom)"),
 	); err != nil {
 		panic(err)
 	}
 	if err := cli.Default.Register(&CompletionsCmd{},
 		cli.WithName("completions"),
 		cli.WithFlagChoices("Shell", "bash", "zsh", "fish", "pwsh"),
+		cli.WithFlagHelp("Shell", "Is the target shell: bash, zsh, fish, or pwsh. Accepted as a positional argument (Amendment E workaround: Run reads os.A..."),
 	); err != nil {
 		panic(err)
 	}
 	if err := cli.Default.Register(&ExplainCmd{},
 		cli.WithName("explain"),
+		cli.WithFlagHelp("List", "Prints all available topics grouped by category"),
+		cli.WithFlagHelp("Topic", "Is the slug to explain (e.g. \"+glacier:command\", \"exit:64\", \"config:github.repo\")"),
 	); err != nil {
 		panic(err)
 	}
 	if err := cli.Default.Register(&GenerateCmd{},
 		cli.WithName("generate"),
+		cli.WithFlagHelp("Check", "Performs drift detection without writing files"),
+		cli.WithFlagHelp("NoStatus", "Disables the status panel animation"),
 		cli.WithFlagValidate("Only", validateGeneratorList),
+		cli.WithFlagHelp("Only", "Filters to a comma-separated subset of generators: cli, mock, httpmock"),
+		cli.WithFlagHelp("Parallel", "Caps the number of concurrent generators (0 = NumCPU)"),
+		cli.WithFlagHelp("Patterns", "Are the go/packages patterns to generate for (default ./...)"),
 	); err != nil {
 		panic(err)
 	}
 	if err := cli.Default.Register(&InitCmd{},
 		cli.WithName("init"),
+		cli.WithFlagHelp("Dir", "Is the target directory (default: current directory)"),
+		cli.WithFlagHelp("Force", "Overwrites files in a non-empty directory"),
+		cli.WithFlagHelp("License", "Selects the license to include"),
 		cli.WithFlagChoices("Mascot", "polar_bear", "penguin", "owl", "fox", "otter", "raccoon"),
+		cli.WithFlagHelp("Mascot", "Selects the project mascot"),
+		cli.WithFlagHelp("Name", "Is the module/app name (e.g. github.com/acme/myapp)"),
+		cli.WithFlagHelp("NoGit", "Suppresses git init"),
 		cli.WithFlagChoices("Template", "library-only", "cli-app", "both"),
+		cli.WithFlagHelp("Template", "Selects the project template"),
 		cli.WithFlagShort("Yes", 'y'),
+		cli.WithFlagHelp("Yes", "Skips interactive prompts, using defaults"),
 	); err != nil {
 		panic(err)
 	}
 	if err := cli.Default.Register(&LintCmd{},
 		cli.WithName("lint"),
+		cli.WithFlagHelp("Fix", "Applies auto-fixes where available"),
 		cli.WithFlagChoices("Format", "text", "json", "sarif"),
+		cli.WithFlagHelp("Format", "Is the output format: text, json, or sarif"),
+		cli.WithFlagHelp("NoCache", "Disables the per-file result cache"),
+		cli.WithFlagHelp("Patterns", "Are the packages or paths to lint (default ./...)"),
 		cli.WithFlagChoices("Severity", "error", "warning", "info"),
+		cli.WithFlagHelp("Severity", "Is the minimum severity to report: error, warning, or info"),
 	); err != nil {
 		panic(err)
 	}
@@ -56,34 +86,63 @@ func init() {
 	if err := cli.Default.Register(&NewCommandCmd{},
 		cli.WithName("command"),
 		cli.WithParent("new"),
+		cli.WithFlagHelp("DryRun", "Prints what would be created without writing files"),
+		cli.WithFlagHelp("Force", "Overwrites existing files"),
+		cli.WithFlagHelp("Name", "Is the command name"),
+		cli.WithFlagHelp("Parent", "Is the parent command name"),
 	); err != nil {
 		panic(err)
 	}
 	if err := cli.Default.Register(&NewOptionCmd{},
 		cli.WithName("option"),
 		cli.WithParent("new"),
+		cli.WithFlagHelp("DryRun", "Prints the generated code without writing it"),
+		cli.WithFlagHelp("Force", "Overwrites existing files"),
+		cli.WithFlagHelp("Pkg", "Is the package path where the option will be added (default: current)"),
+		cli.WithFlagHelp("TypeName", "Is the option target type (e.g. ServerConfig)"),
 	); err != nil {
 		panic(err)
 	}
 	if err := cli.Default.Register(&NewPackageCmd{},
 		cli.WithName("package"),
 		cli.WithParent("new"),
+		cli.WithFlagHelp("DryRun", "Prints what would be created without writing files"),
+		cli.WithFlagHelp("Force", "Overwrites existing files"),
+		cli.WithFlagHelp("Name", "Is the package directory name"),
+		cli.WithFlagHelp("Pkg", "Overrides the Go package name (defaults to Name)"),
 	); err != nil {
 		panic(err)
 	}
 	if err := cli.Default.Register(&TestCmd{},
 		cli.WithName("test"),
+		cli.WithFlagHelp("Baseline", "Is the path to the benchmark baseline file"),
+		cli.WithFlagHelp("Bench", "Is a regexp selecting benchmarks to run"),
+		cli.WithFlagHelp("Cover", "Enables coverage reporting"),
 		cli.WithFlagChoices("Format", "text", "junit", "sarif", "json"),
+		cli.WithFlagHelp("Format", "Is the output format: text, junit, sarif, or json"),
+		cli.WithFlagHelp("Fuzz", "Is a regexp selecting fuzz targets to run"),
+		cli.WithFlagHelp("NoStatus", "Disables the status panel animation"),
+		cli.WithFlagHelp("Patterns", "Are the packages to test (default ./...)"),
+		cli.WithFlagHelp("Race", "Enables the race detector"),
+		cli.WithFlagHelp("Slowest", "Prints the N slowest tests"),
+		cli.WithFlagHelp("UpdateBaseline", "Writes a new benchmark baseline"),
 	); err != nil {
 		panic(err)
 	}
 	if err := cli.Default.Register(&VersionCmd{},
 		cli.WithName("version"),
+		cli.WithFlagHelp("Check", "Fetches the latest release from GitHub and compares with the running version"),
+		cli.WithFlagHelp("JSON", "Emits version information as JSON to stdout"),
+		cli.WithFlagHelp("Strict", "Causes --check to exit non-zero when the GitHub endpoint is unreachable"),
 	); err != nil {
 		panic(err)
 	}
 	if err := cli.Default.Register(&VibeCmd{},
 		cli.WithName("vibe"),
+		cli.WithFlagHelp("ASCII", "Forces the kaomoji-only fallback even on capable terminals"),
+		cli.WithFlagHelp("Duration", "Bounds the loop. Default 0s means run until key press or SIGINT"),
+		cli.WithFlagHelp("NoTips", "Suppresses the rotating tip line"),
+		cli.WithFlagHelp("Seed", "Seeds the tip-rotation order. 0 means time-based"),
 	); err != nil {
 		panic(err)
 	}

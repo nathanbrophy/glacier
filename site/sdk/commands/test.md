@@ -2,44 +2,87 @@
 title: glacier test
 ---
 
-# glacier test    [ SDK ]
+# glacier test
 
-[ View source spec → ](../../../specs/0032-sdk.md#commands-test)
+**Synopsis.** Run the Go test suite with a live status panel and a color-coded aggregated summary.
+
 **Other commands:** [vibe](./vibe.md) [version](./version.md) [generate](./generate.md) [lint](./lint.md) [init](./init.md) [new](./new.md) [completions](./completions.md) [explain](./explain.md)
 
-<!-- magpie:extract source=specs/0032-sdk.md section=commands subsection=test source-checksum=<TODO> -->
-**Synopsis.** Run the Go test suite with a live status panel and an aggregated summary.
-
-**Mental model.** `test` wraps `go test -json` as a subprocess and stream-parses the JSON event stream. Completed packages stream upward in the result block (most recent at the top). Active packages occupy the status panel below (up to 10 rows). The summary block at the end gives pass/fail counts, coverage vs threshold, slowest tests, and failure details. `--bench=<re>` runs benchmarks and compares against the per-project baseline at `<repo>/.glacier/bench-baseline.json`; regression > 5% exits 66. `--update-baseline` rewrites the baseline atomically. Output formats: text (default on TTY), JUnit XML, SARIF, JSON.
-
-**Flags.**
+## Flags
 
 | Flag | Default | Description |
 |---|---|---|
 | `[patterns]` | `./...` | go/packages patterns to test. |
 | `--race` | `false` | Forward `-race` to `go test`. |
-| `--cover` | `false` | Forward `-cover` and merge coverage across packages. |
-| `--fuzz` | | Forward `-fuzz=<re>` to `go test`. |
-| `--bench` | | Forward `-bench=<re>` and run benchstat against the baseline. |
-| `--baseline` | `.glacier/bench-baseline.json` | Override the default baseline path. |
-| `--update-baseline` | `false` | Write the current run as the new baseline. |
+| `--cover` | `false` | Forward `-cover` and write a profile to `.glacier/coverage.out`. |
+| `--fuzz` | | Forward `-fuzz=<regexp>` to `go test`. |
+| `--bench` | | Forward `-bench=<regexp>` and compare results against the baseline. |
+| `--baseline` | `.glacier/bench-baseline.json` | Path to the benchmark baseline file. |
+| `--update-baseline` | `false` | Write the current benchmark run as the new baseline. |
 | `--format` | `text` | Output format. Values: `text`, `junit`, `sarif`, `json`. |
-| `--slowest` | `5` | Count of slowest-tests entries in the summary. |
-| `--no-status` | `false` | Suppress the live status panel. |
+| `--slowest` | `5` | Number of slowest tests shown in the summary. |
+| `--no-status` | `false` | Suppress the live status panel animation. |
 
-**`--format=json` schema.** Each line is a `go test -json` event verbatim. The final line is a Glacier-specific aggregate object with keys `action`, `packages`, `pass`, `fail`, `skip`, `coverage`, `wall_seconds`, `slowest`, and `failures`. Tools that already consume `go test -json` work unchanged.
+## Examples
 
-**Exit codes.** `0` all pass; `2` bad pattern or unknown format; `66` tests failed or bench regression > 5%; `70` `go test` failed to start; `130` SIGINT.
-<!-- /magpie:extract -->
+Run all tests:
 
-## Try it
-
-```asciinema
-site/public/casts/test.cast
+```sh
+glacier test
 ```
 
-The cast shows a focused run with one failing test and the isolation hint.
+Run with the race detector and coverage:
 
-## Related commands
+```sh
+glacier test --race --cover
+```
 
-[lint](./lint.md) [generate](./generate.md) [explain](./explain.md)
+Run only tests in one package:
+
+```sh
+glacier test ./cli/...
+```
+
+Run benchmarks and record a new baseline:
+
+```sh
+glacier test --bench=. --update-baseline
+```
+
+Run benchmarks and fail if any regress more than 5%:
+
+```sh
+glacier test --bench=.
+```
+
+Emit JUnit XML for CI:
+
+```sh
+glacier test --format=junit > results.xml
+```
+
+Run a fuzz target for 30 seconds:
+
+```sh
+glacier test --fuzz=FuzzParse ./conf/...
+```
+
+## What it does under the hood
+
+`test` launches `go test -json` as a subprocess and streams its output through a JSON event parser. In-flight packages are shown in a `term.StatusBar` (up to 10 rows) rendered by `term.Animator`. Completed packages stream to the terminal as they finish, colored by pass/fail/skip. When all packages finish, the command renders a summary box via `term.Box` showing package count, pass/fail/skip counts, coverage, wall time, the N slowest tests, and any failure output with an isolation hint. For `--format=json`, every raw `go test -json` event is forwarded verbatim, followed by a Glacier-specific aggregate object. For `--bench`, benchmark output is collected in a separate channel and compared against the stored baseline via `cmd/glacier/internal/benchcmp`; a regression over the threshold (default 5%) prints a box and exits 66.
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| 0 | All tests passed |
+| 2 | Bad pattern or unknown format |
+| 66 | One or more tests failed, or a benchmark regressed more than the threshold |
+| 70 | `go test` failed to start |
+| 130 | SIGINT |
+
+## See also
+
+- [`glacier lint`](./lint.md) - run before test in CI
+- [`glacier generate`](./generate.md)
+- [`glacier explain 66`](./explain.md) - exit code 66 details

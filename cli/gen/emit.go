@@ -130,6 +130,9 @@ func emitRegistrations(w io.Writer, pkgName string, commands []DiscoveredCommand
 			if fm.Validate != "" {
 				opts = append(opts, fmt.Sprintf("cli.WithFlagValidate(%s, %s)", qn, fm.Validate))
 			}
+			if fm.Help != "" {
+				opts = append(opts, fmt.Sprintf("cli.WithFlagHelp(%s, %s)", qn, strconv.Quote(fm.Help)))
+			}
 		}
 
 		if len(opts) > 0 {
