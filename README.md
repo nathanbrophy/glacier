@@ -6,7 +6,8 @@
 
 <img src="./site/public/mascot/companion-wave.svg" width="200"> <img src="./site/public/wordmark.svg" width="600">
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/nathanbrophy/glacier)](https://goreportcard.com/report/github.com/nathanbrophy/glacier) [![Static Badge](https://img.shields.io/badge/github-Read_The_Docs-teal?style=plastic&logo=github&logoColor=teal&labelColor=white)](https://nathanbrophy.github.io/glacier/)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nathanbrophy/glacier)](https://goreportcard.com/report/github.com/nathanbrophy/glacier) [![Static Badge](https://img.shields.io/badge/github-Read_The_Docs-teal?style=plastic&logo=github&logoColor=teal&labelColor=white)](https://nathanbrophy.github.io/glacier/) [![Static Badge](https://img.shields.io/badge/Go-Go_Docs-blue?style=plastic&logo=go)](https://pkg.go.dev/github.com/nathanbrophy/glacier)
+
 
 
 
