@@ -188,6 +188,7 @@ func Password(ctx context.Context, question string) (string, error) {
 		_ = term.Restore(fd, oldState)
 		if panicking {
 			if r := recover(); r != nil {
+				//glacier:nolint=panic-in-library re-panic propagates the inner panic faithfully after raw-mode restoration.
 				panic(r)
 			}
 		}

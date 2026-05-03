@@ -65,6 +65,7 @@ func Drop[T any](src iter.Seq[T], n int) iter.Seq[T] {
 // Panics with "fluent: Window: size must be positive" if size <= 0.
 func Window[T any](src iter.Seq[T], size int) iter.Seq[[]T] {
 	if size <= 0 {
+		//glacier:nolint=panic-in-library programmer error: non-positive size is documented as a panic precondition.
 		panic("fluent: Window: size must be positive")
 	}
 	return func(yield func([]T) bool) {
@@ -89,6 +90,7 @@ func Window[T any](src iter.Seq[T], size int) iter.Seq[[]T] {
 // Panics with "fluent: Chunk: size must be positive" if size <= 0.
 func Chunk[T any](src iter.Seq[T], size int) iter.Seq[[]T] {
 	if size <= 0 {
+		//glacier:nolint=panic-in-library programmer error: non-positive size is documented as a panic precondition.
 		panic("fluent: Chunk: size must be positive")
 	}
 	return func(yield func([]T) bool) {

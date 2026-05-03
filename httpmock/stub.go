@@ -84,6 +84,7 @@ func (s *Stub) Body(matcher BodyMatcher) *Stub {
 // Times sets the exact expected call count. Panics if n <= 0.
 func (s *Stub) Times(n int) *Stub {
 	if n <= 0 {
+		//glacier:nolint=panic-in-library test-helper programmer error: non-positive count is documented as a panic precondition.
 		panic("httpmock: Times: n must be > 0")
 	}
 	s.timesMin = n
@@ -123,11 +124,13 @@ func (s *Stub) Never() *Stub {
 // Panics if PathPrefix and Regex are both set, or if the regex fails to compile.
 func (s *Stub) Respond(r Responder) *Stub {
 	if s.pathPrefix != "" && s.useRegex {
+		//glacier:nolint=panic-in-library test-helper programmer error: PathPrefix/Regex conflict surfaces at stub registration.
 		panic("httpmock: stub: PathPrefix and Regex are mutually exclusive")
 	}
 	if s.useRegex && s.pathRegex == nil {
 		re, err := regexp.Compile(s.pathExact)
 		if err != nil {
+			//glacier:nolint=panic-in-library test-helper programmer error: bad regex surfaces at stub registration.
 			panic("httpmock: stub: regex does not compile: " + err.Error())
 		}
 		s.pathRegex = re

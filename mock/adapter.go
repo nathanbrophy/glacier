@@ -39,12 +39,14 @@ var adapterRegistry sync.Map
 func RegisterAdapter[T any](factory func(dispatch func(string, []reflect.Value) []reflect.Value) T) {
 	ifaceType := reflect.TypeOf((*T)(nil)).Elem()
 	if ifaceType.Kind() != reflect.Interface {
+		//glacier:nolint=panic-in-library programmer error: non-interface T surfaces at TestMain registration.
 		panic(fmt.Sprintf("mock.RegisterAdapter: T must be an interface type, got %s", ifaceType.Kind()))
 	}
 	wrapped := func(dispatch func(string, []reflect.Value) []reflect.Value) any {
 		return factory(dispatch)
 	}
 	if _, loaded := adapterRegistry.LoadOrStore(ifaceType, adapterFactory(wrapped)); loaded {
+		//glacier:nolint=panic-in-library programmer error: duplicate registration surfaces at TestMain.
 		panic(fmt.Sprintf("mock.RegisterAdapter: adapter already registered for %v", ifaceType))
 	}
 }

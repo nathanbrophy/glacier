@@ -47,6 +47,7 @@ func (f retryOptionFunc) applyRetry(c *retryConfig) error { return f(c) }
 // Negative values panic (programming error).
 func MaxAttempts(n int) RetryOption {
 	if n < 0 {
+		//glacier:nolint=panic-in-library programmer error: negative attempts is documented as a panic precondition.
 		panic("httpc: MaxAttempts: n must be >= 0")
 	}
 	return retryOptionFunc(func(c *retryConfig) error {

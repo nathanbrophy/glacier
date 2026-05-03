@@ -421,20 +421,22 @@ func TestParseStaticcheckOutput(t *testing.T) {
 		assert.Equal(t, "staticcheck", findings[0].Rule)
 	})
 
-	t.Run("panic_trace_collapses_to_summary", func(t *testing.T) {
+	t.Run("panic_trace_collapses_to_info_summary", func(t *testing.T) {
 		t.Parallel()
 		out := []byte("panic: runtime error: invalid memory address\n[signal 0xc0000005]\ngoroutine 1 [running]:\n\thonnef.co/go/tools/...\n")
 		findings := parseStaticcheckOutput(out, nil)
 		assert.Equal(t, 1, len(findings))
 		assert.True(t, strings.Contains(findings[0].Message, "tool failure"), "expected summary; got %q", findings[0].Message)
+		assert.Equal(t, "info", findings[0].Severity)
 	})
 
-	t.Run("version_mismatch_collapses_to_summary", func(t *testing.T) {
+	t.Run("version_mismatch_collapses_to_info_summary", func(t *testing.T) {
 		t.Parallel()
 		out := []byte(`-: internal error in importing "cmp" (unsupported version: 2); please report an issue (compile)`)
 		findings := parseStaticcheckOutput(out, nil)
 		assert.Equal(t, 1, len(findings))
 		assert.True(t, strings.Contains(findings[0].Message, "tool failure"), "expected summary; got %q", findings[0].Message)
+		assert.Equal(t, "info", findings[0].Severity)
 	})
 
 	t.Run("empty_output_no_findings", func(t *testing.T) {

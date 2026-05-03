@@ -107,6 +107,8 @@ type Expectation struct {
 // registration time (library-register format).
 //
 // With returns the expectation for chaining.
+//
+//glacier:nolint=panic-in-library test-helper programmer error: matcher-arity mismatch surfaces at expectation setup.
 func (e *Expectation) With(matchers ...anyMatcher) *Expectation {
 	mt := e.methodType.Type
 	// mt is a func type: skip receiver (already stripped for interface methods).
@@ -128,6 +130,8 @@ func (e *Expectation) With(matchers ...anyMatcher) *Expectation {
 // panics (library-register format).
 //
 // Return returns the expectation for chaining.
+//
+//glacier:nolint=panic-in-library test-helper programmer error: return arity/type mismatches surface at expectation setup.
 func (e *Expectation) Return(vals ...any) *Expectation {
 	e.checkReturnExclusive("Return")
 	mt := e.methodType.Type
@@ -162,6 +166,8 @@ func (e *Expectation) Return(vals ...any) *Expectation {
 //
 // Return, ReturnSeq, and Do are mutually exclusive.
 // ReturnSeq returns the expectation for chaining.
+//
+//glacier:nolint=panic-in-library test-helper programmer error: row-arity/type mismatches surface at expectation setup.
 func (e *Expectation) ReturnSeq(vals [][]any, mode ...seqExhaustion) *Expectation {
 	e.checkReturnExclusive("ReturnSeq")
 	if len(vals) == 0 {
@@ -204,6 +210,8 @@ func (e *Expectation) ReturnSeq(vals [][]any, mode ...seqExhaustion) *Expectatio
 //
 // Return, ReturnSeq, and Do are mutually exclusive.
 // Do returns the expectation for chaining.
+//
+//glacier:nolint=panic-in-library test-helper programmer error: fn signature mismatches surface at expectation setup.
 func (e *Expectation) Do(fn any) *Expectation {
 	e.checkReturnExclusive("Do")
 	if fn == nil {
@@ -258,6 +266,8 @@ func (e *Expectation) Do(fn any) *Expectation {
 // n must be >= 1.
 //
 // Times returns the expectation for chaining.
+//
+//glacier:nolint=panic-in-library test-helper programmer error: invalid n is documented as a panic precondition.
 func (e *Expectation) Times(n int) *Expectation {
 	if n < 1 {
 		panic(fmt.Sprintf("mock.OnCall(%q).Times: n must be >= 1, got %d", e.method, n))
@@ -271,6 +281,8 @@ func (e *Expectation) Times(n int) *Expectation {
 // n must be >= 1.
 //
 // AtLeast returns the expectation for chaining.
+//
+//glacier:nolint=panic-in-library test-helper programmer error: invalid n is documented as a panic precondition.
 func (e *Expectation) AtLeast(n int) *Expectation {
 	if n < 1 {
 		panic(fmt.Sprintf("mock.OnCall(%q).AtLeast: n must be >= 1, got %d", e.method, n))
@@ -284,6 +296,8 @@ func (e *Expectation) AtLeast(n int) *Expectation {
 // n must be >= 0. AtMost(0) is equivalent to Never.
 //
 // AtMost returns the expectation for chaining.
+//
+//glacier:nolint=panic-in-library test-helper programmer error: invalid n is documented as a panic precondition.
 func (e *Expectation) AtMost(n int) *Expectation {
 	if n < 0 {
 		panic(fmt.Sprintf("mock.OnCall(%q).AtMost: n must be >= 0, got %d", e.method, n))
@@ -315,6 +329,8 @@ func (e *Expectation) Never() *Expectation {
 
 // checkReturnExclusive panics if another return programming method has already
 // been set on this Expectation.
+//
+//glacier:nolint=panic-in-library test-helper programmer error: Return/ReturnSeq/Do conflict surfaces at expectation setup.
 func (e *Expectation) checkReturnExclusive(caller string) {
 	if e.retFn != nil {
 		panic(fmt.Sprintf("mock.OnCall(%q).%s: Return has already been called; Return/ReturnSeq/Do are mutually exclusive", e.method, caller))

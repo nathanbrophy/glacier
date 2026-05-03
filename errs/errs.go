@@ -191,6 +191,7 @@ func (s *sentinelError) Error() string { return s.text }
 //	var ErrUnknownFlag = errs.Sentinel("cli: unknown flag")
 func Sentinel(text string) error {
 	if reason := validRegister(text); reason != "" {
+		//glacier:nolint=panic-in-library programmer error: malformed Sentinel text surfaces at package init.
 		panic("errs: Sentinel: text " + strconv.Quote(text) +
 			" does not conform to the Glacier library register: " + reason)
 	}

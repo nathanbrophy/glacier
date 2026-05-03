@@ -25,6 +25,8 @@ type memFS struct {
 // as a file and as a directory).
 //
 // The returned FS satisfies fs.ReadFileFS and fs.ReadDirFS.
+//
+//glacier:nolint=panic-in-library programmer error: setup-time conflicts surface at test wiring; no caller-recoverable signal exists.
 func NewFS(files map[string][]byte) fs.FS {
 	m := &memFS{
 		files: make(map[string][]byte, len(files)),

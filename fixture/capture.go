@@ -81,6 +81,7 @@ func Capture(t assert.TB, fn func()) (stdout, stderr string) {
 	rErr.Close()
 
 	if panicked {
+		//glacier:nolint=panic-in-library re-panic propagates the captured panic faithfully after stdio cleanup.
 		panic(panicVal)
 	}
 

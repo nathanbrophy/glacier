@@ -79,6 +79,7 @@ func init() {
 	mustHex := func(s string) Color {
 		c, err := Hex(s)
 		if err != nil {
+			//glacier:nolint=panic-in-library programmer error: palette literals are constants, malformed values surface at init.
 			panic("term: bad palette hex: " + s)
 		}
 		return c

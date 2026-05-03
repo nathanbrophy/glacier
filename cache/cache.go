@@ -65,6 +65,7 @@ func applyOptions(opts ...Option) config {
 	if err != nil {
 		// option.Apply only errors when an Option's Apply returns one.
 		// Cache options never return errors at v0, so this is unreachable.
+		//glacier:nolint=panic-in-library unreachable: cache options never return errors at v0.
 		panic("cache: option.Apply returned unexpected error: " + err.Error())
 	}
 	if c.clock == nil {

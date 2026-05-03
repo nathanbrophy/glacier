@@ -44,6 +44,7 @@ func Register[T any](path string, defaults T) func() *T {
 		globalRegistry.regs = make(map[string]*registration)
 	}
 	if _, exists := globalRegistry.regs[path]; exists {
+		//glacier:nolint=panic-in-library programmer error: duplicate Register paths surface at package init.
 		panic(fmt.Sprintf("conf: register: path %q already registered", path))
 	}
 

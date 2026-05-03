@@ -66,6 +66,7 @@ func (g *Group) Go(ctx context.Context, fn func() error) {
 	g.mu.Lock()
 	if g.closed {
 		g.mu.Unlock()
+		//glacier:nolint=panic-in-library programmer error: Go after WaitDone is documented as panic in func doc.
 		panic("concur: Group.Go called after WaitDone")
 	}
 	g.mu.Unlock()
@@ -105,6 +106,7 @@ func (g *Group) TryGo(fn func() error) bool {
 	g.mu.Lock()
 	if g.closed {
 		g.mu.Unlock()
+		//glacier:nolint=panic-in-library programmer error: TryGo after WaitDone is documented as panic in func doc.
 		panic("concur: Group.TryGo called after WaitDone")
 	}
 	g.mu.Unlock()

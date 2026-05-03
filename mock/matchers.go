@@ -84,6 +84,7 @@ func Any[T any]() Matcher[T] {
 // Example: Pred[User](func(u User) bool { return u.ID > 0 })
 func Pred[T any](fn func(T) bool) Matcher[T] {
 	if fn == nil {
+		//glacier:nolint=panic-in-library test-helper programmer error: nil predicate is documented as a panic precondition.
 		panic("mock.Pred: predicate function must not be nil")
 	}
 	var zero T
@@ -159,6 +160,7 @@ func NotNil() Matcher[any] {
 // fn must be non-nil; MatchFn panics (library-register) otherwise.
 func MatchFn(fn func(any) bool) Matcher[any] {
 	if fn == nil {
+		//glacier:nolint=panic-in-library test-helper programmer error: nil fn is documented as a panic precondition.
 		panic("mock.MatchFn: function must not be nil")
 	}
 	return Matcher[any]{

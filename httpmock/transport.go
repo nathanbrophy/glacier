@@ -38,6 +38,7 @@ type Transport struct {
 func New(opts ...option.Option[transportConfig]) *Transport {
 	cfg, err := option.Apply(opts)
 	if err != nil {
+		//glacier:nolint=panic-in-library programmer error: option misuse surfaces at construction.
 		panic("httpmock: New: " + err.Error())
 	}
 	if cfg.logger == nil {
@@ -206,6 +207,7 @@ func LenientMode() option.Option[transportConfig] {
 // the given status for unmatched requests. Panics if status ∉ [100,599].
 func WithDefaultStatus(status int) option.Option[transportConfig] {
 	if status < 100 || status > 599 {
+		//glacier:nolint=panic-in-library programmer error: out-of-range status is documented as a panic precondition.
 		panic("httpmock: WithDefaultStatus: status must be in [100, 599]")
 	}
 	return option.OptionFunc[transportConfig](func(c *transportConfig) error {
@@ -218,6 +220,7 @@ func WithDefaultStatus(status int) option.Option[transportConfig] {
 // Panics if l is nil.
 func WithLogger(l *slog.Logger) option.Option[transportConfig] {
 	if l == nil {
+		//glacier:nolint=panic-in-library programmer error: nil logger is documented as a panic precondition.
 		panic("httpmock: WithLogger: logger must not be nil")
 	}
 	return option.OptionFunc[transportConfig](func(c *transportConfig) error {

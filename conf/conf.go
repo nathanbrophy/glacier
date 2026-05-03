@@ -125,6 +125,7 @@ func decodeRegistration(ctx context.Context, cfg loadConfig, reg *registration) 
 // MustLoad calls Load and panics if Load returns a non-nil error.
 func (l *Loader) MustLoad(ctx context.Context, opts ...LoadOption) {
 	if err := l.Load(ctx, opts...); err != nil {
+		//glacier:nolint=panic-in-library Must convention: panic on init-time invariant violation per spec 21.4.
 		panic(err)
 	}
 }

@@ -545,9 +545,12 @@ func parseStaticcheckOutput(out []byte, runErr error) []Finding {
 		if len(noise) > 0 {
 			summary = noise[0]
 		}
+		// Tool-failure surfaces at info severity so a stale or panicking
+		// staticcheck binary on PATH does not fail an otherwise clean lint
+		// run; the message still appears at --severity=info.
 		findings = append(findings, Finding{
 			Rule:     "staticcheck",
-			Severity: "warning",
+			Severity: "info",
 			Message:  "tool failure: " + summary,
 			FixHint:  "upgrade staticcheck (`go install honnef.co/go/tools/cmd/staticcheck@latest`) or remove it from PATH",
 		})

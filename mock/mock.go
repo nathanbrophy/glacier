@@ -78,12 +78,14 @@ type Mock[T any] struct {
 func Of[T any](t assert.TB, opts ...Option) Mock[T] {
 	ifaceType := reflect.TypeOf((*T)(nil)).Elem()
 	if ifaceType.Kind() != reflect.Interface {
+		//glacier:nolint=panic-in-library test-helper programmer error: non-interface T is documented as a panic precondition.
 		panic(fmt.Sprintf(
 			"mock.Of[T]: T must be an interface type, got %s",
 			ifaceType.Kind(),
 		))
 	}
 	if ifaceType.NumMethod() == 0 {
+		//glacier:nolint=panic-in-library test-helper programmer error: empty interface is documented as a panic precondition.
 		panic("mock.Of[T]: T must be an interface type with at least one exported method")
 	}
 
@@ -128,6 +130,7 @@ func Of[T any](t assert.TB, opts ...Option) Mock[T] {
 func (m *Mock[T]) buildInterfaceValue(ifaceType reflect.Type) T {
 	factory, ok := getAdapterFactory(ifaceType)
 	if !ok {
+		//glacier:nolint=panic-in-library test-helper programmer error: missing adapter surfaces at first Mock construction.
 		panic(fmt.Sprintf(
 			"mock.Of[%v]: no adapter registered; call mock.RegisterAdapter[%v] in TestMain or init(), "+
 				"or annotate the interface with //+glacier:mock and run glaciergen",
@@ -313,18 +316,21 @@ func (m *Mock[T]) Interface() T {
 func (m *Mock[T]) OnCall(method string) *Expectation {
 	s := m.state
 	if len(method) > maxMethodNameBytes {
+		//glacier:nolint=panic-in-library test-helper programmer error: oversized method name is documented as a panic precondition.
 		panic(fmt.Sprintf(
 			"mock.OnCall: method name %q is invalid: exceeds %d bytes",
 			method, maxMethodNameBytes,
 		))
 	}
 	if !methodNameRe.MatchString(method) {
+		//glacier:nolint=panic-in-library test-helper programmer error: malformed method name is documented as a panic precondition.
 		panic(fmt.Sprintf(
 			"mock.OnCall: method name %q is invalid: must match ^[A-Z][A-Za-z0-9_]*$",
 			method,
 		))
 	}
 	if !s.methodSet[method] {
+		//glacier:nolint=panic-in-library test-helper programmer error: unknown method on interface is documented as a panic precondition.
 		panic(fmt.Sprintf(
 			"mock.OnCall: method %q not found in interface",
 			method,

@@ -64,6 +64,7 @@ func FromChan[T any](ch <-chan T) iter.Seq[T] {
 // Concurrency: safe.
 func Range(start, stop, step int) iter.Seq[int] {
 	if step == 0 {
+		//glacier:nolint=panic-in-library programmer error: zero step is documented as a panic precondition.
 		panic("fluent: Range: step must be non-zero")
 	}
 	return func(yield func(int) bool) {
@@ -167,6 +168,7 @@ func Words(r io.Reader) iter.Seq[string] {
 // Concurrency: safe.
 func Split(s, sep string) iter.Seq[string] {
 	if sep == "" {
+		//glacier:nolint=panic-in-library programmer error: empty separator is documented as a panic precondition.
 		panic("fluent: Split: separator must not be empty")
 	}
 	return func(yield func(string) bool) {

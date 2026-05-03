@@ -52,6 +52,7 @@ var Default = New()
 func New(opts ...option.Option[clientConfig]) *Client {
 	cfg, err := option.Apply(opts)
 	if err != nil {
+		//glacier:nolint=panic-in-library programmer error: option misuse surfaces at construction; documented in func doc.
 		panic("httpc: New: " + err.Error())
 	}
 	// Apply defaults.

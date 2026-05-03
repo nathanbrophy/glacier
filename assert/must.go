@@ -19,6 +19,7 @@ import "fmt"
 // §21.4 F19, E21, E22
 func Must[T any](v T, err error) T {
 	if err != nil {
+		//glacier:nolint=panic-in-library Must convention: panic on init-time invariant violation per spec 21.4.
 		panic(fmt.Errorf("assert: Must: %w", err))
 	}
 	return v
@@ -34,6 +35,7 @@ func Must[T any](v T, err error) T {
 // §21.4 F20
 func Must2[A, B any](a A, b B, err error) (A, B) {
 	if err != nil {
+		//glacier:nolint=panic-in-library Must convention: panic on init-time invariant violation per spec 21.4.
 		panic(fmt.Errorf("assert: Must2: %w", err))
 	}
 	return a, b
@@ -52,6 +54,7 @@ func Must2[A, B any](a A, b B, err error) (A, B) {
 // §21.4 F21, E22
 func Mustf(cond bool, format string, args ...any) {
 	if !cond {
+		//glacier:nolint=panic-in-library Must convention: panic on init-time invariant violation per spec 21.4.
 		panic(fmt.Sprintf(format, args...))
 	}
 }

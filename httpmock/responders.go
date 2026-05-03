@@ -42,6 +42,7 @@ type jsonResponder struct {
 func JSON[T any](status int, body T) Responder {
 	data, err := json.Marshal(body)
 	if err != nil {
+		//glacier:nolint=panic-in-library test-helper programmer error: setup-time marshal failure surfaces at stub registration.
 		panic(fmt.Sprintf("httpmock: JSON: marshal %T: %s", body, err))
 	}
 	return &jsonResponder{status: status, body: data}
@@ -65,10 +66,12 @@ type jsonFromResponder struct {
 func JSONFrom[T any](status int, r io.Reader) Responder {
 	data, err := io.ReadAll(r)
 	if err != nil {
+		//glacier:nolint=panic-in-library test-helper programmer error: setup-time read failure surfaces at stub registration.
 		panic("httpmock: JSONFrom: read: " + err.Error())
 	}
 	var zero T
 	if err := json.Unmarshal(data, &zero); err != nil {
+		//glacier:nolint=panic-in-library test-helper programmer error: setup-time decode failure surfaces at stub registration.
 		panic("httpmock: JSONFrom: decode: " + err.Error())
 	}
 	return &jsonFromResponder{status: status, body: data}
@@ -166,6 +169,7 @@ func Sequence(rs ...Responder) Responder { return SequenceCycle(rs...) }
 // SequenceCycle serves responders in order, cycling after exhaustion.
 func SequenceCycle(rs ...Responder) Responder {
 	if len(rs) == 0 {
+		//glacier:nolint=panic-in-library test-helper programmer error: empty sequence is documented as a panic precondition.
 		panic("httpmock: SequenceCycle: at least one responder required")
 	}
 	return &sequenceResponder{rs: rs, cycle: true}
@@ -174,6 +178,7 @@ func SequenceCycle(rs ...Responder) Responder {
 // SequenceExhaust serves responders in order; returns an error after all are exhausted.
 func SequenceExhaust(rs ...Responder) Responder {
 	if len(rs) == 0 {
+		//glacier:nolint=panic-in-library test-helper programmer error: empty sequence is documented as a panic precondition.
 		panic("httpmock: SequenceExhaust: at least one responder required")
 	}
 	return &sequenceResponder{rs: rs, cycle: false}
