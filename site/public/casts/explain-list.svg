@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="744" height="748" viewBox="0 0 744 748" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="14">
+<rect x="0" y="0" width="744" height="748" rx="10" fill="#1a1a1d"/>
+<rect x="0" y="0" width="744" height="28" rx="10" fill="#2a2a2f"/>
+<rect x="0" y="22" width="744" height="6" fill="#2a2a2f"/>
+<circle cx="14.0" cy="14.0" r="6" fill="#ff605c"/>
+<circle cx="32.0" cy="14.0" r="6" fill="#ffbd44"/>
+<circle cx="50.0" cy="14.0" r="6" fill="#00ca4e"/>
+<text x="372.0" y="19.0" text-anchor="middle" fill="#9aa6b2">glacier explain --list</text>
+<g transform="translate(12,46)">
+<text x="0" y="18.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#5fffff" font-weight="bold">ʕ•ᴥ•ʔ</tspan><tspan x="40.0" fill="#dde6ee"> </tspan><tspan x="48.0" fill="#5fffff">glacier explain</tspan></text>
+<text x="0" y="36.0" fill="#dde6ee" xml:space="preserve"></text>
+<text x="0" y="54.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">ʕ•_•ʔ marker</tspan></text>
+<text x="0" y="72.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  +glacier:choices                         Marker: +glacier:choices</tspan></text>
+<text x="0" y="90.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  +glacier:command                         Marker: +glacier:command</tspan></text>
+<text x="0" y="108.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  +glacier:default                         Marker: +glacier:default</tspan></text>
+<text x="0" y="126.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  +glacier:deprecated                      Marker: +glacier:deprecated</tspan></text>
+<text x="0" y="144.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  +glacier:env                             Marker: +glacier:env</tspan></text>
+<text x="0" y="162.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  +glacier:flag                            Marker: +glacier:flag</tspan></text>
+<text x="0" y="180.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  +glacier:mock                            Marker: +glacier:mock</tspan></text>
+<text x="0" y="198.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  +glacier:positional                      Marker: +glacier:positional</tspan></text>
+<text x="0" y="216.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  +glacier:required                        Marker: +glacier:required</tspan></text>
+<text x="0" y="234.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  +glacier:root                            Marker: +glacier:root</tspan></text>
+<text x="0" y="252.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  +glacier:short                           Marker: +glacier:short</tspan></text>
+<text x="0" y="270.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  +glacier:validate                        Marker: +glacier:validate</tspan></text>
+<text x="0" y="288.0" fill="#dde6ee" xml:space="preserve"></text>
+<text x="0" y="306.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">ʕ× ×ʔ exit-code</tspan></text>
+<text x="0" y="324.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  exit:0                                   Exit code 0: success</tspan></text>
+<text x="0" y="342.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  exit:1                                   Exit code 1: general error</tspan></text>
+<text x="0" y="360.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  exit:130                                 Exit code 130: interrupted</tspan></text>
+<text x="0" y="378.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  exit:143                                 Exit code 143: terminated</tspan></text>
+<text x="0" y="396.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  exit:2                                   Exit code 2: usage error</tspan></text>
+<text x="0" y="414.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  exit:64                                  Exit code 64: generate failed</tspan></text>
+<text x="0" y="432.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  exit:65                                  Exit code 65: lint findings</tspan></text>
+<text x="0" y="450.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  exit:66                                  Exit code 66: tests failed</tspan></text>
+<text x="0" y="468.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  exit:67                                  Exit code 67: scaffolding failed</tspan></text>
+<text x="0" y="486.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  exit:68                                  Exit code 68: version check unreachable</tspan></text>
+<text x="0" y="504.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  exit:69                                  Exit code 69: codegen drift</tspan></text>
+<text x="0" y="522.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  exit:70                                  Exit code 70: subprocess failure</tspan></text>
+<text x="0" y="540.0" fill="#dde6ee" xml:space="preserve"></text>
+<text x="0" y="558.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">ʕ⌐■-■ʔ config-key</tspan></text>
+<text x="0" y="576.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  config:banner.show_on_help               Config key: banner.show_on_help</tspan></text>
+<text x="0" y="594.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  config:github.repo                       Config key: github.repo</tspan></text>
+<text x="0" y="612.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  config:palette.override                  Config key: palette.override</tspan></text>
+<text x="0" y="630.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  config:versioncheck.cache_ttl            Config key: versioncheck.cache_ttl</tspan></text>
+<text x="0" y="648.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  config:versioncheck.enabled              Config key: versioncheck.enabled</tspan></text>
+<text x="0" y="666.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  config:versioncheck.strict               Config key: versioncheck.strict</tspan></text>
+</g>
+</svg>

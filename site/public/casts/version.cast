@@ -1,0 +1,2 @@
+{"env":{"SHELL":"/bin/bash","TERM":"xterm-256color"},"height":8,"timestamp":1777840762,"title":"glacier version","version":2,"width":60}
+[0,"o","\u001b[1m\u001b[38;5;87mʕ•ᴥ•ʔ\u001b[0m \u001b[38;5;87mglacier version\u001b[0m\n\u001b[1m\u001b[38;5;84mʕ⌐■-■ʔ\u001b[0m \u001b[38;5;84mglacier v0.1.1-0.20260503180151-f5f0336c8ef3+dirty\u001b[0m\n  build: 2026-05-03T18:01:51Z\n  go:    go1.26.0\n  os:    windows/amd64\n"]

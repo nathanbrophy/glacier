@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="744" height="298" viewBox="0 0 744 298" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="14">
+<rect x="0" y="0" width="744" height="298" rx="10" fill="#1a1a1d"/>
+<rect x="0" y="0" width="744" height="28" rx="10" fill="#2a2a2f"/>
+<rect x="0" y="22" width="744" height="6" fill="#2a2a2f"/>
+<circle cx="14.0" cy="14.0" r="6" fill="#ff605c"/>
+<circle cx="32.0" cy="14.0" r="6" fill="#ffbd44"/>
+<circle cx="50.0" cy="14.0" r="6" fill="#00ca4e"/>
+<text x="372.0" y="19.0" text-anchor="middle" fill="#9aa6b2">glacier explain exit:66</text>
+<g transform="translate(12,46)">
+<text x="0" y="18.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#5fffff" font-weight="bold">ʕ•ᴥ•ʔ</tspan><tspan x="40.0" fill="#dde6ee"> </tspan><tspan x="48.0" fill="#5fffff">glacier explain</tspan></text>
+<text x="0" y="36.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#46d9ff">╭</tspan><tspan x="8.0" fill="#46d9ff">─</tspan><tspan x="16.0" fill="#46d9ff"> </tspan><tspan x="24.0" fill="#7fe7ff" font-weight="bold">ʕ× ×ʔ  Exit code 66: tests failed</tspan><tspan x="288.0" fill="#46d9ff"> </tspan><tspan x="296.0" fill="#46d9ff">─────────────────────────────────────────</tspan><tspan x="624.0" fill="#46d9ff">╮</tspan></text>
+<text x="0" y="54.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#46d9ff">│</tspan><tspan x="8.0" fill="#dde6ee">                                                                             </tspan><tspan x="624.0" fill="#46d9ff">│</tspan></text>
+<text x="0" y="72.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#46d9ff">│</tspan><tspan x="8.0" fill="#dde6ee">  glacier test reported one or more test failures, or a benchmark regressed  </tspan><tspan x="624.0" fill="#46d9ff">│</tspan></text>
+<text x="0" y="90.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#46d9ff">│</tspan><tspan x="8.0" fill="#dde6ee">  by more than 5% vs the stored baseline.                                    </tspan><tspan x="624.0" fill="#46d9ff">│</tspan></text>
+<text x="0" y="108.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#46d9ff">│</tspan><tspan x="8.0" fill="#dde6ee">                                                                             </tspan><tspan x="624.0" fill="#46d9ff">│</tspan></text>
+<text x="0" y="126.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#46d9ff">│</tspan><tspan x="8.0" fill="#dde6ee">  For benchmark regressions, run glacier test --update-baseline to accept    </tspan><tspan x="624.0" fill="#46d9ff">│</tspan></text>
+<text x="0" y="144.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#46d9ff">│</tspan><tspan x="8.0" fill="#dde6ee">  the new performance level.                                                 </tspan><tspan x="624.0" fill="#46d9ff">│</tspan></text>
+<text x="0" y="162.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#46d9ff">│</tspan><tspan x="8.0" fill="#dde6ee">                                                                             </tspan><tspan x="624.0" fill="#46d9ff">│</tspan></text>
+<text x="0" y="180.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#46d9ff">│</tspan><tspan x="8.0" fill="#dde6ee">  See also: exit:65                                                          </tspan><tspan x="624.0" fill="#46d9ff">│</tspan></text>
+<text x="0" y="198.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#46d9ff">│</tspan><tspan x="8.0" fill="#dde6ee">                                                                             </tspan><tspan x="624.0" fill="#46d9ff">│</tspan></text>
+<text x="0" y="216.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#46d9ff">╰</tspan><tspan x="8.0" fill="#46d9ff">─────────────────────────────────────────────────────────────────────────────</tspan><tspan x="624.0" fill="#46d9ff">╯</tspan></text>
+</g>
+</svg>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="744" height="424" viewBox="0 0 744 424" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="14">
+<rect x="0" y="0" width="744" height="424" rx="10" fill="#1a1a1d"/>
+<rect x="0" y="0" width="744" height="28" rx="10" fill="#2a2a2f"/>
+<rect x="0" y="22" width="744" height="6" fill="#2a2a2f"/>
+<circle cx="14.0" cy="14.0" r="6" fill="#ff605c"/>
+<circle cx="32.0" cy="14.0" r="6" fill="#ffbd44"/>
+<circle cx="50.0" cy="14.0" r="6" fill="#00ca4e"/>
+<text x="372.0" y="19.0" text-anchor="middle" fill="#9aa6b2">glacier version --help</text>
+<g transform="translate(12,46)">
+<text x="0" y="18.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee" font-weight="bold">SYNOPSIS</tspan></text>
+<text x="0" y="36.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  glacier version [flags]</tspan></text>
+<text x="0" y="54.0" fill="#dde6ee" xml:space="preserve"></text>
+<text x="0" y="72.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  Print version info; --check fetches the latest release.</tspan></text>
+<text x="0" y="90.0" fill="#dde6ee" xml:space="preserve"></text>
+<text x="0" y="108.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee" font-weight="bold">DESCRIPTION</tspan></text>
+<text x="0" y="126.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  Prints the binary's version, build time, Go version, and OS/arch.</tspan></text>
+<text x="0" y="144.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan></text>
+<text x="0" y="162.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  Use --check to fetch the latest release from GitHub. The result is</tspan></text>
+<text x="0" y="180.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  cached for 24h under &lt;UserCacheDir&gt;/glacier/. --strict exits 68</tspan></text>
+<text x="0" y="198.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  when the API is unreachable; without --strict, version --check</tspan></text>
+<text x="0" y="216.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  exits 0 with an (offline) annotation.</tspan></text>
+<text x="0" y="234.0" fill="#dde6ee" xml:space="preserve"></text>
+<text x="0" y="252.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee" font-weight="bold">FLAGS</tspan></text>
+<text x="0" y="270.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#e3c46e">    --check</tspan><tspan x="104.0" fill="#dde6ee">   Fetches the latest release from GitHub and compares with the running version</tspan></text>
+<text x="0" y="288.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#e3c46e">    --json</tspan><tspan x="96.0" fill="#dde6ee">    Emits version information as JSON to stdout</tspan></text>
+<text x="0" y="306.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#e3c46e">    --strict</tspan><tspan x="112.0" fill="#dde6ee">  Causes --check to exit non-zero when the GitHub endpoint is unreachable</tspan></text>
+<text x="0" y="324.0" fill="#dde6ee" xml:space="preserve"></text>
+<text x="0" y="342.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">Run </tspan><tspan x="32.0" fill="#dde6ee" text-decoration="underline">glacier --help</tspan><tspan x="144.0" fill="#dde6ee"> for global flags.</tspan></text>
+</g>
+</svg>

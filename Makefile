@@ -31,6 +31,14 @@ build: ## Build all packages
 gen: ## Run glaciergen code generation (./...)
 	go run ./cmd/cligen ./...
 
+.PHONY: casts
+casts: ## Record asciinema .cast + .svg snapshots of the SDK under site/public/casts/
+	@echo "  building glacier binary for cast recording ..."
+	@go build -o glacier ./cmd/glacier
+	@go run ./cmd/glacier/internal/castgen/cmd
+	@echo ""
+	@echo "  cast + svg snapshots regenerated under site/public/casts/."
+
 .PHONY: tidy
 tidy: ## Tidy go.mod and go.sum
 	go mod tidy

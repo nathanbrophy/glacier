@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="504" height="172" viewBox="0 0 504 172" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="14">
+<rect x="0" y="0" width="504" height="172" rx="10" fill="#1a1a1d"/>
+<rect x="0" y="0" width="504" height="28" rx="10" fill="#2a2a2f"/>
+<rect x="0" y="22" width="504" height="6" fill="#2a2a2f"/>
+<circle cx="14.0" cy="14.0" r="6" fill="#ff605c"/>
+<circle cx="32.0" cy="14.0" r="6" fill="#ffbd44"/>
+<circle cx="50.0" cy="14.0" r="6" fill="#00ca4e"/>
+<text x="252.0" y="19.0" text-anchor="middle" fill="#9aa6b2">glacier version</text>
+<g transform="translate(12,46)">
+<text x="0" y="18.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#5fffff" font-weight="bold">ʕ•ᴥ•ʔ</tspan><tspan x="40.0" fill="#dde6ee"> </tspan><tspan x="48.0" fill="#5fffff">glacier version</tspan></text>
+<text x="0" y="36.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#5fff87" font-weight="bold">ʕ⌐■-■ʔ</tspan><tspan x="48.0" fill="#dde6ee"> </tspan><tspan x="56.0" fill="#5fff87">glacier v0.1.1-0.20260503180151-f5f0336c8ef3+dirty</tspan></text>
+<text x="0" y="54.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  build: 2026-05-03T18:01:51Z</tspan></text>
+<text x="0" y="72.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  go:    go1.26.0</tspan></text>
+<text x="0" y="90.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  os:    windows/amd64</tspan></text>
+</g>
+</svg>

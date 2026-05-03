@@ -60,9 +60,9 @@ The top-level help page is the format-A renderer from spec 0032 D-S39: full bloc
 
 <div class="cast-frame">
   <a href="/casts/help.cast" rel="noopener">
-    <img src="/casts/help.svg" alt="glacier --help (animated)" loading="lazy" />
+    <img src="/casts/help.svg" alt="glacier --help" loading="lazy" />
   </a>
-  <div class="cast-caption">Recorded with <code>asciinema rec</code>; rendered via <code>agg</code> at site-build time.</div>
+  <div class="cast-caption">Captured live from the binary by <code>cmd/glacier/internal/castgen</code>. Regenerate with <code>make casts</code>.</div>
 </div>
 
 ```text
@@ -112,10 +112,10 @@ The wordmark gradient and command-name highlighting are 24-bit ANSI in real term
 A meditative wordmark animation with the polar bear cycling through expressions and a tip rotation drawn from the framework's own documentation. Run it when you want the SDK to remind you that less plumbing means more Go.
 
 <div class="cast-frame">
-  <a href="/casts/vibe.cast" rel="noopener">
-    <img src="/casts/vibe.svg" alt="glacier vibe (animated)" loading="lazy" />
+  <a href="/casts/vibe-static.cast" rel="noopener">
+    <img src="/casts/vibe-static.svg" alt="glacier vibe --ascii" loading="lazy" />
   </a>
-  <div class="cast-caption">10s loop; bear cycles every 3s, wordmark gradient shimmers per 100ms tick.</div>
+  <div class="cast-caption">Static fallback frame. Run <code>glacier vibe</code> in a real terminal for the full animation: bear cycles every 3s, wordmark gradient shimmers per 100ms tick.</div>
 </div>
 
 ### `glacier test ./...`

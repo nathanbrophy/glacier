@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="824" height="802" viewBox="0 0 824 802" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="14">
+<rect x="0" y="0" width="824" height="802" rx="10" fill="#1a1a1d"/>
+<rect x="0" y="0" width="824" height="28" rx="10" fill="#2a2a2f"/>
+<rect x="0" y="22" width="824" height="6" fill="#2a2a2f"/>
+<circle cx="14.0" cy="14.0" r="6" fill="#ff605c"/>
+<circle cx="32.0" cy="14.0" r="6" fill="#ffbd44"/>
+<circle cx="50.0" cy="14.0" r="6" fill="#00ca4e"/>
+<text x="412.0" y="19.0" text-anchor="middle" fill="#9aa6b2">glacier --help</text>
+<g transform="translate(12,46)">
+<text x="0" y="18.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#00c8c8">  ▟▀▙   ▟▀▙     ██████╗ ██╗      █████╗  ██████╗██╗███████╗██████╗</tspan></text>
+<text x="0" y="36.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#00b7d1"> ▟████████▙    ██╔════╝ ██║     ██╔══██╗██╔════╝██║██╔════╝██╔══██╗</tspan></text>
+<text x="0" y="54.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#00a6da"> █ ●  ▼  ● █   ██║  ███╗██║     ███████║██║     ██║█████╗  ██████╔╝</tspan></text>
+<text x="0" y="72.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#0096e3">  ▀▀▀▀▀▀▀▀▀    ██║   ██║██║     ██╔══██║██║     ██║██╔══╝  ██╔══██╗</tspan></text>
+<text x="0" y="90.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#0085ec">    ʕ•ᴥ•ʔ      ╚██████╔╝███████╗██║  ██║╚██████╗██║███████╗██║  ██║</tspan></text>
+<text x="0" y="108.0" fill="#dde6ee" xml:space="preserve"></text>
+<text x="0" y="126.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#0064ff">                       Less plumbing. More Go.</tspan></text>
+<text x="0" y="144.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee" font-weight="bold">USAGE</tspan></text>
+<text x="0" y="162.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  glacier [global flags] &lt;command&gt; [command flags] [args]</tspan></text>
+<text x="0" y="180.0" fill="#dde6ee" xml:space="preserve"></text>
+<text x="0" y="198.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee" font-weight="bold">CREATE</tspan></text>
+<text x="0" y="216.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#7fdfe7">init</tspan><tspan x="48.0" fill="#dde6ee">  Scaffold a new Glacier project.</tspan></text>
+<text x="0" y="234.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#7fdfe7">new</tspan><tspan x="40.0" fill="#dde6ee">   Add a package, command, or option to an existing project.</tspan></text>
+<text x="0" y="252.0" fill="#dde6ee" xml:space="preserve"></text>
+<text x="0" y="270.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee" font-weight="bold">DEVELOP</tspan></text>
+<text x="0" y="288.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#7fdfe7">generate</tspan><tspan x="80.0" fill="#dde6ee">  Run all registered code generators (cli, mock, httpmock).</tspan></text>
+<text x="0" y="306.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#7fdfe7">lint</tspan><tspan x="48.0" fill="#dde6ee">      Run gofmt + go vet + staticcheck + 6 Glacier-specific lints.</tspan></text>
+<text x="0" y="324.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#7fdfe7">test</tspan><tspan x="48.0" fill="#dde6ee">      Run go test with a streaming summary, bench baseline, JUnit/SARIF emitters.</tspan></text>
+<text x="0" y="342.0" fill="#dde6ee" xml:space="preserve"></text>
+<text x="0" y="360.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee" font-weight="bold">INSPECT</tspan></text>
+<text x="0" y="378.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#7fdfe7">explain</tspan><tspan x="72.0" fill="#dde6ee">  Show reference for a marker, exit code, or config key.</tspan></text>
+<text x="0" y="396.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#7fdfe7">version</tspan><tspan x="72.0" fill="#dde6ee">  Print version info; --check fetches the latest release.</tspan></text>
+<text x="0" y="414.0" fill="#dde6ee" xml:space="preserve"></text>
+<text x="0" y="432.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee" font-weight="bold">UTILITY</tspan></text>
+<text x="0" y="450.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#7fdfe7">completions</tspan><tspan x="104.0" fill="#dde6ee">  Print a shell completion script (bash, zsh, fish, pwsh).</tspan></text>
+<text x="0" y="468.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#7fdfe7">vibe</tspan><tspan x="48.0" fill="#dde6ee">         Animated bear + tip rotation; ambient framework reference.</tspan></text>
+<text x="0" y="486.0" fill="#dde6ee" xml:space="preserve"></text>
+<text x="0" y="504.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee" font-weight="bold">GLOBAL FLAGS</tspan></text>
+<text x="0" y="522.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#e3c46e">    --forcecolor</tspan><tspan x="144.0" fill="#dde6ee">            Forces ANSI color emission even when output is not a TTY. Useful for piping into less -R or capturing colored logs to a ...</tspan></text>
+<text x="0" y="540.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#e3c46e">    --noanimate</tspan><tspan x="136.0" fill="#dde6ee">             Disables all animations even on a TTY</tspan></text>
+<text x="0" y="558.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#e3c46e">    --nobanner</tspan><tspan x="128.0" fill="#dde6ee">              Suppresses the banner on --help</tspan></text>
+<text x="0" y="576.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#e3c46e">    --nocolor</tspan><tspan x="120.0" fill="#dde6ee">               Disables ANSI color output. Equivalent to setting NO_COLOR in the environment</tspan></text>
+<text x="0" y="594.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#e3c46e">    --otelendpoint &lt;value&gt;</tspan><tspan x="224.0" fill="#dde6ee">  Overrides OTEL_EXPORTER_OTLP_ENDPOINT for this invocation </tspan><tspan x="704.0" fill="#dde6ee" opacity="0.6">[env: OTEL_EXPORTER_OTLP_ENDPOINT]</tspan></text>
+<text x="0" y="612.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#e3c46e">    --profile &lt;value&gt;</tspan><tspan x="184.0" fill="#dde6ee">       Writes pprof files to &lt;Profile&gt;.cpu/.heap/.goroutine</tspan></text>
+<text x="0" y="630.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#e3c46e">-q, --quiet</tspan><tspan x="104.0" fill="#dde6ee">                 Lowers log level to Warn; suppresses animations; keeps final summary</tspan></text>
+<text x="0" y="648.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#e3c46e">-V, --verbose</tspan><tspan x="120.0" fill="#dde6ee">               Raises log level to Debug</tspan></text>
+<text x="0" y="666.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">  </tspan><tspan x="16.0" fill="#e3c46e">    --veryverbose</tspan><tspan x="152.0" fill="#dde6ee">           Raises log level to Trace level (custom)</tspan></text>
+<text x="0" y="684.0" fill="#dde6ee" xml:space="preserve"></text>
+<text x="0" y="702.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">Run </tspan><tspan x="32.0" fill="#7fdfe7">glacier</tspan><tspan x="88.0" fill="#dde6ee"> &lt;command&gt; --help for command-specific help.</tspan></text>
+<text x="0" y="720.0" fill="#dde6ee" xml:space="preserve"><tspan x="0.0" fill="#dde6ee">Run </tspan><tspan x="32.0" fill="#dde6ee" text-decoration="underline">glacier explain</tspan><tspan x="152.0" fill="#dde6ee"> &lt;topic&gt; for marker, exit-code, or config-key reference.</tspan></text>
+</g>
+</svg>
