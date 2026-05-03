@@ -5,7 +5,7 @@ slug: httpc
 status: accepted
 owner-agent: otter
 created: 2026-05-01
-last-updated: 2026-05-01
+last-updated: 2026-05-02
 supersedes: []
 superseded-by: null
 reviewers:
@@ -788,7 +788,8 @@ func ExamplePost_MultipartBody() {
 // through context to all httpc calls. No conditional code is needed at call sites.
 func ExampleWithDryRun() {
     type DeployCmd struct {
-        DryRun bool `json:"dry_run"` // +glacier:default false
+        // +glacier:default false
+        DryRun bool `json:"dry_run"`
     }
 
     func (d *DeployCmd) Run(ctx context.Context) error {

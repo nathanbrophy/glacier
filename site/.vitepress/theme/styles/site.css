@@ -1,0 +1,413 @@
+/* Custom theme styles layered on top of VitePress default theme. */
+
+.glacier-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+/* The aurora backdrop sits behind everything but above the page background. */
+.glacier-shell .glacier-aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.glacier-shell > :not(.glacier-aurora) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero block layout */
+.glacier-hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  align-items: center;
+  justify-items: center;
+  padding: 4rem 1.5rem 3rem;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .glacier-hero {
+    grid-template-columns: minmax(140px, 1fr) minmax(0, 2fr);
+    text-align: left;
+    padding: 6rem 2rem 4rem;
+  }
+}
+
+.glacier-hero__mascot-col {
+  display: flex;
+  justify-content: center;
+}
+
+.glacier-hero__terminal-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 720px;
+}
+
+.glacier-hero__wordmark {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  filter: drop-shadow(0 0 18px rgba(34, 211, 238, 0.10));
+}
+
+.glacier-hero__tagline {
+  margin: 0;
+  font-family: var(--mg-font-display);
+  font-weight: 500;
+  font-size: clamp(1.4rem, 3.2vw, 2rem);
+  letter-spacing: -0.01em;
+  color: var(--mg-text);
+}
+
+.glacier-hero__lede {
+  margin: 0;
+  font-family: var(--mg-font-display);
+  font-weight: 500;
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  color: var(--mg-text-muted);
+  max-width: 60ch;
+}
+
+.glacier-hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.glacier-hero__cta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.1rem;
+  border-radius: 8px;
+  font-family: var(--mg-font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: transform 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.glacier-hero__cta .primary {
+  background: var(--mg-cyan);
+  color: var(--mg-bg);
+}
+
+.glacier-hero__cta .primary:hover {
+  background: var(--mg-teal);
+  transform: translateY(-1px);
+}
+
+.glacier-hero__cta .secondary {
+  background: transparent;
+  color: var(--mg-text);
+  border: 1px solid var(--mg-border);
+}
+
+.glacier-hero__cta .secondary:hover {
+  border-color: var(--mg-cyan);
+  color: var(--mg-cyan);
+}
+
+/* Suppress VitePress home-layout chrome on the landing; we own the hero. */
+.VPHome .VPHero,
+.VPHome .VPFeatures {
+  display: none !important;
+}
+
+/* Wordmark in the nav: a bit taller than VitePress's default 24px so the
+ * ANSI Shadow box-drawing characters stay legible. */
+.VPNavBarTitle .VPImage,
+.VPNavBarTitle img {
+  height: 34px !important;
+  width: auto !important;
+  max-width: 200px;
+  display: block;
+}
+
+.VPNavBarTitle .title {
+  padding: 0 !important;
+  border-bottom: none !important;
+}
+
+/* Keep the nav bar background uniform across routes. VitePress's default
+ * has-sidebar treatment splits the bar into two backgrounds (sidebar-side
+ * uses --vp-c-bg-alt, content-side uses --vp-c-bg with a gradient seam).
+ * Our brand surface vs page bg are distinct enough that this seam reads
+ * as a visual break. Force everything to the page bg color. */
+.VPNavBar,
+.VPNavBar.has-sidebar .container,
+.VPNavBar.has-sidebar .wrapper,
+.VPNavBar.has-sidebar .content,
+.VPNavBar.has-sidebar .content-body,
+.VPNavBar.has-sidebar .title {
+  background: transparent !important;
+}
+
+.VPNav {
+  background-color: var(--mg-bg);
+}
+
+.VPNavBar .divider-line,
+.VPNavBar.has-sidebar .divider-line {
+  background-color: var(--mg-border);
+}
+
+/* Also keep the local-nav (return-to-top bar) background uniform. */
+.VPLocalNav.has-sidebar {
+  background: var(--mg-bg) !important;
+}
+
+/* Landing-page pillar grid wrapper */
+.glacier-pillars-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.glacier-pillars-section h2 {
+  font-family: var(--mg-font-display);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  color: var(--mg-text);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* 1 col on mobile, 2 col on tablet, 4 col on desktop */
+.glacier-pillars {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 641px) {
+  .glacier-pillars {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 769px) {
+  .glacier-pillars {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Docs task grid — used on /docs/index.md */
+.glacier-task-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+}
+
+@media (min-width: 641px) {
+  .glacier-task-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 960px) {
+  .glacier-task-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.glacier-task-card {
+  background: var(--mg-surface);
+  border: 1px solid var(--mg-border);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  transition: border-color 150ms ease;
+}
+
+.glacier-task-card:hover {
+  border-color: var(--mg-cyan);
+}
+
+.glacier-task-card h3 {
+  margin: 0 0 0.5rem;
+  font-family: var(--mg-font-display);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.glacier-task-card h3 a {
+  color: var(--mg-cyan);
+  text-decoration: none;
+}
+
+.glacier-task-card h3 a:hover {
+  text-decoration: underline;
+}
+
+.glacier-task-card p {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: var(--mg-text-muted);
+  line-height: 1.5;
+}
+
+/* ----------------------------------------------------------------------
+ * Marketing-page narrative gutter + content-width
+ * VitePress's `layout: page` (.VPPage) is full-bleed by default. Add a
+ * gutter so prose / code blocks / grids don't hit the viewport edge,
+ * and constrain narrative content to a readable width. The hero section
+ * has its own internal max-width and is allowed to extend full-bleed.
+ * -------------------------------------------------------------------- */
+.VPPage {
+  padding: 0 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .VPPage {
+    padding: 0 2rem;
+  }
+}
+
+/* The hero stays centered inside the page gutter; its own internal
+ * max-width 1200px and margin auto handles cinema width. */
+
+/* Constrain narrative content to a readable max-width. Marketing pages
+ * have lots of H2 + paragraph + code + grid sections at the page root;
+ * each gets centered to a comfortable measure. */
+.VPPage > div > div > h1,
+.VPPage > div > div > h2,
+.VPPage > div > div > h3,
+.VPPage > div > div > h4,
+.VPPage > div > div > p,
+.VPPage > div > div > ul,
+.VPPage > div > div > ol,
+.VPPage > div > div > blockquote,
+.VPPage > div > div > pre,
+.VPPage > div > div > div[class*='language-'],
+.VPPage > div > div > div.glacier-faq,
+.VPPage > div > div > div.glacier-task-grid,
+.VPPage > div > div > section.glacier-compare,
+.VPPage > div > div > section.glacier-grid,
+.VPPage > div > div > hr {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Section-heading rhythm. */
+.VPPage > div > div > h2 {
+  font-family: var(--mg-font-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  letter-spacing: -0.01em;
+  color: var(--mg-text);
+  margin-top: 3.5rem;
+  margin-bottom: 1.25rem;
+  padding-top: 0.5rem;
+}
+
+.VPPage > div > div > h3 {
+  font-family: var(--mg-font-display);
+  font-weight: 600;
+  font-size: 1.2rem;
+  letter-spacing: -0.005em;
+  color: var(--mg-text);
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.VPPage > div > div > p {
+  line-height: 1.65;
+  color: var(--mg-text);
+  margin: 0.6rem auto 1rem;
+}
+
+/* ----------------------------------------------------------------------
+ * Code-block presentation
+ * Hide VitePress's language sticker (the "go" / "ts" label that sits at
+ * the top of every fenced block) since the syntax highlighting itself
+ * signals the language. Round the corners and apply brand surface.
+ * -------------------------------------------------------------------- */
+[class*='language-'] .lang {
+  display: none !important;
+}
+
+[class*='language-'] {
+  border-radius: 10px;
+  border: 1px solid var(--mg-border);
+  background: var(--mg-surface) !important;
+  overflow: hidden;
+  margin: 1.25rem auto;
+}
+
+[class*='language-'] pre.vp-code {
+  background: var(--mg-surface) !important;
+  padding: 1.1rem 1.25rem;
+}
+
+/* The copy button is the only top-right adornment we keep. */
+[class*='language-'] button.copy {
+  background: var(--mg-surface-2);
+  border-color: var(--mg-border);
+}
+
+[class*='language-'] button.copy:hover {
+  border-color: var(--mg-cyan);
+}
+
+/* ----------------------------------------------------------------------
+ * FAQ pattern - wrap a sequence of bold-question / answer paragraphs in
+ * <div class="glacier-faq">...</div> in markdown to get carded styling.
+ * -------------------------------------------------------------------- */
+.glacier-faq {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin: 1.25rem auto 2rem;
+  max-width: 1100px;
+}
+
+.glacier-faq > p {
+  background: var(--mg-surface);
+  border: 1px solid var(--mg-border);
+  border-left: 2px solid var(--mg-cyan);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin: 0;
+  color: var(--mg-text-muted);
+  line-height: 1.6;
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+
+.glacier-faq > p:hover {
+  border-color: var(--mg-cyan);
+  transform: translateY(-1px);
+}
+
+.glacier-faq > p > strong:first-child {
+  display: block;
+  font-family: var(--mg-font-display);
+  font-weight: 600;
+  font-size: 1.04rem;
+  color: var(--mg-text);
+  letter-spacing: -0.005em;
+  margin-bottom: 0.4rem;
+}
+
+/* ----------------------------------------------------------------------
+ * Companion sprite accent — inline block used on marketing + docs pages
+ * to give the polar bear visible presence beyond footer / 404.
+ * -------------------------------------------------------------------- */
+.glacier-sprite-accent {
+  display: flex;
+  justify-content: center;
+  margin: 1.25rem auto 2rem;
+}
+
+.glacier-sprite-accent img {
+  filter: drop-shadow(0 4px 16px rgba(34, 211, 238, 0.18));
+}

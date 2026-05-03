@@ -1,0 +1,76 @@
+# Glacier site deploy: builds /site and ships to GitHub Pages.
+# Spec 0031 §Architecture / Build & deploy + §Security & Supply-Chain Notes.
+#
+# Hardening (per Falcon, D-S14, D-S25):
+#   - Every action ref is 40-char SHA pinned. No tag pins.
+#   - permissions: scoped to id-token + pages only.
+#   - npm ci --ignore-scripts (post-install scripts disabled per .npmrc).
+#   - Concurrency group prevents overlapping deploys.
+
+name: site-deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'specs/**'
+      - '.github/workflows/site-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  pages: write
+  contents: read
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      # actions/checkout v4.2.2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      # actions/setup-node v4.1.0
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install (no post-install scripts)
+        run: npm ci --ignore-scripts
+
+      - name: Fetch vendored fonts
+        run: bash scripts/fetch-fonts.sh
+
+      - name: Build site
+        run: npm run build
+
+      - name: Run static checks (scripts/check-site.sh)
+        run: bash scripts/check-site.sh
+
+      # actions/configure-pages v5.0.0
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
+
+      # actions/upload-pages-artifact v3.0.1
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
+        with:
+          path: site/.vitepress/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # actions/deploy-pages v4.0.5
+      - id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e

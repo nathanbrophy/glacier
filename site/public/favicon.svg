@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Glacier bear favicon">
+  <defs>
+    <linearGradient id="favBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="#22D3EE"/>
+      <stop offset="0.6" stop-color="#0891B2"/>
+      <stop offset="1"   stop-color="#0D9488"/>
+    </linearGradient>
+    <radialGradient id="favSheen" cx="0.35" cy="0.3" r="0.7">
+      <stop offset="0"   stop-color="#A5F3FC" stop-opacity="0.45"/>
+      <stop offset="1"   stop-color="#A5F3FC" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Rounded-square background with ice gradient -->
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#favBg)"/>
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#favSheen)"/>
+
+  <!-- Ears (white outer, cyan inner pad) -->
+  <circle cx="19" cy="22" r="7" fill="#F5FBFC"/>
+  <circle cx="45" cy="22" r="7" fill="#F5FBFC"/>
+  <circle cx="19" cy="22" r="3.5" fill="#22D3EE" opacity="0.55"/>
+  <circle cx="45" cy="22" r="3.5" fill="#22D3EE" opacity="0.55"/>
+
+  <!-- Face -->
+  <ellipse cx="32" cy="37" rx="20" ry="18" fill="#F5FBFC"/>
+
+  <!-- Snout -->
+  <ellipse cx="32" cy="45" rx="9" ry="7" fill="#FFFFFF"/>
+
+  <!-- Eyes (with tiny shine for cuteness) -->
+  <circle cx="24" cy="34" r="3" fill="#0E1116"/>
+  <circle cx="40" cy="34" r="3" fill="#0E1116"/>
+  <circle cx="25" cy="33" r="0.9" fill="#FFFFFF"/>
+  <circle cx="41" cy="33" r="0.9" fill="#FFFFFF"/>
+
+  <!-- Nose -->
+  <ellipse cx="32" cy="42.5" rx="2.5" ry="1.9" fill="#0E1116"/>
+
+  <!-- Smile -->
+  <path d="M 27.5 47 Q 32 50.5 36.5 47"
+        stroke="#0E1116" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+</svg>
