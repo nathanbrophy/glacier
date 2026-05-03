@@ -28,6 +28,7 @@ type DecodeError struct {
 	Layer string // source layer label; informational
 }
 
+// Error implements error.
 func (e *DecodeError) Error() string {
 	if e.Path == "" {
 		return fmt.Sprintf("conf: decode: %v", e.Cause)

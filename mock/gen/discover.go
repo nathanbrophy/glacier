@@ -73,6 +73,9 @@ type Discoverer interface {
 // pkgDiscoverer is the real go/packages-backed Discoverer implementation.
 type pkgDiscoverer struct{}
 
+// Discover implements Discoverer using go/packages to load the requested
+// pattern and walk every interface declaration carrying a +glacier:mock
+// marker.
 func (pkgDiscoverer) Discover(pattern, modulePrefix string, logger *slog.Logger) ([]DiscoveredInterface, error) {
 	cfg := &packages.Config{
 		Mode: loadMode,

@@ -116,12 +116,23 @@ func Ref[T any](want T, opts ...assert.EqualOption) Matcher[T] {
 // Used internally by Ref to drive assert.Equal without side effects.
 type noopTB struct{}
 
-func (noopTB) Helper()               {}
+// Helper implements assert.TB; no-op.
+func (noopTB) Helper() {}
+
+// Errorf implements assert.TB; no-op.
 func (noopTB) Errorf(string, ...any) {}
+
+// Fatalf implements assert.TB; no-op.
 func (noopTB) Fatalf(string, ...any) {}
-func (noopTB) FailNow()              {}
-func (noopTB) Cleanup(fn func())     {}
-func (noopTB) Name() string          { return "" }
+
+// FailNow implements assert.TB; no-op.
+func (noopTB) FailNow() {}
+
+// Cleanup implements assert.TB; no-op.
+func (noopTB) Cleanup(fn func()) {}
+
+// Name implements assert.TB and returns an empty name.
+func (noopTB) Name() string { return "" }
 
 // Nil returns a Matcher[any] that passes only when the argument is nil
 // (interface nil, pointer nil, or nil slice/map/channel/func).

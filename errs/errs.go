@@ -178,6 +178,7 @@ func validRegister(text string) string {
 
 type sentinelError struct{ text string }
 
+// Error implements error.
 func (s *sentinelError) Error() string { return s.text }
 
 // Sentinel constructs a sentinel error with stable text. The text MUST conform
@@ -213,8 +214,13 @@ func IsAny(err error, targets ...error) bool {
 // retryableError is the marker type used by MarkRetryable.
 type retryableError struct{ err error }
 
-func (r *retryableError) Error() string   { return r.err.Error() }
-func (r *retryableError) Unwrap() error   { return r.err }
+// Error implements error.
+func (r *retryableError) Error() string { return r.err.Error() }
+
+// Unwrap returns the wrapped error.
+func (r *retryableError) Unwrap() error { return r.err }
+
+// Retryable reports that the operation is safe to retry.
 func (r *retryableError) Retryable() bool { return true }
 
 // MarkRetryable wraps err with a marker indicating the operation is safe to

@@ -24,11 +24,15 @@ type Mutex struct {
 	timerMu     sync.Mutex
 }
 
+// Lock implements sync.Locker; in debug builds it also records the
+// acquiring caller's stack and starts a hold-timeout warning timer.
 func (m *Mutex) Lock() {
 	m.mu.Lock()
 	m.recordAcquire()
 }
 
+// Unlock implements sync.Locker; in debug builds it cancels the
+// hold-timeout warning timer registered by Lock.
 func (m *Mutex) Unlock() {
 	m.cancelTimer()
 	m.acquiredAt = time.Time{}
@@ -36,6 +40,8 @@ func (m *Mutex) Unlock() {
 	m.mu.Unlock()
 }
 
+// LockCtx is the ctx-aware lock with backoff polling; ErrCancelled if
+// ctx is done before acquisition.
 func (m *Mutex) LockCtx(ctx context.Context) error {
 	if m.mu.TryLock() {
 		m.recordAcquire()
@@ -103,11 +109,20 @@ type RWMutex struct {
 	mu sync.RWMutex
 }
 
-func (m *RWMutex) Lock()    { m.mu.Lock() }
-func (m *RWMutex) Unlock()  { m.mu.Unlock() }
-func (m *RWMutex) RLock()   { m.mu.RLock() }
+// Lock implements sync.Locker.
+func (m *RWMutex) Lock() { m.mu.Lock() }
+
+// Unlock implements sync.Locker.
+func (m *RWMutex) Unlock() { m.mu.Unlock() }
+
+// RLock acquires a read lock.
+func (m *RWMutex) RLock() { m.mu.RLock() }
+
+// RUnlock releases a read lock.
 func (m *RWMutex) RUnlock() { m.mu.RUnlock() }
 
+// RLockCtx is the ctx-aware read-lock with backoff polling; ErrCancelled
+// if ctx is done before acquisition.
 func (m *RWMutex) RLockCtx(ctx context.Context) error {
 	if m.mu.TryRLock() {
 		return nil

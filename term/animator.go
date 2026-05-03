@@ -47,8 +47,13 @@ type Clock interface {
 // Now and Sleep; After allocates one timer + channel (stdlib behaviour).
 type realClock struct{}
 
-func (realClock) Now() time.Time                         { return time.Now() }
-func (realClock) Sleep(d time.Duration)                  { time.Sleep(d) }
+// Now implements Clock by delegating to time.Now.
+func (realClock) Now() time.Time { return time.Now() }
+
+// Sleep implements Clock by delegating to time.Sleep.
+func (realClock) Sleep(d time.Duration) { time.Sleep(d) }
+
+// After implements Clock by delegating to time.After.
 func (realClock) After(d time.Duration) <-chan time.Time { return time.After(d) }
 
 // Handle is a cancellation token returned by Animator.Add.
@@ -152,10 +157,14 @@ type interceptHandler struct {
 	dropped int // count of dropped records since last flush
 }
 
+// Enabled implements slog.Handler by delegating to the wrapped handler.
 func (h *interceptHandler) Enabled(ctx context.Context, level slog.Level) bool {
 	return h.wrapped.Enabled(ctx, level)
 }
 
+// Handle implements slog.Handler by formatting r through the wrapped
+// handler and queueing the resulting line into the ring buffer for the
+// frame loop to drain between frames.
 func (h *interceptHandler) Handle(ctx context.Context, r slog.Record) error {
 	// Format the record as a plain text line via the wrapped handler.
 	// We write it to a temporary string builder handler.
@@ -197,10 +206,12 @@ func (h *interceptHandler) Handle(ctx context.Context, r slog.Record) error {
 	return nil
 }
 
+// WithAttrs implements slog.Handler.
 func (h *interceptHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &interceptHandler{wrapped: h.wrapped.WithAttrs(attrs), buf: h.buf}
 }
 
+// WithGroup implements slog.Handler.
 func (h *interceptHandler) WithGroup(name string) slog.Handler {
 	return &interceptHandler{wrapped: h.wrapped.WithGroup(name), buf: h.buf}
 }

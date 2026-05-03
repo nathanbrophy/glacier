@@ -162,10 +162,12 @@ type memFile struct {
 	offset int
 }
 
+// Stat implements fs.File.
 func (f *memFile) Stat() (fs.FileInfo, error) {
 	return &memFileInfo{name: path.Base(f.path), size: int64(len(f.data)), isDir: false}, nil
 }
 
+// Read implements fs.File.
 func (f *memFile) Read(b []byte) (int, error) {
 	if f.offset >= len(f.data) {
 		return 0, fmt.Errorf("EOF")
@@ -175,6 +177,7 @@ func (f *memFile) Read(b []byte) (int, error) {
 	return n, nil
 }
 
+// Close implements fs.File and is a no-op for in-memory files.
 func (f *memFile) Close() error { return nil }
 
 // ── memDir ────────────────────────────────────────────────────────────────────
@@ -184,14 +187,17 @@ type memDir struct {
 	path string
 }
 
+// Stat implements fs.File.
 func (d *memDir) Stat() (fs.FileInfo, error) {
 	return &memFileInfo{name: path.Base(d.path), size: 0, isDir: true}, nil
 }
 
+// Read implements fs.File and always returns a "is a directory" error.
 func (d *memDir) Read(_ []byte) (int, error) {
 	return 0, &fs.PathError{Op: "read", Path: d.path, Err: fmt.Errorf("is a directory")}
 }
 
+// Close implements fs.File and is a no-op for in-memory directories.
 func (d *memDir) Close() error { return nil }
 
 // ── memFileInfo ───────────────────────────────────────────────────────────────
@@ -202,12 +208,23 @@ type memFileInfo struct {
 	isDir bool
 }
 
-func (i *memFileInfo) Name() string       { return i.name }
-func (i *memFileInfo) Size() int64        { return i.size }
-func (i *memFileInfo) Mode() fs.FileMode  { return 0o444 }
+// Name implements fs.FileInfo.
+func (i *memFileInfo) Name() string { return i.name }
+
+// Size implements fs.FileInfo.
+func (i *memFileInfo) Size() int64 { return i.size }
+
+// Mode implements fs.FileInfo and reports a fixed read-only mode.
+func (i *memFileInfo) Mode() fs.FileMode { return 0o444 }
+
+// ModTime implements fs.FileInfo and returns the zero time.
 func (i *memFileInfo) ModTime() time.Time { return time.Time{} }
-func (i *memFileInfo) IsDir() bool        { return i.isDir }
-func (i *memFileInfo) Sys() any           { return nil }
+
+// IsDir implements fs.FileInfo.
+func (i *memFileInfo) IsDir() bool { return i.isDir }
+
+// Sys implements fs.FileInfo and returns nil (no underlying system source).
+func (i *memFileInfo) Sys() any { return nil }
 
 // ── memDirEntry ───────────────────────────────────────────────────────────────
 
@@ -217,14 +234,21 @@ type memDirEntry struct {
 	data  []byte
 }
 
+// Name implements fs.DirEntry.
 func (e *memDirEntry) Name() string { return e.name }
-func (e *memDirEntry) IsDir() bool  { return e.isDir }
+
+// IsDir implements fs.DirEntry.
+func (e *memDirEntry) IsDir() bool { return e.isDir }
+
+// Type implements fs.DirEntry.
 func (e *memDirEntry) Type() fs.FileMode {
 	if e.isDir {
 		return fs.ModeDir
 	}
 	return 0
 }
+
+// Info implements fs.DirEntry.
 func (e *memDirEntry) Info() (fs.FileInfo, error) {
 	if e.isDir {
 		return &memFileInfo{name: e.name, size: 0, isDir: true}, nil

@@ -247,6 +247,11 @@ type exitCodeError struct {
 	cause error
 }
 
+// Error implements error.
 func (e *exitCodeError) Error() string { return e.cause.Error() }
+
+// Unwrap returns the wrapped cause for errors.Is/errors.As traversal.
 func (e *exitCodeError) Unwrap() error { return e.cause }
+
+// ExitCode returns the explicit exit code carried by this error.
 func (e *exitCodeError) ExitCode() int { return e.code }

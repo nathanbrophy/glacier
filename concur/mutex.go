@@ -16,7 +16,10 @@ type Mutex struct {
 	mu sync.Mutex
 }
 
-func (m *Mutex) Lock()   { m.mu.Lock() }
+// Lock implements sync.Locker.
+func (m *Mutex) Lock() { m.mu.Lock() }
+
+// Unlock implements sync.Locker.
 func (m *Mutex) Unlock() { m.mu.Unlock() }
 
 // LockCtx attempts to acquire the lock, returning ErrCancelled if ctx is
@@ -57,9 +60,16 @@ type RWMutex struct {
 	mu sync.RWMutex
 }
 
-func (m *RWMutex) Lock()    { m.mu.Lock() }
-func (m *RWMutex) Unlock()  { m.mu.Unlock() }
-func (m *RWMutex) RLock()   { m.mu.RLock() }
+// Lock implements sync.Locker.
+func (m *RWMutex) Lock() { m.mu.Lock() }
+
+// Unlock implements sync.Locker.
+func (m *RWMutex) Unlock() { m.mu.Unlock() }
+
+// RLock acquires a read lock.
+func (m *RWMutex) RLock() { m.mu.RLock() }
+
+// RUnlock releases a read lock.
 func (m *RWMutex) RUnlock() { m.mu.RUnlock() }
 
 // RLockCtx is the ctx-aware read-lock. Same backoff approach as LockCtx.

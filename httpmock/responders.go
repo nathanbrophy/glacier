@@ -47,6 +47,7 @@ func JSON[T any](status int, body T) Responder {
 	return &jsonResponder{status: status, body: data}
 }
 
+// Respond implements Responder.
 func (r *jsonResponder) Respond(req *http.Request) (*http.Response, error) {
 	h := make(http.Header)
 	h.Set("Content-Type", "application/json")
@@ -73,6 +74,7 @@ func JSONFrom[T any](status int, r io.Reader) Responder {
 	return &jsonFromResponder{status: status, body: data}
 }
 
+// Respond implements Responder.
 func (r *jsonFromResponder) Respond(req *http.Request) (*http.Response, error) {
 	h := make(http.Header)
 	h.Set("Content-Type", "application/json")
@@ -84,6 +86,7 @@ func Status(status int) Responder { return &statusResponder{status: status} }
 
 type statusResponder struct{ status int }
 
+// Respond implements Responder.
 func (r *statusResponder) Respond(req *http.Request) (*http.Response, error) {
 	return makeResponse(req, r.status, nil, nil), nil
 }
@@ -101,6 +104,7 @@ type bodyResponder struct {
 	contentType string
 }
 
+// Respond implements Responder.
 func (r *bodyResponder) Respond(req *http.Request) (*http.Response, error) {
 	h := make(http.Header)
 	if r.contentType != "" {
@@ -120,6 +124,7 @@ type streamResponder struct {
 	contentType string
 }
 
+// Respond implements Responder.
 func (r *streamResponder) Respond(req *http.Request) (*http.Response, error) {
 	h := make(http.Header)
 	if r.contentType != "" {
@@ -145,6 +150,7 @@ func Error(err error) Responder { return &errorResponder{err: err} }
 
 type errorResponder struct{ err error }
 
+// Respond implements Responder.
 func (r *errorResponder) Respond(_ *http.Request) (*http.Response, error) { return nil, r.err }
 
 // sequenceResponder cycles or exhausts through a list of responders.
@@ -173,6 +179,7 @@ func SequenceExhaust(rs ...Responder) Responder {
 	return &sequenceResponder{rs: rs, cycle: false}
 }
 
+// Respond implements Responder.
 func (s *sequenceResponder) Respond(req *http.Request) (*http.Response, error) {
 	idx := s.idx.Add(1) - 1
 	n := int64(len(s.rs))

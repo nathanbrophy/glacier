@@ -48,8 +48,13 @@ type realClock struct{}
 // deterministic time.
 func Real() Clock { return realClock{} }
 
-func (realClock) Now() time.Time                         { return time.Now() }
-func (realClock) Sleep(d time.Duration)                  { time.Sleep(d) }
+// Now implements Clock by delegating to time.Now.
+func (realClock) Now() time.Time { return time.Now() }
+
+// Sleep implements Clock by delegating to time.Sleep.
+func (realClock) Sleep(d time.Duration) { time.Sleep(d) }
+
+// After implements Clock by delegating to time.After.
 func (realClock) After(d time.Duration) <-chan time.Time { return time.After(d) }
 
 // pendingTimer is a timer registered via FakeClock.After.
@@ -88,6 +93,7 @@ func NewClock(t assert.TB, start time.Time) FakeClock {
 	return fc
 }
 
+// Now implements Clock by returning the current fake time.
 func (fc *fakeClock) Now() time.Time {
 	fc.mu.Lock()
 	defer fc.mu.Unlock()

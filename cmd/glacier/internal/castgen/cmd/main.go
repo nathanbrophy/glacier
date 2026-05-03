@@ -168,9 +168,11 @@ func defaultBinPath() string {
 // package's small surface.
 type bytesWriter struct{ data []byte }
 
+// Write implements io.Writer by appending p to the internal buffer.
 func (b *bytesWriter) Write(p []byte) (int, error) {
 	b.data = append(b.data, p...)
 	return len(p), nil
 }
 
+// Bytes returns the accumulated bytes.
 func (b *bytesWriter) Bytes() []byte { return b.data }

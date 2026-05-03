@@ -16,6 +16,7 @@ const scanLoadMode = packages.NeedName | packages.NeedModule
 // pkgScanner is the production PackageScanner backed by go/packages.
 type pkgScanner struct{}
 
+// Scan implements PackageScanner using go/packages.
 func (pkgScanner) Scan(pattern, modulePrefix string, _ *slog.Logger) (int, error) {
 	cfg := &packages.Config{Mode: scanLoadMode}
 	pkgs, err := packages.Load(cfg, pattern)

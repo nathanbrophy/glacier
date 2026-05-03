@@ -24,7 +24,10 @@ var ErrCancelled = &cancelledError{}
 // SIGINT-induced cancellation maps to exit 130 per sysexits convention.
 type cancelledError struct{}
 
+// Error implements error.
 func (*cancelledError) Error() string { return "glacier/cli: context cancelled before dispatch" }
+
+// ExitCode returns 130 (sysexits SIGINT-on-shell convention).
 func (*cancelledError) ExitCode() int { return 130 }
 
 // FlagParseError is returned when argv contains a flag whose value cannot be
