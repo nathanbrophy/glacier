@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="3" failures="1">
+  <testsuite name="mypkg" tests="3" failures="1" skipped="0" time="1.500">
+    <testcase classname="mypkg" name="TestPass1" time="0.400"></testcase>
+    <testcase classname="mypkg" name="TestPass2" time="0.300"></testcase>
+    <testcase classname="mypkg" name="TestFail" time="0.100">
+      <failure message="mypkg/TestFail failed">got nil, want error&#xA;</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

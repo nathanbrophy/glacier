@@ -4,6 +4,7 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -297,7 +298,13 @@ func (a *App) Run(ctx context.Context, argv []string) (retErr error) {
 }
 
 // Main calls Run with os.Args[1:] and, on a non-nil error, formats the error
-// to stderr and calls os.Exit(1). On success it calls os.Exit(0).
+// to stderr and calls os.Exit with a code derived from the error chain.
+//
+// Exit code resolution:
+//   - nil error → exit 0
+//   - error chain contains an ExitCoder (errors.As) → exit ExitCoder.ExitCode()
+//   - any other error → exit 1
+//
 // On ErrUnknownCommand, Main also calls Help before exiting.
 // Main never returns to the caller.
 func (a *App) Main() {
@@ -319,6 +326,12 @@ func (a *App) Main() {
 	}
 
 	fmt.Fprintf(a.cfg.stderr, "error: %s\n", err)
+
+	// Honor any ExitCoder in the error chain.
+	var coder ExitCoder
+	if errors.As(err, &coder) {
+		os.Exit(coder.ExitCode())
+	}
 	os.Exit(1)
 }
 

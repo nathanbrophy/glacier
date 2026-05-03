@@ -22,6 +22,36 @@ Glacier is in early design. The repo currently holds the development lifecycle a
 - [`specs/0001-brand-identity.md`](specs/0001-brand-identity.md) — what Glacier looks and feels like.
 - [`CLAUDE.md`](CLAUDE.md) — the rules.
 
+## Glacier SDK
+
+The Glacier SDK is a CLI binary, `glacier`, that demonstrates the framework in production. Nine commands cover the developer day.
+
+### Install
+
+```sh
+go install github.com/nathanbrophy/glacier/cmd/glacier@latest
+```
+
+### What ships
+
+| Command | Description |
+|---|---|
+| `glacier init` | Scaffold a new Glacier project |
+| `glacier new` | Add a package, command, or option to an existing project |
+| `glacier generate` | Run code generators (cli, mock, httpmock) |
+| `glacier lint` | gofmt, vet, staticcheck, and Glacier-specific lints |
+| `glacier test` | Live status panel and summary |
+| `glacier vibe` | Glacier vibes animation |
+| `glacier version` | Print version; `--check` compares against latest |
+| `glacier explain` | Explain a marker, exit code, or config key |
+| `glacier completions` | Shell completions (bash, zsh, fish, pwsh) |
+
+### Why dogfood
+
+The SDK is the framework's longest-running integration test. Every Glacier package is exercised by at least one SDK command. A Lynx-owned coverage row fails CI if any package falls out of use. Bugs in the framework surface immediately, before they reach framework consumers.
+
+[Read the SDK reference](https://nathanbrophy.github.io/glacier/sdk/)
+
 ## The Promise
 
 When you use Glacier, you should be able to say each of these truthfully:

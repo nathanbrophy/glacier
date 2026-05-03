@@ -97,6 +97,14 @@ func discoverCommands(pattern, modulePrefix string, logger *slog.Logger) ([]Disc
 				}
 			}
 
+			// Skip types that have no +glacier:command or +glacier:root marker.
+			// Types that merely happen to implement Run(ctx context.Context) error
+			// (e.g. term.Animator, test helpers) are not commands and must not
+			// generate a registration entry.
+			if pr.Cmd.Name == "" && !pr.IsRoot {
+				continue
+			}
+
 			// Also parse field-level markers.
 			parseFieldMarkers(pkg, named, pr)
 

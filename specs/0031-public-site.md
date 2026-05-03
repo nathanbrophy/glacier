@@ -346,6 +346,7 @@ The site authors per-package pages with the directive block syntax below. v1 fil
 | `source` | path | yes | Path to the source spec relative to repo root |
 | `section` | enum | yes | One of `public-summary`, `mental-model`, `api`, `examples`, `faq` (matches the `docs-extract` array in spec frontmatter) |
 | `source-checksum` | hex | yes | SHA-256 of the source section's bytes (header line through final newline before next `## ` header). Recomputed by `check-extraction-directives.sh` |
+| `subsection` | enum (kebab-case ASCII) | no | When `section` resolves to a parent that holds many sub-sections (e.g. `## Commands` with one `### <verb>` per command), `subsection=<verb>` selects exactly one sub-section's bytes. The `source-checksum` is computed over the sub-section's range (its `### ` line through the byte before the next `### ` or `## ` header). When absent, behavior is unchanged. Added by spec 0032 (Amendment A). |
 
 `check-extraction-directives.sh` enforces:
 - Every `/docs/packages/<name>` page contains directive blocks for all five sections in order.
@@ -624,6 +625,10 @@ The kaomoji forms (D43, D45) and the block-character banner mascot (D44) remain 
 When this spec moves to `accepted`, Magpie opens a one-line PR amending spec 0001's frontmatter `last-updated` to a date `>= 2026-05-02` and adding a footnote in spec 0001 §Decisions referencing "see spec 0031 amendments A & B." That PR is review-only by Magpie and Otter — no full re-acceptance cycle, since the binding-amendment text lives here in spec 0031, which reviewers cite going forward.
 
 No code or content change in the existing repo is required by these amendments — they only constrain future writing.
+
+### Amendment log: inbound from spec 0032 (SDK)
+
+Spec 0032 (Glacier SDK CLI binary; accepted 2026-05-03) extends this spec's `magpie:extract` directive grammar with an optional `subsection=<verb>` attribute so a single `## Commands` anchor can feed nine command pages without an anchor explosion. The new attribute is documented as the fourth row of the directive grammar table in `## API` above; the `check-extraction-directives.sh` script honors it (sub-section bytes range from the `### ` header line through the byte before the next `### ` or `## ` header). The amendment is non-breaking: directives without `subsection` retain prior behavior. Tracked in spec 0032 §Migration & Compatibility (Amendment A) and D-S5.
 
 ## FAQ
 

@@ -88,6 +88,7 @@ Identity is a taxonomy and a surface map, not a code architecture.
 | Naming conventions (Go)  | This spec                           | Every package, type, function, error, interface in the framework |
 | Naming conventions (CLI) | This spec                           | Every CLI verb, flag, subcommand emitted by the CLI module       |
 | The Promise              | This spec                           | Acceptance criterion for every component spec                    |
+| User-mascot library      | This spec; art under `cmd/glacier/internal/mascots/` | Six mascots (`polar_bear`, `penguin`, `owl`, `fox`, `otter`, `raccoon`), each in two forms (kaomoji + 5-line block-character banner). User-facing scaffold library only; distinct from Glacier's own polar-bear identity. Added by spec 0032 (Amendment B). |
 
 **Surface map** — where each identity element appears:
 
@@ -330,6 +331,18 @@ Fonts on the eventual public site are vendored, not Go dependencies; their justi
 ## Migration & Compatibility
 
 N/A. This is the first identity spec; nothing to migrate from.
+
+### Amendment log: inbound from spec 0032 (SDK)
+
+Spec 0032 (Glacier SDK CLI binary; accepted 2026-05-03) admits a new asset class to this spec: a curated **user-mascot library** scoped to user projects scaffolded by `glacier init`. The library is recorded as a sixth row in the taxonomy table under `## Architecture`. Key constraints:
+
+- The Glacier identity remains the polar bear. Every framework asset (`banner.txt`, README, public site hero) continues to use the polar bear (D5, D44). The non-polar-bear mascots in this library do not appear on Glacier-branded surfaces.
+- The library lives at `cmd/glacier/internal/mascots/` and ships six mascots: `polar_bear`, `penguin`, `owl`, `fox`, `otter`, `raccoon`. It exists to let user projects pick a mascot for their own scaffold.
+- Each non-polar-bear mascot ships in two forms: a kaomoji single-line and a 5-line block-character banner form. Both authored by Magpie under this spec's brand discipline (block-character purity per the verification table; kaomoji styling per D43 / D45).
+- Magpie signs off on each mascot's render under the existing voice / visual rules.
+- Any extension of the library (new mascots, new forms, new placements outside scaffolded user projects) is itself a spec amendment requiring Magpie + Otter sign-off.
+
+The amendment narrows, rather than broadens, the `## Non-Goals` exclusion of "external assets beyond the repo" by carving out a single tooling-asset class confined to the scaffold path. Tracked in spec 0032 §Migration & Compatibility (Amendment B) and D-S38.
 
 ## FAQ
 

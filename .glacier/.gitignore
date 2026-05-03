@@ -1,0 +1,3 @@
+# Glacier SDK local cache files — do not commit
+lint-cache.json
+bench-baseline.json
