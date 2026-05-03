@@ -6,6 +6,11 @@
 coverage.*
 vendor/
 
+# Locally built SDK binary (extensionless on Linux/macOS; .exe matched above).
+# `make casts` builds this at the repo root for the cast renderer.
+/glacier
+/cligen
+
 # IDE / editor
 .vscode/
 .idea/
