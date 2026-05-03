@@ -1,2 +1,2 @@
-{"env":{"SHELL":"/bin/bash","TERM":"xterm-256color"},"height":8,"timestamp":1777840762,"title":"glacier vibe --ascii","version":2,"width":60}
-[0,"o","\u001b[1m\u001b[38;5;87mʕ•ᴥ•ʔ\u001b[0m \u001b[38;5;87mglacier vibe\u001b[0m\nʕ•ᴥ•ʔ  GLACIER\nLess plumbing. More Go.\n\nʕ•ᴥ•ʔ httpc.Default has retry, backoff, tracing, and timeout pre-wired. Pass httpc.WithMaxAttempts(1) to disable retry for tests.\n"]
+{"env":{"SHELL":"/bin/bash","TERM":"xterm-256color"},"height":8,"timestamp":1777841085,"title":"glacier vibe --ascii","version":2,"width":60}
+[0,"o","\u001b[1m\u001b[38;5;87mʕ•ᴥ•ʔ\u001b[0m \u001b[38;5;87mglacier vibe\u001b[0m\nʕ•ᴥ•ʔ  GLACIER\nLess plumbing. More Go.\n\nʕ•ᴥ•ʔ fixture.Golden updates expected output with -update; CI runs without it. One flag, zero drift.\n"]

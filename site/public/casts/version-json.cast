@@ -1,2 +1,2 @@
-{"env":{"SHELL":"/bin/bash","TERM":"xterm-256color"},"height":12,"timestamp":1777840762,"title":"glacier version --json","version":2,"width":60}
-[0,"o","\u001b[1m\u001b[38;5;87mʕ•ᴥ•ʔ\u001b[0m \u001b[38;5;87mglacier version\u001b[0m\n{\n  \"version\": \"v0.1.1-0.20260503180151-f5f0336c8ef3+dirty\",\n  \"build_time\": \"2026-05-03T18:01:51Z\",\n  \"go_version\": \"go1.26.0\",\n  \"os\": \"windows\",\n  \"arch\": \"amd64\"\n}\n"]
+{"env":{"SHELL":"/bin/bash","TERM":"xterm-256color"},"height":12,"timestamp":1777841085,"title":"glacier version --json","version":2,"width":60}
+[0,"o","\u001b[1m\u001b[38;5;87mʕ•ᴥ•ʔ\u001b[0m \u001b[38;5;87mglacier version\u001b[0m\n{\n  \"version\": \"v0.1.1-0.20260503204126-4c6b8aae8ec2+dirty\",\n  \"build_time\": \"2026-05-03T20:41:26Z\",\n  \"go_version\": \"go1.26.0\",\n  \"os\": \"windows\",\n  \"arch\": \"amd64\"\n}\n"]

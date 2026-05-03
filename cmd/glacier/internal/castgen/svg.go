@@ -104,34 +104,47 @@ func WriteSVG(w io.Writer, c Cast) error {
 	fmt.Fprintf(w, `<text x="%.1f" y="%.1f" text-anchor="middle" fill="%s">%s</text>`+"\n",
 		width/2, titleH/2+5, titleFgCol, title)
 
-	// Body.
+	// Body. Each row uses explicit per-character <tspan> positioning so
+	// every glyph lands on the cellW grid. This is critical for the banner
+	// and box-drawing rows: box-drawing and block characters often render at
+	// fractionally different widths than ASCII even in monospace fonts, which
+	// makes a single-tspan row drift visibly across the line. Per-character
+	// positioning eliminates the drift at the cost of a slightly larger SVG.
 	fmt.Fprintf(w, `<g transform="translate(%.0f,%.0f)">`+"\n", padX, titleH+padY/2)
 	for i, row := range rows {
 		y := float64(i+1) * cellH
-		fmt.Fprintf(w, `<text x="0" y="%.1f" fill="%s" xml:space="preserve">`, y, fgColor)
+		fmt.Fprintf(w, `<text y="%.1f" fill="%s" xml:space="preserve">`, y, fgColor)
 		spans := parseANSI(row)
 		col := 0
 		for _, sp := range spans {
 			if sp.text == "" {
 				continue
 			}
-			x := float64(col) * cellW
-			// Build attributes from active style.
-			attrs := fmt.Sprintf(` x="%.1f" fill="%s"`, x, sp.style.svgFG(fgColor))
+			// One <tspan> per rune: x is the rune's column * cellW.
+			// All runes inherit the span's style attributes.
+			styleAttrs := fmt.Sprintf(`fill="%s"`, sp.style.svgFG(fgColor))
 			if sp.style.bold {
-				attrs += ` font-weight="bold"`
+				styleAttrs += ` font-weight="bold"`
 			}
 			if sp.style.italic {
-				attrs += ` font-style="italic"`
+				styleAttrs += ` font-style="italic"`
 			}
 			if sp.style.underline {
-				attrs += ` text-decoration="underline"`
+				styleAttrs += ` text-decoration="underline"`
 			}
 			if sp.style.dim {
-				attrs += ` opacity="0.6"`
+				styleAttrs += ` opacity="0.6"`
 			}
-			fmt.Fprintf(w, `<tspan%s>%s</tspan>`, attrs, svgEscape(sp.text))
-			col += visibleLen(sp.text)
+			for _, r := range sp.text {
+				x := float64(col) * cellW
+				// Center each glyph in its cell so wide and narrow rune
+				// shapes still look aligned. text-anchor=middle on the
+				// tspan does that without affecting the row's left edge.
+				cx := x + cellW/2
+				fmt.Fprintf(w, `<tspan x="%.2f" text-anchor="middle" %s>%s</tspan>`,
+					cx, styleAttrs, svgEscape(string(r)))
+				col++
+			}
 		}
 		fmt.Fprintf(w, "</text>\n")
 	}

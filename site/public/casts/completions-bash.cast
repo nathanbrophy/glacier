@@ -1,2 +1,2 @@
-{"env":{"SHELL":"/bin/bash","TERM":"xterm-256color"},"height":30,"timestamp":1777840762,"title":"glacier completions bash","version":2,"width":100}
+{"env":{"SHELL":"/bin/bash","TERM":"xterm-256color"},"height":30,"timestamp":1777841085,"title":"glacier completions bash","version":2,"width":100}
 [0,"o","\u001b[1m\u001b[38;5;87mʕ•ᴥ•ʔ\u001b[0m \u001b[38;5;87mglacier completions\u001b[0m\n# glacier bash completion\n_glacier_completions() {\n    local cur=\"${COMP_WORDS[COMP_CWORD]}\"\n    local commands=\"vibe version generate lint test init new completions explain\"\n    if [[ ${COMP_CWORD} -eq 1 ]]; then\n        COMPREPLY=($(compgen -W \"${commands}\" -- \"${cur}\"))\n    fi\n}\ncomplete -F _glacier_completions glacier\n"]
