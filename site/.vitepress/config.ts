@@ -25,11 +25,11 @@ export default withMermaid(defineConfig({
     siteTitle: false,
     nav: [
       { text: 'Why', link: '/why' },
+      { text: 'SDK', link: '/sdk/' },
       { text: 'Features', link: '/features' },
       { text: 'Examples', link: '/examples' },
       { text: 'Concepts', link: '/concepts' },
       { text: 'Docs', link: '/docs/' },
-      { text: 'SDK', link: '/sdk' },
     ],
     socialLinks: [
       { icon: 'github', link: 'https://github.com/nathanbrophy/glacier' },
@@ -42,6 +42,49 @@ export default withMermaid(defineConfig({
       provider: 'local',
     },
     sidebar: {
+      '/sdk/': [
+        {
+          text: 'Glacier SDK',
+          collapsed: false,
+          items: [
+            { text: 'Overview',      link: '/sdk/' },
+            { text: 'Install',       link: '/sdk/install' },
+            { text: 'Configuration', link: '/sdk/configuration' },
+          ],
+        },
+        {
+          text: 'Commands',
+          collapsed: false,
+          items: [
+            { text: 'All commands',      link: '/sdk/commands/' },
+            { text: 'glacier init',      link: '/sdk/commands/init' },
+            { text: 'glacier new',       link: '/sdk/commands/new' },
+            { text: 'glacier generate',  link: '/sdk/commands/generate' },
+            { text: 'glacier lint',      link: '/sdk/commands/lint' },
+            { text: 'glacier test',      link: '/sdk/commands/test' },
+            { text: 'glacier explain',   link: '/sdk/commands/explain' },
+            { text: 'glacier version',   link: '/sdk/commands/version' },
+            { text: 'glacier completions', link: '/sdk/commands/completions' },
+            { text: 'glacier vibe',      link: '/sdk/commands/vibe' },
+          ],
+        },
+        {
+          text: 'Codegen examples',
+          collapsed: true,
+          items: [
+            { text: 'Overview',                          link: '/sdk/codegen/' },
+            { text: 'cli: all markers',                  link: '/sdk/codegen/cli-all-markers' },
+            { text: 'cli: nested commands',              link: '/sdk/codegen/cli-nested' },
+            { text: 'cli: simple',                       link: '/sdk/codegen/cli-simple' },
+            { text: 'mock: interface only',              link: '/sdk/codegen/mock-interface-only' },
+            { text: 'mock: nested interfaces',           link: '/sdk/codegen/mock-nested-interfaces' },
+            { text: 'mock: types from other package',    link: '/sdk/codegen/mock-with-types-from-other-package' },
+            { text: 'httpmock: programmable router',     link: '/sdk/codegen/httpmock-programmable-router' },
+            { text: 'httpmock: recording disabled',      link: '/sdk/codegen/httpmock-recording-disabled' },
+            { text: 'httpmock: body closure',            link: '/sdk/codegen/httpmock-with-body-closure' },
+          ],
+        },
+      ],
       '/docs/': [
         {
           text: 'Tasks',
@@ -87,6 +130,7 @@ export default withMermaid(defineConfig({
             { text: 'mock',     link: '/docs/packages/mock' },
             { text: 'httpmock', link: '/docs/packages/httpmock' },
             { text: 'httpc',    link: '/docs/packages/httpc' },
+            { text: 'cache',    link: '/docs/packages/cache' },
           ],
         },
       ],

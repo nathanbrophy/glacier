@@ -1,6 +1,6 @@
-// 14-package manifest for the public site. See specs/0002-framework-shape.md
+// 15-package manifest for the public site. See specs/0002-framework-shape.md
 // for the canonical three-tier DAG and specs/0031-public-site.md §Schema for
-// the PackageManifest invariant (length === 14; tier counts {kernel: 5, mid: 5, leaf: 4}).
+// the PackageManifest invariant (length === 15; tier counts {kernel: 5, mid: 5, leaf: 5}).
 
 import type { PackageManifest } from '../types'
 
@@ -107,5 +107,12 @@ export const packages: PackageManifest = [
     tier: 'leaf',
     specId: '0015',
     teaser: 'Typed HTTP client: Get[T], Post[T], Put[T] auto-unmarshal. Retry with backoff, closure-body retry-safe payloads, dry-run via context.',
+  },
+  {
+    name: 'cache',
+    slug: 'cache',
+    tier: 'leaf',
+    specId: '0033',
+    teaser: 'Generic key-value cache with TTL: New[V] in-memory, NewDisk[V] JSON-on-disk with flock, NewLayered write-through. GetOrLoad collapses concurrent misses.',
   },
 ] as const

@@ -253,18 +253,18 @@ func writeFlags(w io.Writer, fs *flag.FlagSet, cfg regConfig, useColor bool) {
 	}
 }
 
-// exportedName converts a lowercase flag name back to a guess of the field
-// name registered with WithFlagShort/WithFlagEnv. Best-effort: for v0 we just
-// uppercase the first letter, since cligen generates fields that way.
+// exportedName converts a kebab-case flag name back to the field name
+// registered with WithFlagShort/WithFlagEnv. cligen records the original
+// CamelCase identifier in cfg's maps, so the lookup compares each key's
+// kebab-case projection against flagName.
 func exportedName(flagName string, cfg regConfig) string {
-	// Try direct match first (the maps may key by either form depending on caller).
 	for k := range cfg.short {
-		if strings.EqualFold(k, flagName) {
+		if fieldFlagName(k) == flagName {
 			return k
 		}
 	}
 	for k := range cfg.envVars {
-		if strings.EqualFold(k, flagName) {
+		if fieldFlagName(k) == flagName {
 			return k
 		}
 	}

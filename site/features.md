@@ -5,7 +5,7 @@ aside: false
 
 # Features
 
-14 packages across three tiers. Each package stands alone. Together they are Glacier. The tiers enforce a no-cycles constraint: kernel packages have no internal dependencies; mid-tier packages depend only on the kernel; leaf packages depend only on kernel and mid-tier, never on each other. See [Concepts](/concepts) for the full mental model.
+15 packages across three tiers. Each package stands alone. Together they are Glacier. The tiers enforce a no-cycles constraint: kernel packages have no internal dependencies; mid-tier packages depend only on the kernel; leaf packages depend only on kernel and mid-tier, never on each other. See [Concepts](/concepts) for the full mental model.
 
 ---
 
@@ -200,7 +200,7 @@ defer span.End()
 
 ## Tier 2: Leaves
 
-The four leaf packages are large enough to justify isolation. They depend on kernel and mid-tier packages only and never import each other. Consumers who need only `httpmock` for tests don't pull in `cli`.
+The five leaf packages are large enough to justify isolation. They depend on kernel and mid-tier packages only and never import each other. Consumers who need only `httpmock` for tests don't pull in `cli`.
 
 ### cli <TierBadge tier="leaf" />
 
@@ -283,3 +283,25 @@ fmt.Println(user.Name) // Alice
 ```
 
 [Read the docs](/docs/packages/httpc)
+
+---
+
+### cache <TierBadge tier="leaf" />
+
+Generic key-value cache with TTL. One `Cache[V]` interface; three implementations: `New[V]` in-memory (map+RWMutex, zero-alloc on hit), `NewDisk[V]` per-key JSON files with advisory flock for cross-process safety, and `NewLayered[V]` write-through composition. `GetOrLoad` collapses concurrent misses on the same key onto a single loader call via singleflight. Tests in dependent packages mock `Cache[V]` instead of stubbing files. Hit/miss counters surface via `obs` when an OTLP endpoint is configured; zero overhead otherwise.
+
+```go
+mem := cache.New[Release](cache.WithDefaultTTL(24 * time.Hour))
+disk, err := cache.NewDisk[Release](filepath.Join(cacheDir, "glacier"))
+if err != nil {
+    return err
+}
+
+c := cache.NewLayered(mem, disk)
+release, err := c.GetOrLoad(ctx, "github:nathanbrophy/glacier",
+    func(ctx context.Context) (Release, error) {
+        return fetcher.Latest(ctx, "nathanbrophy/glacier")
+    })
+```
+
+[Read the docs](/docs/packages/cache)

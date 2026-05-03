@@ -12,7 +12,7 @@ require (
 require (
 	golang.org/x/mod v0.33.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect; transitive via golang.org/x/term; pre-approved per §23.3
+	golang.org/x/sys v0.42.0 // transitive via golang.org/x/term; pre-approved per §23.3
 )
 
 require (

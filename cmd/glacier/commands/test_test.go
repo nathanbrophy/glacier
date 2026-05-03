@@ -376,7 +376,7 @@ func TestBenchRegression_NoRegression(t *testing.T) {
 		{Name: "BenchmarkFoo-8", NsPerOp: 100},
 	}
 	current := []benchcmp.BenchEntry{
-		{Name: "BenchmarkFoo-8", NsPerOp: 104}, // 4% slower — within 5% threshold
+		{Name: "BenchmarkFoo-8", NsPerOp: 104}, // 4% slower :  within 5% threshold
 	}
 	regressions := benchcmp.Compare(baseline, current)
 	assert.Equal(t, len(regressions), 0)
@@ -388,7 +388,7 @@ func TestBenchRegression_JustAtThreshold(t *testing.T) {
 		{Name: "BenchmarkFoo-8", NsPerOp: 100},
 	}
 	current := []benchcmp.BenchEntry{
-		{Name: "BenchmarkFoo-8", NsPerOp: 105}, // exactly 5% — at threshold, not over
+		{Name: "BenchmarkFoo-8", NsPerOp: 105}, // exactly 5% :  at threshold, not over
 	}
 	regressions := benchcmp.Compare(baseline, current)
 	assert.Equal(t, len(regressions), 0)
@@ -400,7 +400,7 @@ func TestBenchRegression_OverThreshold(t *testing.T) {
 		{Name: "BenchmarkFoo-8", NsPerOp: 100},
 	}
 	current := []benchcmp.BenchEntry{
-		{Name: "BenchmarkFoo-8", NsPerOp: 106}, // 6% slower — regression
+		{Name: "BenchmarkFoo-8", NsPerOp: 106}, // 6% slower :  regression
 	}
 	regressions := benchcmp.Compare(baseline, current)
 	assert.Equal(t, len(regressions), 1)
@@ -431,9 +431,9 @@ func TestBenchRegression_MultipleRegressions(t *testing.T) {
 		{Name: "BenchmarkC-8", NsPerOp: 50},
 	}
 	current := []benchcmp.BenchEntry{
-		{Name: "BenchmarkA-8", NsPerOp: 120}, // 20% — regression
-		{Name: "BenchmarkB-8", NsPerOp: 202}, // 1% — ok
-		{Name: "BenchmarkC-8", NsPerOp: 60},  // 20% — regression
+		{Name: "BenchmarkA-8", NsPerOp: 120}, // 20% :  regression
+		{Name: "BenchmarkB-8", NsPerOp: 202}, // 1% :  ok
+		{Name: "BenchmarkC-8", NsPerOp: 60},  // 20% :  regression
 	}
 	regressions := benchcmp.Compare(baseline, current)
 	assert.Equal(t, len(regressions), 2)
@@ -445,7 +445,7 @@ func TestBenchRegression_Improvement(t *testing.T) {
 		{Name: "BenchmarkFoo-8", NsPerOp: 100},
 	}
 	current := []benchcmp.BenchEntry{
-		{Name: "BenchmarkFoo-8", NsPerOp: 50}, // 50% faster — no regression
+		{Name: "BenchmarkFoo-8", NsPerOp: 50}, // 50% faster :  no regression
 	}
 	regressions := benchcmp.Compare(baseline, current)
 	assert.Equal(t, len(regressions), 0)
@@ -492,9 +492,11 @@ func TestRun_UpdateBaseline(t *testing.T) {
 
 // --- Run with format=json emits glacier-summary ---
 
+// Not t.Parallel: the test rebinds the process-wide os.Stdout to a pipe
+// while TestCmd.Run runs. Other tests in this package that swap os.Stdout
+// (lint_test.TestExitCodeStability, cross_cutting.TestBannerSuppressedOnSubcommands)
+// would race here if any ran in parallel.
 func TestRun_FormatJSON_AggregateEmitted(t *testing.T) {
-	t.Parallel()
-
 	runner := &fakeRunner{
 		eventLines: []string{
 			makeEvent("run", "mypkg", "TestA", 0, ""),

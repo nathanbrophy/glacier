@@ -21,6 +21,7 @@ import PackageGrid from './components/PackageGrid.vue'
 import PackagesUsedBadges from './components/PackagesUsedBadges.vue'
 import PillarCard from './components/PillarCard.vue'
 import PromiseSection from './components/PromiseSection.vue'
+import SdkSpotlight from './components/SdkSpotlight.vue'
 import TierBadge from './components/TierBadge.vue'
 import UsedInTasksBadges from './components/UsedInTasksBadges.vue'
 import WordmarkSVG from './components/WordmarkSVG.vue'
@@ -43,6 +44,7 @@ const theme: Theme = {
     app.component('PackagesUsedBadges', PackagesUsedBadges)
     app.component('PillarCard', PillarCard)
     app.component('PromiseSection', PromiseSection)
+    app.component('SdkSpotlight', SdkSpotlight)
     app.component('TierBadge', TierBadge)
     app.component('UsedInTasksBadges', UsedInTasksBadges)
     app.component('WordmarkSVG', WordmarkSVG)

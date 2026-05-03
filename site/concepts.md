@@ -5,7 +5,7 @@ aside: false
 
 # Concepts
 
-Glacier is 14 packages organized into three tiers. The tiers aren't a metaphor - they're a testable import constraint enforced by a layering test on every PR. Understanding the tiers tells you what you can depend on and what you can't.
+Glacier is 15 packages organized into three tiers. The tiers aren't a metaphor - they're a testable import constraint enforced by a layering test on every PR. Understanding the tiers tells you what you can depend on and what you can't.
 
 ## The three tiers
 
@@ -30,10 +30,12 @@ flowchart TB
         mock
         httpmock
         httpc
+        cache
     end
     subgraph INT[Internal]
         sigh[internal/sigh]
         reflectx[internal/reflectx]
+        lockfile[internal/lockfile]
     end
 
     errs --> log
@@ -48,9 +50,11 @@ flowchart TB
     option --> httpc
     option --> obs
     option --> term
+    option --> cache
     errs --> concur
     errs --> conf
     errs --> obs
+    errs --> cache
     log  --> conf
     log  --> obs
     term --> log
@@ -58,8 +62,10 @@ flowchart TB
     assert --> fixture
     concur --> obs
     fluent --> httpmock
+    obs --> cache
     sigh --> cli
     reflectx --> mock
+    lockfile --> cache
 ```
 
 The DAG has no cycles. Forbidden edges are testable invariants - a Lynx-owned test rejects any import that violates them on every PR.
@@ -92,6 +98,7 @@ Leaf packages are large enough to justify isolation. They depend on kernel and m
 - **mock** - Interface mocks: `mock.Of[T]` reflect-based or `+glacier:mock` codegen typed wrappers. Fluent expectation builder, automatic `Verify` on cleanup.
 - **httpmock** - Programmable `http.RoundTripper` for tests. Stub builder, `JSON[T]` response helpers, strict-by-default.
 - **httpc** - Typed HTTP client: `Get[T]`, `Post[T]`, `Put[T]` auto-unmarshal. Retry with backoff, dry-run via context.
+- **cache** - Generic key-value cache: `New[V]` in-memory, `NewDisk[V]` per-key JSON with flock, `NewLayered` write-through. `GetOrLoad` singleflights concurrent misses; `obs` counters when configured.
 
 ## Cross-cutting conventions
 

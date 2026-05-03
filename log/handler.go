@@ -257,6 +257,42 @@ func WithLevel(l slog.Leveler) option.Option[handlerConfig] {
 	})
 }
 
+// defaultLevelVar is the package-owned dynamic level var consulted by
+// handlers constructed with WithDynamicLevel. SDK binaries that want
+// runtime-mutable level filtering install one such handler at startup and
+// then call SetDefaultLevel to update the threshold (e.g. when --verbose is
+// observed during flag parsing).
+//
+// The zero value of slog.LevelVar is slog.LevelInfo; SDK startup typically
+// calls SetDefaultLevel(LevelWarn) before installing the handler.
+var defaultLevelVar slog.LevelVar
+
+// WithDynamicLevel binds the handler to the package-level dynamic level var
+// updated by SetDefaultLevel. Use this when the program needs to change the
+// handler's filter level after construction (for example, after CLI flag
+// parsing reveals a --verbose request).
+//
+//	log.SetDefaultLevel(slog.LevelWarn)
+//	h := log.NewHandler(os.Stderr, log.WithDynamicLevel())
+//	// ...later, after parsing --verbose:
+//	log.SetDefaultLevel(slog.LevelDebug)
+func WithDynamicLevel() option.Option[handlerConfig] {
+	return WithLevel(&defaultLevelVar)
+}
+
+// SetDefaultLevel updates the threshold of the package-level dynamic level
+// var. Handlers constructed via WithDynamicLevel observe the new level on
+// their next Enabled / Handle call. Safe for concurrent use.
+func SetDefaultLevel(l slog.Level) {
+	defaultLevelVar.Set(l)
+}
+
+// DefaultLevel returns the current threshold of the package-level dynamic
+// level var. Returns slog.LevelInfo if SetDefaultLevel has never been called.
+func DefaultLevel() slog.Level {
+	return defaultLevelVar.Level()
+}
+
 // WithSource enables source-location attribution on every record: the
 // caller's file and line are included. Off by default :  source attribution
 // adds approximately 30% latency per log call.

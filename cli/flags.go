@@ -9,7 +9,41 @@ import (
 	"reflect"
 	"strings"
 	"time"
+	"unicode"
 )
+
+// fieldFlagName converts a Go field name (CamelCase or PascalCase) to its
+// command-line flag form (kebab-case). The conversion inserts a hyphen at
+// every lower-to-upper or acronym-to-word boundary, then lowercases the
+// result, matching how the spec and docs render flag names.
+//
+//	NoColor       → "no-color"
+//	VeryVerbose   → "very-verbose"
+//	OtelEndpoint  → "otel-endpoint"
+//	JSON          → "json"
+//	JSONOnly      → "json-only"
+//	URL           → "url"
+//	URLPath       → "url-path"
+//
+// Single-word fields (Verbose, Quiet, Profile) round-trip to their plain
+// lowercase form so existing flag references continue to work.
+func fieldFlagName(field string) string {
+	var b strings.Builder
+	b.Grow(len(field) + 4)
+	runes := []rune(field)
+	for i, r := range runes {
+		if i > 0 && unicode.IsUpper(r) {
+			prev := runes[i-1]
+			lowerToUpper := unicode.IsLower(prev) || unicode.IsDigit(prev)
+			acronymBoundary := unicode.IsUpper(prev) && i+1 < len(runes) && unicode.IsLower(runes[i+1])
+			if lowerToUpper || acronymBoundary {
+				b.WriteRune('-')
+			}
+		}
+		b.WriteRune(unicode.ToLower(r))
+	}
+	return b.String()
+}
 
 // buildFlagSet constructs a flag.FlagSet from the exported fields of cmd's
 // concrete struct type. cfg provides short aliases, env overrides, and help
@@ -33,7 +67,7 @@ func buildFlagSet(cmd any, cfg regConfig, cmdPath string) (*flag.FlagSet, map[st
 		if !f.IsExported() {
 			continue
 		}
-		flagName := strings.ToLower(f.Name)
+		flagName := fieldFlagName(f.Name)
 		helpText := flagName
 		if h, ok := cfg.help[f.Name]; ok {
 			helpText = h
@@ -60,7 +94,7 @@ func buildFlagSet(cmd any, cfg regConfig, cmdPath string) (*flag.FlagSet, map[st
 			ptr := (*float64)(fv.Addr().UnsafePointer())
 			fs.Float64Var(ptr, flagName, fv.Float(), helpText)
 		default:
-			// unsupported type — skip silently
+			// unsupported type :  skip silently
 			delete(fieldByFlag, flagName)
 		}
 	}
@@ -78,14 +112,14 @@ func applyEnvOverrides(fs *flag.FlagSet, cfg regConfig) {
 	})
 
 	for flagName, envVar := range cfg.envVars {
-		if explicit[strings.ToLower(flagName)] {
+		if explicit[fieldFlagName(flagName)] {
 			continue // argv wins
 		}
 		val := os.Getenv(envVar)
 		if val == "" {
 			continue
 		}
-		lower := strings.ToLower(flagName)
+		lower := fieldFlagName(flagName)
 		f := fs.Lookup(lower)
 		if f == nil {
 			continue
@@ -121,7 +155,7 @@ func validateRequiredFlags(fs *flag.FlagSet, cfg regConfig) error {
 	})
 
 	for flagName := range cfg.required {
-		lower := strings.ToLower(flagName)
+		lower := fieldFlagName(flagName)
 		f := fs.Lookup(lower)
 		if f == nil {
 			return &RequiredError{Name: lower}
@@ -137,7 +171,7 @@ func validateRequiredFlags(fs *flag.FlagSet, cfg regConfig) error {
 // in-set value.
 func validateChoices(fs *flag.FlagSet, cfg regConfig) error {
 	for flagName, choices := range cfg.choices {
-		lower := strings.ToLower(flagName)
+		lower := fieldFlagName(flagName)
 		f := fs.Lookup(lower)
 		if f == nil {
 			continue
@@ -163,7 +197,7 @@ func validateChoices(fs *flag.FlagSet, cfg regConfig) error {
 // validateFns runs per-flag validate functions.
 func validateFns(fs *flag.FlagSet, cfg regConfig) error {
 	for flagName, fn := range cfg.validate {
-		lower := strings.ToLower(flagName)
+		lower := fieldFlagName(flagName)
 		f := fs.Lookup(lower)
 		if f == nil {
 			continue

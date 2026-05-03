@@ -10,7 +10,7 @@ declare -A EXPECTED=(
   [option]=0003 [errs]=0004 [log]=0005 [assert]=0006
   [concur]=0007 [fluent]=0008 [conf]=0009 [fixture]=0010
   [cli]=0011 [mock]=0012 [httpmock]=0013 [httpc]=0015
-  [term]=0016 [obs]=0017
+  [term]=0016 [obs]=0017 [cache]=0033
 )
 
 fail=0

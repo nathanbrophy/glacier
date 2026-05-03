@@ -5,7 +5,7 @@ slug: public-site
 status: accepted
 owner-agent: magpie
 created: 2026-05-02
-last-updated: 2026-05-02
+last-updated: 2026-05-03
 supersedes: []
 superseded-by: null
 reviewers:
@@ -39,7 +39,7 @@ docs-extract:
 
 <!-- **Public.** One paragraph in end-user voice. The canonical description for the site and README. -->
 
-The Glacier public site at `https://nathanbrophy.github.io/glacier/` is a static site built with VitePress that combines a marketing surface and a reference documentation surface. It reuses the canonical brand identity from spec 0001 :  polar-bear mascot, ANSI Shadow wordmark with the 6-stop ice gradient, "Less plumbing. More Go." tagline :  and presents the framework shape from spec 0002 as a navigable, dev-first experience. Marketing pages explain what Glacier is, why a Go developer would reach for it, and how the 14-package suite interlocks. Documentation pages walk concrete tasks ("Build a CLI", "Write tests", "Mock HTTP", etc.) and resolve to per-package reference pages whose content is anchored to the accepted spec for that package via a content-extraction contract.
+The Glacier public site at `https://nathanbrophy.github.io/glacier/` is a static site built with VitePress that combines a marketing surface and a reference documentation surface. It reuses the canonical brand identity from spec 0001 :  polar-bear mascot, ANSI Shadow wordmark with the 6-stop ice gradient, "Less plumbing. More Go." tagline :  and presents the framework shape from spec 0002 as a navigable, dev-first experience. Marketing pages explain what Glacier is, why a Go developer would reach for it, and how the 15-package suite interlocks. Documentation pages walk concrete tasks ("Build a CLI", "Write tests", "Mock HTTP", etc.) and resolve to per-package reference pages whose content is anchored to the accepted spec for that package via a content-extraction contract.
 
 ## Mental Model
 
@@ -74,7 +74,7 @@ flowchart LR
   DP --> SP[(spec source)]
 ```
 
-A visitor who arrives via the landing page can scroll the marketing density (hero → install → 4 pillars → Promise → 14-package grid → before/after code → mini-FAQ → footer) without ever leaving `/`. A visitor looking for reference lands on `/docs` (the task grid), picks a task page, and threads through to the relevant package page; from there the spec source for that package is one click away. `/concepts` introduces the kernel/mid/leaves mental model from spec 0002 *before* a visitor encounters a "Tier 0" badge with no priors. The same nav and the same chrome serve both audiences.
+A visitor who arrives via the landing page can scroll the marketing density (hero → install → 4 pillars → Promise → 15-package grid → before/after code → mini-FAQ → footer) without ever leaving `/`. A visitor looking for reference lands on `/docs` (the task grid), picks a task page, and threads through to the relevant package page; from there the spec source for that package is one click away. `/concepts` introduces the kernel/mid/leaves mental model from spec 0002 *before* a visitor encounters a "Tier 0" badge with no priors. The same nav and the same chrome serve both audiences.
 
 The site is dark-only by design :  Glacier's brand is dark-first per spec 0001 D6. Light-mode tokens are deferred until a future spec amendment.
 
@@ -84,7 +84,7 @@ The site is dark-only by design :  Glacier's brand is dark-first per spec 0001 D
 
 - Stand up the public face of Glacier on GitHub Pages with a build that succeeds locally and in CI.
 - Reuse the canonical brand assets from spec 0001 (banner, wordmark, mascot, palette, tagline, voice) :  the site does not redefine them.
-- Present the framework shape from spec 0002 (14 packages, three tiers) as a navigable suite, with `/concepts` introducing the mental model.
+- Present the framework shape from spec 0002 (15 packages, three tiers) as a navigable suite, with `/concepts` introducing the mental model.
 - Surface spec 0001's four-statement Promise on the site so it is testable per spec 0001 §Test Matrix row "Promise satisfaction."
 - Author the content extraction contract that lets Magpie generate per-package reference pages from accepted spec sections (`Public Summary`, `Mental Model`, `API`, `Examples`, `FAQ`) without hand-duplication, with a SHA-256 checksum mechanism for drift detection.
 - Lock the multi-page IA, dense-but-disciplined landing, task-organized docs (only for workflows composing 2+ packages), dark-first dark-only theme, aurora atmospheric backdrop, SVG wordmark with embedded ice gradient, kaomoji-canonical mascot with a small illustrated companion sprite.
@@ -120,9 +120,9 @@ The site is dark-only by design :  Glacier's brand is dark-first per spec 0001 D
 
 | URL | File | Surface | Role |
 |---|---|---|---|
-| `/` | `site/index.md` | Marketing | Landing :  hero, install, 4 pillars, Promise (with `#promise` anchor), 14-package grid, code-compare, mini-FAQ, footer |
+| `/` | `site/index.md` | Marketing | Landing :  hero, install, 4 pillars, Promise (with `#promise` anchor), 15-package grid, code-compare, mini-FAQ, footer |
 | `/why` | `site/why.md` | Marketing | Each of the four pillars exploded into a section with diagrams and Go snippets |
-| `/features` | `site/features.md` | Marketing | The 14-package suite as a feature index, one card per package, headline + teaser snippet |
+| `/features` | `site/features.md` | Marketing | The 15-package suite as a feature index, one card per package, headline + teaser snippet |
 | `/examples` | `site/examples.md` | Marketing | 6–8 marquee recipes; each card links to a `/docs/<task>` page |
 | `/sdk` | `site/sdk.md` | Marketing | Framed placeholder for the dogfooded Glacier SDK CLI binary (deferred to spec 0032) |
 | `/concepts` | `site/concepts.md` | Concepts | Introduces the kernel/mid/leaves mental model from spec 0002 §Mental Model; tier diagram; the cross-cutting conventions; entry point cited by every package page's tier badge |
@@ -134,7 +134,7 @@ The site is dark-only by design :  Glacier's brand is dark-first per spec 0001 D
 | `/docs/structured-logging` | `site/docs/structured-logging.md` | Reference | Task page composing `log` + `errs` + `obs` |
 | `/docs/observability` | `site/docs/observability.md` | Reference | Task page composing `obs` + `log` + `httpc` |
 | `/docs/concurrency` | `site/docs/concurrency.md` | Reference | Task page composing `concur` + `errs` |
-| `/docs/packages/<name>` | `site/docs/packages/<name>.md` | Reference | One page per Glacier package; 14 pages total. Cross-reference from task pages. Tier badge linking back to `/concepts`. |
+| `/docs/packages/<name>` | `site/docs/packages/<name>.md` | Reference | One page per Glacier package; 15 pages total. Cross-reference from task pages. Tier badge linking back to `/concepts`. |
 
 **Task page rule (binding for v1):** a task page exists only for a workflow that composes **two or more** packages. Workflows that map to a single package live on the package page only. This eliminates duplicate surfaces (e.g. `/docs/functional-options` would have paraphrased `/docs/packages/option`). Adding a single-package task page is forbidden without a spec amendment lifting this rule.
 
@@ -170,7 +170,7 @@ The top nav holds: `Why`, `Features`, `Examples`, `Concepts`, `Docs`, `SDK`, Git
 │   │   │   ├── AuroraBackdrop.vue  # 30s drifting gradient field; reduced-motion safe
 │   │   │   ├── PillarCard.vue      # "why" pillar block
 │   │   │   ├── PromiseSection.vue  # renders the four Promise statements from spec 0001
-│   │   │   ├── PackageGrid.vue     # 14-package grid (3 tiers, color-tagged)
+│   │   │   ├── PackageGrid.vue     # 15-package grid (3 tiers, color-tagged)
 │   │   │   ├── PackagesUsedBadges.vue  # task-page header badge row
 │   │   │   ├── UsedInTasksBadges.vue   # package-page header badge row
 │   │   │   ├── TierBadge.vue           # links to /concepts#tier-<tier>
@@ -179,7 +179,7 @@ The top nav holds: `Why`, `Features`, `Examples`, `Concepts`, `Docs`, `SDK`, Git
 │   │       ├── tokens.css          # palette + type tokens from spec 0001
 │   │       └── prose.css           # documentation prose styling
 │   └── data/
-│       ├── packages.ts             # 14-package manifest (name, slug, tier, teaser)
+│       ├── packages.ts             # 15-package manifest (name, slug, tier, teaser)
 │       └── sidebar.ts              # task→packages and package→tasks cross-reference table
 ├── public/                         # VitePress public assets root (sibling of index.md, NOT inside .vitepress/)
 │   ├── wordmark.svg                # generated from spec 0001 D40 source
@@ -231,7 +231,7 @@ The top nav holds: `Why`, `Features`, `Examples`, `Concepts`, `Docs`, `SDK`, Git
     ├── index.md
     ├── <task>.md (×7)
     └── packages/
-        └── <name>.md (×14)
+        └── <name>.md (×15)
 ```
 
 ### Visual system
@@ -310,7 +310,7 @@ export interface PackageManifestEntry {
 }
 
 export type PackageManifest = readonly PackageManifestEntry[]
-// invariant: length === 14; tier counts {kernel: 5, mid: 5, leaf: 4} per spec 0002.
+// invariant: length === 15; tier counts {kernel: 5, mid: 5, leaf: 5} per spec 0002.
 ```
 
 ## API
@@ -366,7 +366,7 @@ Internal API used by `/site/.vitepress/theme/` and the page Markdown only. Not p
 | `<AuroraBackdrop />` | `{}` | Renders the atmospheric gradient; honors `prefers-reduced-motion` |
 | `<PillarCard />` | `{ title: string; headline: string }` + slot=`details` | A single "why" pillar block |
 | `<PromiseSection />` | `{}` | Renders the four Promise statements verbatim from spec 0001 §Examples §The Promise |
-| `<PackageGrid />` | `{}` | Renders the 14-package grid by reading `data/packages.ts` |
+| `<PackageGrid />` | `{}` | Renders the 15-package grid by reading `data/packages.ts` |
 | `<PackagesUsedBadges />` | `{ packageNames: string[] }` | Task-page header badge row |
 | `<UsedInTasksBadges />` | `{ taskSlugs: string[] }` | Package-page header badge row (renders "Used in tasks: none" if empty) |
 | `<TierBadge />` | `{ tier: Tier }` | Links to `/concepts#tier-<tier>` |
@@ -411,10 +411,10 @@ The site introduces no Go API; "examples" here are concrete content sketches the
 │  • "The error tells me what to do next."                                   │
 │  • "Tests are easy because the framework helps."                           │
 ├────────────────────────────────────────────────────────────────────────────┤
-│  ## The 14-package suite                                                   │
+│  ## The 15-package suite                                                   │
 │  KERNEL  option · errs · log · assert · term                               │
 │  MID     concur · fluent · conf · fixture · obs                            │
-│  LEAVES  cli · mock · httpmock · httpc                                     │
+│  LEAVES  cli · mock · httpmock · httpc · cache                             │
 ├────────────────────────────────────────────────────────────────────────────┤
 │  ## With Glacier vs. without                                               │
 │  ┌─────────── without ───────────┐  ┌──────────── with ─────────────┐      │
@@ -518,10 +518,10 @@ Every row's `Covered by` cell names a specific test file, test name, or CI scrip
 | Accessibility (axe) :  every route | `axe-core` via Playwright on `/`, `/why`, `/features`, `/examples`, `/sdk`, `/concepts`, `/docs`, every `/docs/<task>`, every `/docs/packages/<name>`, `/404` | Zero `serious` or `critical` violations on any route | `tests/e2e/a11y.spec.ts > sweep-all-routes` |
 | Lighthouse thresholds | `lighthouse-ci` against `/`, `/why`, `/concepts`, `/docs`, `/docs/packages/option` | Performance ≥ 95, Accessibility ≥ 95, Best Practices ≥ 95, SEO ≥ 95 | `site-pr-checks.yml` (lighthouse-ci step) |
 | WCAG contrast (AAA on text) | Computed contrast for `--mg-text` on `--mg-bg`, `--mg-cyan` on `--mg-bg` | ≥ 7:1 (AAA) | `tests/unit/contrast.spec.ts > aa-and-aaa` (re-verifies spec 0001 contrast claims) |
-| Spec traceability | Every `/docs/packages/<name>` page links to `specs/<NNNN-name>.md` | All 14 pages have a `View source spec →` link with the correct spec ID | `scripts/check-spec-links.sh` |
+| Spec traceability | Every `/docs/packages/<name>` page links to `specs/<NNNN-name>.md` | All 15 pages have a `View source spec →` link with the correct spec ID | `scripts/check-spec-links.sh` |
 | Magpie extraction directive presence + checksum | Every `/docs/packages/<name>` page has 5 directive blocks (one per `docs-extract` section) with valid `source-checksum` | All directive blocks present; recomputed SHA-256 of cited source section matches the directive's `source-checksum` | `scripts/check-extraction-directives.sh` |
-| `docs-extract` exhaustive | Every spec referenced by a `/docs/packages/<name>` page has `docs-extract` containing all 5 section IDs | All 14 referenced specs pass | `scripts/check-extraction-directives.sh > docs-extract-exhaustive` |
-| Packages manifest shape | Import `site/.vitepress/data/packages.ts` | Length === 14; tier counts {kernel: 5, mid: 5, leaf: 4}; every name unique; every `specId` resolves to an existing spec file | `tests/unit/packages-manifest.spec.ts > has-14-entries`, `> tier-counts`, `> spec-ids-resolve` |
+| `docs-extract` exhaustive | Every spec referenced by a `/docs/packages/<name>` page has `docs-extract` containing all 5 section IDs | All 15 referenced specs pass | `scripts/check-extraction-directives.sh > docs-extract-exhaustive` |
+| Packages manifest shape | Import `site/.vitepress/data/packages.ts` | Length === 15; tier counts {kernel: 5, mid: 5, leaf: 5}; every name unique; every `specId` resolves to an existing spec file | `tests/unit/packages-manifest.spec.ts > has-15-entries`, `> tier-counts`, `> spec-ids-resolve` |
 | Base path correctness | Built `dist/index.html` `<a href>` references | All internal links resolve under `/glacier/`; no bare `/` references | `scripts/check-base-path.sh` |
 | Lockfile pinned | `site/package-lock.json` exists and matches `package.json` | `npm ci --ignore-scripts` succeeds with frozen lockfile | `site-deploy.yml` (implicit in `npm ci`) |
 | `.npmrc` registry pin | Read `site/.npmrc` | Contains `registry=https://registry.npmjs.org/` and `ignore-scripts=true` | `scripts/check-site.sh > npmrc` |
@@ -672,7 +672,7 @@ This spec is authored from a fully-resolved interview captured in [`~/.claude/pl
 - **D-S3 :  Hero is an animated terminal demo with the mascot reacting to it.** Reactivity is mediated by the `mascotState` field on each terminal line; the kaomoji state shift is one-to-one with spec 0001 D45.
 - **D-S4 :  Voice holds spec 0001 D11 line, with one negotiated bolder hero phrase.** The phrase is reviewed by Magpie + Otter at content time, must contain zero banned words, and lives only in the landing hero. (Spec 0001 D11 is the voice/superlative-ban decision; D38 in spec 0001 is the project-name decision and is unrelated to voice.)
 - **D-S5 :  Multi-page marketing IA.** `/`, `/why`, `/features`, `/examples`, `/sdk`, `/concepts` give each marketing surface its own URL.
-- **D-S6 :  Dense landing.** Hero → install → 4 pillars → Promise → 14-package grid → before/after → mini-FAQ → footer.
+- **D-S6 :  Dense landing.** Hero → install → 4 pillars → Promise → 15-package grid → before/after → mini-FAQ → footer.
 - **D-S7 :  All four pillars carry equal weight.** "Less plumbing, more Go" is the headline; "Curated suite," "Generics-first," "Test-first dogfooded helpers" are equal-weight supporting pillars.
 - **D-S8 :  Docs organized by task with package as secondary cross-reference.** Newcomers find tasks faster; the tier mental model lives on each package page as a `<TierBadge>` linking to `/concepts#tier-<tier>`.
 - **D-S9 :  Banner is pre-rendered SVG with embedded `<linearGradient>`.** Sharper than `<pre>` text, no per-resize gradient remapping.

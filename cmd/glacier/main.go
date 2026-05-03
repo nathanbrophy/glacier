@@ -75,19 +75,22 @@ func configureColor() {
 // process logger via the log package's SetDefault. Subsequent calls to
 // slog.Default()/log.Default() return the configured logger.
 //
-// Default level is Warn (per spec 0032 D-S31): INFO records from generators
-// and other internals are suppressed unless --verbose / GLACIER_DEBUG bumps
-// the level. This keeps the user-visible output dominated by report.Status
-// kaomoji lines, with structured logs only for warnings and errors.
+// The handler is bound to log.WithDynamicLevel so the threshold can be
+// updated by GlacierCmd.ApplyRoot once the cli framework has parsed the
+// persistent --quiet / --verbose / --very-verbose flags. The initial level
+// here is Warn (per spec 0032 D-S31) unless GLACIER_DEBUG / GLACIER_VERBOSE
+// is set, in which case env vars seed a more chatty default that the
+// flags can still raise but never silently lower.
 func configureLogging() {
 	level := slog.LevelWarn
 	switch {
 	case os.Getenv("GLACIER_DEBUG") != "":
-		level = slog.LevelDebug
+		level = log.LevelTrace
 	case os.Getenv("GLACIER_VERBOSE") != "":
-		level = slog.LevelInfo
+		level = slog.LevelDebug
 	}
-	handler := log.NewHandler(os.Stderr, log.WithLevel(level))
+	log.SetDefaultLevel(level)
+	handler := log.NewHandler(os.Stderr, log.WithDynamicLevel())
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
 	log.SetDefault(logger)

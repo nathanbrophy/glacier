@@ -50,13 +50,13 @@ When the boundary feels wrong - when something generic is on your side or someth
 
 ## Curated suite, designed together. {#curated-suite}
 
-14 packages. Three tiers. Zero cycles.
+15 packages. Three tiers. Zero cycles.
 
 <TierBadge tier="kernel" /> Five kernel packages that every consumer transitively depends on: `option`, `errs`, `log`, `assert`, `term`. They have no dependencies on each other except where the DAG explicitly allows it.
 
 <TierBadge tier="mid" /> Five mid-tier packages - `concur`, `fluent`, `conf`, `fixture`, `obs` - each independent of the others, depending only on the kernel.
 
-<TierBadge tier="leaf" /> Four leaf packages - `cli`, `mock`, `httpmock`, `httpc` - large enough to justify isolation, never importing each other.
+<TierBadge tier="leaf" /> Five leaf packages - `cli`, `mock`, `httpmock`, `httpc`, `cache` - large enough to justify isolation, never importing each other.
 
 Every package configurable at construction uses the same `option.Option[T]` protocol. Every error from every package follows the same library register: `lowercase, no trailing period, package: action: cause`. Every package that logs injects via `WithLogger(*slog.Logger)`. These are testable invariants, not aspirational guidelines. A Lynx-owned layering test rejects forbidden import edges on every PR.
 

@@ -88,6 +88,7 @@ func New(opts ...option.Option[appConfig]) *App {
 	cfg, err := option.Apply(opts)
 	if err != nil {
 		// Option errors in New are programmer errors; panic to surface immediately.
+		//glacier:nolint=panic-in-library programmer error: option misuse surfaces at App construction.
 		panic("cli: New: " + err.Error())
 	}
 	// Apply defaults for zero-valued fields.
@@ -204,6 +205,30 @@ func (a *App) Run(ctx context.Context, argv []string) (retErr error) {
 		}
 	}
 
+	// Persistent root flags (D-S33): peel any token in argv that names a
+	// flag declared on the root command's struct, parse them into the root
+	// instance, and remove them from argv before subcommand resolution.
+	// Without this step, `glacier --verbose test` would dispatch to the
+	// root command (because splitArgv stops at the first '-'), and
+	// `glacier test --verbose` would fail with ErrUnknownFlag because the
+	// test subcommand's flag set doesn't declare --verbose.
+	rootEntry := a.rootEntryLocked()
+	var rootVals map[string]string
+	if rootEntry != nil {
+		peeled, remaining := peelRootFlags(argv, rootEntry)
+		vals, err := parseRootFlags(rootEntry, peeled)
+		if err != nil {
+			return err
+		}
+		rootVals = vals
+		argv = remaining
+		if applier, ok := rootEntry.cmd.(RootApplier); ok {
+			if err := applier.ApplyRoot(ctx); err != nil {
+				return err
+			}
+		}
+	}
+
 	// Extract command path tokens (leading non-flag tokens).
 	cmdTokens, rest := splitArgv(argv)
 
@@ -249,7 +274,7 @@ func (a *App) Run(ctx context.Context, argv []string) (retErr error) {
 
 	// Log deprecated flag warnings.
 	for flagName, msg := range e.cfg.deprecated {
-		lower := strings.ToLower(flagName)
+		lower := fieldFlagName(flagName)
 		f := fs.Lookup(lower)
 		if f == nil {
 			continue
@@ -285,8 +310,16 @@ func (a *App) Run(ctx context.Context, argv []string) (retErr error) {
 		return err
 	}
 
-	// Store flag values for Lookup.
-	vals := flagValues(fs)
+	// Store flag values for Lookup. Root persistent-flag values from the
+	// peel-and-parse pass are seeded first so the active command's own
+	// flags (if a name collides) win on the merge.
+	vals := make(map[string]string, len(rootVals)+1)
+	for k, v := range rootVals {
+		vals[k] = v
+	}
+	for k, v := range flagValues(fs) {
+		vals[k] = v
+	}
 	a.mu.Lock()
 	a.lastFlags = vals
 	a.mu.Unlock()
@@ -457,6 +490,101 @@ func (a *App) resolve(tokens []string) (*entry, string) {
 	}
 
 	return nil, strings.Join(tokens, ".")
+}
+
+// RootApplier is implemented by root commands that need to react to their
+// own flag values before any subcommand executes. App.Run invokes ApplyRoot
+// after the root command's persistent flags have been parsed (and env
+// overrides applied) but before splitArgv resolves the active command.
+//
+// A non-nil return aborts dispatch with that error. Typical uses: validating
+// mutually-exclusive global flags, updating a process-wide log level, or
+// installing signal handlers gated by a flag.
+type RootApplier interface {
+	ApplyRoot(ctx context.Context) error
+}
+
+// rootEntryLocked returns the registered root entry, or nil if no command
+// was registered with WithRoot. The returned *entry is shared with the
+// registry; callers must not mutate cfg fields.
+func (a *App) rootEntryLocked() *entry {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	if a.rootPath == "" {
+		return nil
+	}
+	return a.commands[a.rootPath]
+}
+
+// peelRootFlags walks argv left-to-right and partitions every token into
+// `peeled` (matched a root flag, plus its value if non-bool) or `remaining`
+// (positional, unknown flag, or flag belonging to a subcommand). The double
+// dash `--` terminates root flag peeling: it and every subsequent token
+// pass through to remaining unchanged, matching stdlib flag.Parse semantics.
+//
+// Bool flags (those whose value implements interface{ IsBoolFlag() bool })
+// are single-token; non-bool flags consume the following token as their
+// value unless the `--name=value` form is used.
+func peelRootFlags(argv []string, root *entry) (peeled, remaining []string) {
+	rootFs, _ := buildFlagSet(root.cmd, root.cfg, root.path)
+	bools := make(map[string]bool)
+	known := make(map[string]bool)
+	rootFs.VisitAll(func(f *flag.Flag) {
+		known[f.Name] = true
+		if bf, ok := f.Value.(interface{ IsBoolFlag() bool }); ok && bf.IsBoolFlag() {
+			bools[f.Name] = true
+		}
+	})
+
+	i := 0
+	for i < len(argv) {
+		a := argv[i]
+		if a == "--" {
+			remaining = append(remaining, argv[i:]...)
+			return
+		}
+		if !strings.HasPrefix(a, "-") || a == "-" {
+			remaining = append(remaining, a)
+			i++
+			continue
+		}
+		name := strings.TrimLeft(a, "-")
+		hasInlineValue := false
+		if eq := strings.Index(name, "="); eq >= 0 {
+			name = name[:eq]
+			hasInlineValue = true
+		}
+		if !known[name] {
+			remaining = append(remaining, a)
+			i++
+			continue
+		}
+		peeled = append(peeled, a)
+		i++
+		if !bools[name] && !hasInlineValue && i < len(argv) {
+			peeled = append(peeled, argv[i])
+			i++
+		}
+	}
+	return
+}
+
+// parseRootFlags builds a fresh flag set bound to root's struct, parses the
+// peeled tokens into it, and applies env-var overrides. Returns the
+// resulting flag values keyed by lower-case flag name (suitable for merging
+// into App.lastFlags). Errors are wrapped in the same shape App.Run uses
+// for subcommand parse failures so callers see consistent error types.
+func parseRootFlags(root *entry, peeled []string) (map[string]string, error) {
+	fs, _ := buildFlagSet(root.cmd, root.cfg, root.path)
+	if err := fs.Parse(peeled); err != nil {
+		if strings.HasPrefix(err.Error(), "flag provided but not defined: ") {
+			name := strings.TrimPrefix(err.Error(), "flag provided but not defined: -")
+			return nil, &ErrUnknownFlag{Name: name}
+		}
+		return nil, &FlagParseError{Name: "", Err: err}
+	}
+	applyEnvOverrides(fs, root.cfg)
+	return flagValues(fs), nil
 }
 
 // splitArgv separates leading non-flag tokens (command path) from the rest.

@@ -5,13 +5,13 @@
 #   - sidebar empty state (no current file; allowed when added)
 #   - scroll-to-top button (theme/components/ScrollTop.vue or similar)
 #   - page-level accent placements approved by the user:
-#     sdk.md, why.md, docs/index.md
+#     sdk/index.md, why.md, docs/index.md
 #
 # Any occurrence outside these allowed files fails the check.
 set -eu
 cd "$(dirname "$0")/.."
 
-ALLOWED='^(\.vitepress/theme/(Layout|components/(MascotSprite|Footer|NotFound|ScrollTop|EmptySidebar))\.vue|404\.md|sdk\.md|why\.md|docs/index\.md)$'
+ALLOWED='^(\.vitepress/theme/(Layout|components/(MascotSprite|Footer|NotFound|ScrollTop|EmptySidebar))\.vue|404\.md|sdk/index\.md|why\.md|docs/index\.md)$'
 
 # shellcheck disable=SC2155
 matches=$(grep -rln '<MascotSprite' . \

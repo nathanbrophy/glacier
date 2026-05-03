@@ -5,7 +5,7 @@ slug: framework-shape
 status: verified
 owner-agent: otter
 created: 2026-05-01
-last-updated: 2026-05-02
+last-updated: 2026-05-03
 supersedes: []
 superseded-by: null
 reviewers:
@@ -45,7 +45,7 @@ Glacier is a Go framework :  a curated suite of consumable packages that make Go
 
 <!-- **Public.** The conceptual frame a developer should hold while using this. Mermaid diagrams welcome. Source for the "Concepts" page on the site. -->
 
-Glacier's coherence comes from its layering. Kernel packages are universal: every consumer of any Glacier package transitively depends on `option`, `errs`, `log`, `assert`, and `term`. Mid-tier packages are independent of each other. Leaf packages are large enough to deserve isolation: `cli`, `mock`, `httpmock`, and `httpc` may not import each other, only kernel and mid-tier. The result: any consumer can pick exactly the packages they need without dragging in unrelated leaves. The dogfooded Glacier SDK, when it ships, composes leaves at the binary level :  never inside a package.
+Glacier's coherence comes from its layering. Kernel packages are universal: every consumer of any Glacier package transitively depends on `option`, `errs`, `log`, `assert`, and `term`. Mid-tier packages are independent of each other. Leaf packages are large enough to deserve isolation: `cli`, `mock`, `httpmock`, `httpc`, and `cache` may not import each other, only kernel and mid-tier. The result: any consumer can pick exactly the packages they need without dragging in unrelated leaves. The dogfooded Glacier SDK, when it ships, composes leaves at the binary level :  never inside a package.
 
 ```mermaid
 flowchart TB
@@ -68,10 +68,12 @@ flowchart TB
         mock
         httpmock
         httpc
+        cache
     end
     subgraph INT[Internal]
         sigh[internal/sigh]
         reflectx[internal/reflectx]
+        lockfile[internal/lockfile]
     end
 
     errs --> log
@@ -100,6 +102,10 @@ flowchart TB
     reflectx --> mock
     reflectx --> conf
     reflectx --> fluent
+    option --> cache
+    errs --> cache
+    obs --> cache
+    lockfile --> cache
 ```
 
 The DAG has no cycles. Forbidden edges are testable invariants enforced by a Lynx-owned layering test on every PR. Every package configurable at construction uses `option.Option[T]`; every package that emits errors uses the library error register enforced by a cross-cutting Lynx test.
@@ -108,7 +114,7 @@ The DAG has no cycles. Forbidden edges are testable invariants enforced by a Lyn
 
 <!-- **Internal.** Bulleted list. -->
 
-- Lock the v0 package layout: 14 packages + 2 internal helpers + 0 binaries.
+- Lock the v0 package layout: 15 packages + 3 internal helpers + 0 binaries.
 - Lock the three-tier DAG and the forbidden edges (F1–F7 plus F3a/F3b/F3c).
 - Lock the six cross-cutting conventions (functional options, error contract, context propagation, lifecycle, logging, naming) plus the seventh (path safety).
 - Commit to zero direct application-code dependencies in v0; approve the three build-time and standards-layer deps (golang.org/x/tools, golang.org/x/sys, go.opentelemetry.io/otel set).
@@ -124,7 +130,7 @@ The DAG has no cycles. Forbidden edges are testable invariants enforced by a Lyn
 
 <!-- **Internal.** Bulleted list. What this spec deliberately excludes. -->
 
-- Ratifying any individual leaf package's full API. That belongs in component specs 0011 (cli), 0012 (mock), 0013 (httpmock), 0015 (httpc), 0016 (term), 0017 (obs), and the mid-tier component specs.
+- Ratifying any individual leaf package's full API. That belongs in component specs 0011 (cli), 0012 (mock), 0013 (httpmock), 0015 (httpc), 0016 (term), 0017 (obs), 0033 (cache), and the mid-tier component specs.
 - Shipping the Glacier SDK CLI binary. Deferred per D6 to spec 0032.
 - Sandboxing. Dropped from v0 per D38 / §23.1; deferred to spec 0018.
 - Selecting YAML/TOML/HCL config formats. Deferred to spec 0023.
@@ -229,19 +235,37 @@ github.com/nathanbrophy/glacier/
 │   └── doc.go               full API in spec 0013
 ├── httpc/                   typed HTTP client with retries + dry-run          [Tier 2 leaf]
 │   └── doc.go               full API in spec 0015
+├── cache/                   generic key-value cache (mem/disk/layered)        [Tier 2 leaf]
+│   ├── cache.go             Cache[V] interface + +glacier:mock marker
+│   ├── doc.go               full API in spec 0033
+│   ├── options.go           Option type + With* constructors
+│   ├── mem.go               in-memory implementation
+│   ├── disk.go              disk-backed implementation (per-key JSON + flock)
+│   ├── layered.go           write-through composition (primary + backing)
+│   ├── singleflight.go      generic singleflight collapses concurrent misses
+│   ├── observability.go     obs counters when OTLP endpoint configured
+│   ├── example_test.go
+│   ├── mem_test.go
+│   ├── disk_test.go
+│   ├── layered_test.go
+│   ├── singleflight_test.go
+│   └── bench_test.go
 ├── internal/
 │   ├── sigh/                signal-to-ctx wiring (SIGINT/SIGTERM)
 │   │   ├── sigh.go
 │   │   └── sigh_test.go
-│   └── reflectx/            reflection helpers shared by mock/fluent/conf
-│       ├── reflectx.go
-│       └── reflectx_test.go
+│   ├── reflectx/            reflection helpers shared by mock/fluent/conf
+│   │   ├── reflectx.go
+│   │   └── reflectx_test.go
+│   └── lockfile/            advisory file-locking helper used by cache disk impl
+│       ├── lockfile.go
+│       └── lockfile_test.go
 └── .github/
     └── workflows/
         └── ci.yml           required PR gates per D31 + §23.12
 ```
 
-The `cli`, `mock`, `httpmock`, `httpc` packages exist at v0 only as package directories with a `doc.go` declaring the package name and one-paragraph charter. Their actual code lands in component specs 0011–0015. The `cmd/mongoose/` directory does not exist at v0. It will be created by the Glacier SDK spec (0032).
+The `cli`, `mock`, `httpmock`, `httpc` packages exist at v0 only as package directories with a `doc.go` declaring the package name and one-paragraph charter. Their actual code lands in component specs 0011–0015. The `cache` package was added under spec 0033 to replace the SDK's TODO version-check stub; it lands with full implementation, not a stub. The `cmd/mongoose/` directory does not exist at v0. It will be created by the Glacier SDK spec (0032).
 
 ### Three-tier DAG and forbidden edges
 
@@ -749,8 +773,9 @@ The `log/` package automatically appends `trace_id` and `span_id` slog attrs whe
 | `mock/`     | leaf | `option`, `errs`, `log`, `assert`, `internal/reflectx`   | Reflect-based runtime mock generator for any Go interface, with per-call request tracking and typed/generic matchers. Opt-in `+glacier:mock` marker generates typed expectation builders via `glaciergen`. No `unsafe`. Full API in spec 0012.                                                    |
 | `httpmock/` | leaf | `option`, `errs`, `log`, `assert`, `fluent`              | Programmable `http.RoundTripper` that never makes real network calls. Stubs declared via chained builder; generic `JSON[T]` responses; strict-by-default. Full API in spec 0013.                                                                                                                  |
 | `httpc/`    | leaf | `option`, `errs`, `log`, `concur`, `term`                | Typed HTTP client: `Get[T]`, `Post[T]`, `Put[T]`, etc. with retry (exponential/linear backoff, jitter), closure-based retry-safe bodies, dry-run mode via ctx, response body cap (32 MiB default), progress integration with `term.Animator`. Full API in spec 0015.                              |
+| `cache/`    | leaf | `option`, `errs`, `obs`, `internal/safefile`, `internal/safejson`, `internal/lockfile` | Generic key-value cache. One `Cache[V]` interface; three implementations: `New[V]` in-memory (map+RWMutex), `NewDisk[V]` per-key JSON files with advisory flock for cross-process safety, `NewLayered[V]` write-through composition. Per-key TTL with hybrid defaults; `GetOrLoad` collapses concurrent misses via singleflight. Hot-path `Get` is zero-alloc. Full API in spec 0033. |
 
-Each leaf at v0 has only `doc.go` declaring the package and its charter.
+Each leaf at v0 has only `doc.go` declaring the package and its charter, except `cache` which lands with full implementation per spec 0033.
 
 ## API
 
@@ -1017,7 +1042,7 @@ func main() {
 
 Spec 0002's test matrix consists of three layers:
 
-1. **Per-package matrices**: Exhaustive matrices for all 14 v0 packages are maintained by Lynx in `specs/test-matrices/`. See the README there for scope, file layout, and mutability rules.
+1. **Per-package matrices**: Exhaustive matrices for all 15 v0 packages are maintained by Lynx in `specs/test-matrices/`. See the README there for scope, file layout, and mutability rules.
 2. **Cross-cutting framework-level tests**: The rows in the table below are framework-shape-specific :  they verify invariants that no single package can verify alone.
 3. **Cross-package integration tests**: See §25.9 of the plan; 8 scenarios exercising the full composition story.
 
@@ -1039,7 +1064,8 @@ Spec 0002's test matrix consists of three layers:
 | `mock/`                | leaf   | 11         | ~80                |
 | `httpmock/`            | leaf   | 13         | ~80                |
 | `httpc/`               | leaf   | 12         | ~100               |
-| **Total**              |        | **~171**   | **~1480+**         |
+| `cache/`               | leaf   | 7          | ~30                |
+| **Total**              |        | **~178**   | **~1510+**         |
 
 Source: `specs/test-matrices/README.md`.
 
@@ -1056,7 +1082,7 @@ Source: `specs/test-matrices/README.md`.
 | Layering enforcement F5           | Import graph                                                  | No tier-2 imports another tier-2                                              | `internal/laytest/layering_test.go`          |
 | Layering enforcement F6           | Import graph                                                  | `internal/sigh` does not import `cli/`                                        | `internal/laytest/layering_test.go`          |
 | Library error register            | Every exported `*Error` type and sentinel in every package    | `Error()` matches `^[a-z][^.]*$`                                              | `errfmt_test.go` (Lynx-owned)                |
-| Every package has doc.go          | Module file tree                                              | Each of 14 packages has exactly one `doc.go`                                  | `internal/laytest/doccheck_test.go`          |
+| Every package has doc.go          | Module file tree                                              | Each of 15 packages has exactly one `doc.go`                                  | `internal/laytest/doccheck_test.go`          |
 | Zero direct application-code deps | `go.mod`                                                      | Only `golang.org/x/tools`, `golang.org/x/sys`, `go.opentelemetry.io/otel` set | `mod_hygiene_test.go` + CI `mod-hygiene` job |
 | Toolchain pin                     | `go.mod` toolchain directive                                  | Matches `go1.26.0`                                                            | CI `toolchain-pin-check` job                 |
 | `cmd/mongoose/` absent            | Module file tree                                              | Directory does not exist                                                      | `internal/laytest/layout_test.go`            |
@@ -1287,7 +1313,7 @@ The spec is verified when all of the following hold:
 2. `go build ./...` succeeds; every `doc.go` declares a valid package.
 3. `go vet ./...`, `gofmt -l .`, `staticcheck ./...` all clean.
 4. Layering test `internal/laytest/layering_test.go` passes (F1–F7 + F3a/F3b/F3c).
-5. Every one of the 14 package directories contains exactly one `doc.go`.
+5. Every one of the 15 package directories contains exactly one `doc.go`.
 6. `govulncheck -mode=source ./...` clean.
 7. `go-licenses check ./...` clean.
 8. CI workflow file (`.github/workflows/ci.yml`) parses with `actionlint`.

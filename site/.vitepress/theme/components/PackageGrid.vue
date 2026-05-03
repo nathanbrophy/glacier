@@ -1,5 +1,5 @@
 <!--
-  PackageGrid - the 14-package suite rendered as three tier-grouped grids.
+  PackageGrid - the 15-package suite rendered as three tier-grouped grids.
   Used on / and /features.
 -->
 <script setup lang="ts">

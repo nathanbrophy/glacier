@@ -8,6 +8,7 @@ import (
 	"errors"
 	"go/parser"
 	"go/token"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -18,6 +19,7 @@ import (
 	"github.com/nathanbrophy/glacier/assert"
 	"github.com/nathanbrophy/glacier/cache"
 	"github.com/nathanbrophy/glacier/cmd/glacier/internal/ghreleases"
+	"github.com/nathanbrophy/glacier/log"
 	"github.com/nathanbrophy/glacier/term"
 )
 
@@ -140,6 +142,58 @@ func TestVerbosityMutualExclusion(t *testing.T) {
 			assert.Error(t, err)
 			var ec *exitCodeError
 			assert.True(t, errors.As(err, &ec), "expected exitCodeError")
+			assert.Equal(t, exitUsage, ec.ExitCode())
+		})
+	}
+}
+
+// --- ApplyRoot wires global flags to log level and color ---
+
+// TestApplyRootSetsLogLevel verifies that GlacierCmd.ApplyRoot, the cli
+// package's RootApplier hook, updates the package-level dynamic level var
+// according to the verbosity ladder. Without this wiring, the persistent
+// --verbose / --quiet / --very-verbose flags would be parsed but inert.
+func TestApplyRootSetsLogLevel(t *testing.T) {
+	rows := []struct {
+		name   string
+		cmd    GlacierCmd
+		want   slog.Level
+		seedTo slog.Level
+	}{
+		{"very_verbose_sets_trace", GlacierCmd{VeryVerbose: true}, log.LevelTrace, slog.LevelWarn},
+		{"verbose_sets_debug", GlacierCmd{Verbose: true}, slog.LevelDebug, slog.LevelWarn},
+		{"quiet_sets_warn", GlacierCmd{Quiet: true}, slog.LevelWarn, slog.LevelDebug},
+		{"no_flags_keeps_seed", GlacierCmd{}, slog.LevelInfo, slog.LevelInfo},
+	}
+	for _, tc := range rows {
+		t.Run(tc.name, func(t *testing.T) {
+			log.SetDefaultLevel(tc.seedTo)
+			err := tc.cmd.ApplyRoot(context.Background())
+			assert.NoError(t, err)
+			assert.Equal(t, tc.want, log.DefaultLevel())
+		})
+	}
+}
+
+// TestApplyRootEnforcesMutualExclusion verifies that combining --quiet with
+// --verbose / --very-verbose produces an exitUsage error from ApplyRoot,
+// matching the spec D-S31 mutual-exclusion contract. ApplyRoot is the
+// runtime hook the cli package calls; the error must surface from there
+// (not just validateVerbosity, which is a private helper).
+func TestApplyRootEnforcesMutualExclusion(t *testing.T) {
+	rows := []struct {
+		name string
+		cmd  GlacierCmd
+	}{
+		{"quiet_verbose", GlacierCmd{Quiet: true, Verbose: true}},
+		{"quiet_very_verbose", GlacierCmd{Quiet: true, VeryVerbose: true}},
+	}
+	for _, tc := range rows {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.cmd.ApplyRoot(context.Background())
+			assert.Error(t, err)
+			var ec *exitCodeError
+			assert.True(t, errors.As(err, &ec))
 			assert.Equal(t, exitUsage, ec.ExitCode())
 		})
 	}
