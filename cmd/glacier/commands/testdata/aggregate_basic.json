@@ -1,0 +1,23 @@
+{
+  "action": "glacier-summary",
+  "packages": 2,
+  "pass": 5,
+  "fail": 1,
+  "skip": 1,
+  "coverage": 0.85,
+  "wall_seconds": 10,
+  "slowest": [
+    {
+      "package": "a",
+      "test": "TestSlow",
+      "elapsed": 2
+    }
+  ],
+  "failures": [
+    {
+      "package": "b",
+      "test": "TestFail",
+      "output": "nope\n"
+    }
+  ]
+}

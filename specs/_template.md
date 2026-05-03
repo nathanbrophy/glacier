@@ -67,12 +67,30 @@ docs-extract:                      # which sections Magpie pulls into public doc
   Magpie extracts signatures + doc comments verbatim to the API reference page.
 -->
 
+## Commands
+
+<!--
+  **Public.** OPTIONAL section, permitted in any spec that defines a CLI command set.
+  One `### <verb>` sub-section per command. Magpie's `magpie:extract` directive supports
+  `subsection=<verb>` against this anchor so a single spec can feed many command pages.
+  Delete this section if not applicable. Added by spec 0032 (Amendment C).
+-->
+
 ## Examples
 
 <!--
   **Public.** Runnable Go examples in fenced ```go blocks.
   Each example is self-contained and `go test ./...`-compatible (valid Example functions).
   Magpie transcludes verbatim into tutorials.
+-->
+
+## Documentation Surface
+
+<!--
+  **Public.** OPTIONAL section, permitted in any spec that owns a slice of public-facing
+  documentation. Lists the routes / pages / extraction directives this spec provides to
+  the public site. Magpie's extractor recognizes this as a PUBLIC section. Delete this
+  section if not applicable. Added by spec 0032 (Amendment C).
 -->
 
 ## Test Matrix

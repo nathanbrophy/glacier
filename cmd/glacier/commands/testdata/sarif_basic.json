@@ -1,0 +1,55 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "glacier-test",
+          "version": "0.0.0",
+          "rules": [
+            {
+              "id": "test-failure",
+              "name": "TestFailure",
+              "shortDescription": {
+                "text": "A Go test function failed."
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "test-failure",
+          "message": {
+            "text": "mypkg/sub/TestBad failed"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "sub/"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "test-failure",
+          "message": {
+            "text": "mypkg/other/TestAlsoBad failed"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "other/"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

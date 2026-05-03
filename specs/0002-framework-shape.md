@@ -1160,6 +1160,15 @@ Glacier commits to byte-for-byte reproducibility for tagged releases under: `CGO
 
 The repo-wide "SDK → framework" prose sweep (§10 of the plan) that touches `CLAUDE.md`, `README.md`, `specs/0001-brand-identity.md`, `specs/0000-spec-process.md`, `specs/README.md`, and `.claude/agents/otter.md` is a casual prose edit riding in the same implementation commit as this spec. It is not a tracked migration because the "SDK" phrasing was informal; the packages-first reframe is the *new* contract, not a change to an old one.
 
+### Amendment log: inbound from spec 0032 (SDK)
+
+Spec 0032 (Glacier SDK CLI binary; accepted 2026-05-03) extends the spec template's stable-anchor set with two new optional top-level anchors that authors of future component specs may adopt where useful:
+
+- `## Commands` (positioned between `## API` and `## Examples`): permitted in any spec that defines a CLI command set. Hosts one `### <verb>` sub-section per command. Magpie's `magpie:extract` directive supports `subsection=<verb>` against this anchor (see spec 0031 §API, amended in lockstep).
+- `## Documentation Surface` (positioned between `## Examples` and `## Test Matrix`): permitted in any spec that owns a slice of public-facing documentation. Lists the routes / pages / extraction directives the spec provides to the public site.
+
+Both anchors are optional, not required. Existing accepted specs are not required to add them. Magpie's extractor recognizes both as PUBLIC sections by default; each spec's `docs-extract` frontmatter explicitly lists which to extract. The placeholders are committed in `specs/_template.md` for future authors. Tracked in spec 0032 §Migration & Compatibility (Amendment C) and D-S5.
+
 ## FAQ
 
 <!-- **Public.** Anticipated user questions with answers. Magpie extracts to the public docs FAQ. -->

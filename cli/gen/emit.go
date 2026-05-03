@@ -34,10 +34,31 @@ func emitRegistrations(w io.Writer, pkgName string, commands []DiscoveredCommand
 
 	b.WriteString("func init() {\n")
 
-	// Sort commands for deterministic output.
+	// Find the root command's name so we can suppress WithParent for its
+	// direct children. Commands marked parent=<rootName> are registered at
+	// the top level of the CLI (their path in the commands map is just their
+	// own name, not "<rootName>.<name>"), because os.Args[1:] never contains
+	// the binary name.
+	rootName := ""
+	for _, cmd := range commands {
+		if cmd.ParseResult.IsRoot {
+			rootName = cmd.ParseResult.Cmd.Name
+			break
+		}
+	}
+
+	// Sort commands for deterministic, parent-before-child output.
+	// Alphabetical TypeName order is sufficient: the root and all flat-path
+	// commands (parent omitted or parent==rootName) have no dependency on
+	// each other, and the "new" family sorts "NewCmd" < "NewCommandCmd" etc.
 	sorted := make([]DiscoveredCommand, len(commands))
 	copy(sorted, commands)
 	sort.Slice(sorted, func(i, j int) bool {
+		pi, pj := sorted[i].ParseResult, sorted[j].ParseResult
+		// Root always first.
+		if pi.IsRoot != pj.IsRoot {
+			return pi.IsRoot
+		}
 		return sorted[i].TypeName < sorted[j].TypeName
 	})
 
@@ -66,7 +87,11 @@ func emitRegistrations(w io.Writer, pkgName string, commands []DiscoveredCommand
 		if pr.Cmd.Name != "" {
 			opts = append(opts, "cli.WithName("+strconv.Quote(pr.Cmd.Name)+")")
 		}
-		if pr.Cmd.Parent != "" {
+		// Emit WithParent only when the parent is NOT the root. Direct children
+		// of the root resolve from os.Args[1:] as flat paths; passing
+		// WithParent(rootName) would create a "root.child" path that never
+		// matches the dispatch table.
+		if pr.Cmd.Parent != "" && pr.Cmd.Parent != rootName {
 			opts = append(opts, "cli.WithParent("+strconv.Quote(pr.Cmd.Parent)+")")
 		}
 		if pr.Cmd.Alias != "" {

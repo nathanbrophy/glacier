@@ -1,0 +1,18 @@
+package main
+
+import "context"
+
+// ServeCmd is the example subcommand. Replace with your own logic.
+//
+// +glacier:command name=serve parent={{.AppName}}
+type ServeCmd struct {
+	// Port is the TCP port to listen on.
+	//
+	// +glacier:default 8080
+	Port int
+}
+
+// Run implements cli.Command.
+func (c *ServeCmd) Run(_ context.Context) error {
+	return nil
+}
