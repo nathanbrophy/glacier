@@ -5,7 +5,6 @@ package term
 import (
 	"os"
 	"strings"
-	"unicode/utf8"
 )
 
 // cornerSet describes the eight characters used to draw a box border.
@@ -110,7 +109,8 @@ func Box(text string, opts ...BoxOption) string {
 		termW = 80
 	}
 
-	// Pre-wrap content so no content line exceeds termW - 2 (border) - padding.
+	// Wrap budget: cap content at termW minus borders + padding so very wide
+	// content stays within the terminal. visibleWidth ignores ANSI escapes.
 	innerW := termW - 2 - cfg.padding[3] - cfg.padding[1]
 	if innerW < 1 {
 		innerW = 1
@@ -118,11 +118,22 @@ func Box(text string, opts ...BoxOption) string {
 	wrapped := Wrap(text, innerW)
 	lines := strings.Split(wrapped, "\n")
 
-	// Compute content width.
+	// Compute content width as the longest VISIBLE line. ANSI color codes
+	// are not counted: a colored "hello" string contains many escape bytes
+	// but renders as 5 columns. Without this, a single colored line would
+	// stretch the box to 30+ columns and leave a huge dead area to the right.
 	contentW := 0
 	for _, l := range lines {
-		if w := utf8.RuneCountInString(l); w > contentW {
+		if w := visibleWidth(l); w > contentW {
 			contentW = w
+		}
+	}
+	// Also size to fit the title (with its " title " padding) so a long
+	// title is not truncated by content that happens to be shorter.
+	if cfg.title != "" {
+		titleW := visibleWidth(cfg.title) + 4 // "─ title ─"
+		if titleW > contentW+cfg.padding[3]+cfg.padding[1] {
+			contentW = titleW - cfg.padding[3] - cfg.padding[1]
 		}
 	}
 	if contentW < 1 {
@@ -162,8 +173,8 @@ func Box(text string, opts ...BoxOption) string {
 			}
 		}
 		titStr := string(titRunes)
-		leftFill := 1                                                        // one "─" before space
-		rightFill := topFill - leftFill - 2 - utf8.RuneCountInString(titStr) // remaining
+		leftFill := 1                                          // one "─" before space
+		rightFill := topFill - leftFill - 2 - visibleWidth(titStr) // remaining; visible width excludes ANSI
 		if rightFill < 0 {
 			rightFill = 0
 		}
@@ -193,8 +204,15 @@ func Box(text string, opts ...BoxOption) string {
 	padL := strings.Repeat(" ", cfg.padding[3])
 	padR := strings.Repeat(" ", cfg.padding[1])
 	for _, l := range lines {
-		lw := utf8.RuneCountInString(l)
-		trailing := strings.Repeat(" ", contentW-lw)
+		// Use visibleWidth (strips ANSI) so colored content lines pad to
+		// the same visible column as plain ones. Without this, padding
+		// math is off by the byte length of the escape sequences.
+		lw := visibleWidth(l)
+		fill := contentW - lw
+		if fill < 0 {
+			fill = 0
+		}
+		trailing := strings.Repeat(" ", fill)
 		sb.WriteString(border(cfg.corners.V))
 		sb.WriteString(padL)
 		sb.WriteString(l)
@@ -218,4 +236,56 @@ func Box(text string, opts ...BoxOption) string {
 	sb.WriteString(border(cfg.corners.BR))
 
 	return sb.String()
+}
+
+// visibleWidth returns the rune count of s after stripping ANSI escape
+// sequences. The Box layout uses this to size and pad lines correctly even
+// when content is colored: a 5-character colored "hello" is 5 visible
+// columns even though it carries 11+ bytes of ESC[...m sequences.
+//
+// Recognized escapes:
+//   - CSI sequences "\x1b[...<final>" where final is in [@-~]
+//   - OSC sequences "\x1b]...BEL" or "\x1b]...\x1b\\"
+//   - Two-byte ESC sequences "\x1bX"
+//
+// Tabs are counted as 1 column (Box callers should expand tabs upstream).
+func visibleWidth(s string) int {
+	width := 0
+	runes := []rune(s)
+	for i := 0; i < len(runes); i++ {
+		r := runes[i]
+		if r != '\x1b' {
+			width++
+			continue
+		}
+		// Escape sequence: scan until terminating byte.
+		i++
+		if i >= len(runes) {
+			break
+		}
+		switch runes[i] {
+		case '[':
+			// CSI: skip until final byte in 0x40..0x7E
+			for i++; i < len(runes); i++ {
+				c := runes[i]
+				if c >= 0x40 && c <= 0x7E {
+					break
+				}
+			}
+		case ']':
+			// OSC: skip until BEL (0x07) or ESC \
+			for i++; i < len(runes); i++ {
+				if runes[i] == 0x07 {
+					break
+				}
+				if runes[i] == '\x1b' && i+1 < len(runes) && runes[i+1] == '\\' {
+					i++
+					break
+				}
+			}
+		default:
+			// Two-byte escape: ESC + one char already consumed.
+		}
+	}
+	return width
 }
