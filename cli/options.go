@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"regexp"
+	"strings"
 	"unicode"
 	"unicode/utf8"
 
@@ -116,6 +117,36 @@ func WithAlias(alias string) option.Option[regConfig] {
 func WithRoot() option.Option[regConfig] {
 	return option.OptionFunc[regConfig](func(c *regConfig) error {
 		c.root = true
+		return nil
+	})
+}
+
+// WithSummary sets the one-line description shown next to the command in
+// the top-level help listing. Newlines are converted to spaces.
+func WithSummary(summary string) option.Option[regConfig] {
+	return option.OptionFunc[regConfig](func(c *regConfig) error {
+		c.summary = strings.ReplaceAll(summary, "\n", " ")
+		return nil
+	})
+}
+
+// WithCategory groups commands in the top-level help. Conventional values
+// for the SDK are "create", "develop", "inspect", "utility"; any short
+// lowercase string works. Unknown categories are still accepted; help
+// renders them in registration order at the bottom of the listing.
+func WithCategory(category string) option.Option[regConfig] {
+	return option.OptionFunc[regConfig](func(c *regConfig) error {
+		c.category = category
+		return nil
+	})
+}
+
+// WithLongDescription sets the multi-line description rendered below the
+// synopsis on a per-command help page (e.g. `glacier vibe --help`).
+// Use plain text; ANSI codes are stripped on non-color writers.
+func WithLongDescription(desc string) option.Option[regConfig] {
+	return option.OptionFunc[regConfig](func(c *regConfig) error {
+		c.longDesc = desc
 		return nil
 	})
 }

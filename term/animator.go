@@ -3,6 +3,7 @@
 package term
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -345,15 +346,20 @@ func (a *Animator) Run(ctx context.Context) (runErr error) {
 			copy(snapshot, a.entries)
 			a.animMu.Unlock()
 
-			// Erase previous frame.
+			// Render each animation into a single buffer first; one Write at the
+			// end avoids flicker that comes from the terminal observing partial
+			// frames between the erase and the redraw. (Fixes spec 0032 D-S55
+			// flicker user complaint.)
+			var frame bytes.Buffer
 			if lastLines > 0 {
-				fmt.Fprint(w, strings.Repeat("\x1b[1A\x1b[2K", lastLines))
+				// Erase previous frame.
+				fmt.Fprint(&frame, strings.Repeat("\x1b[1A\x1b[2K", lastLines))
 			}
 
-			// Flush buffered log records.
+			// Flush buffered log records BEFORE the new frame: log lines
+			// scroll above the animation, the frame redraws below.
 			a.flushRecords(ih)
 
-			// Render each animation.
 			totalLines := 0
 			allDone := true
 			var surviving []*animEntry
@@ -371,7 +377,7 @@ func (a *Animator) Run(ctx context.Context) (runErr error) {
 					return e.anim.Render()
 				}()
 				for _, l := range lines {
-					fmt.Fprintln(w, l)
+					fmt.Fprintln(&frame, l)
 					totalLines++
 				}
 				if !done {
@@ -379,6 +385,8 @@ func (a *Animator) Run(ctx context.Context) (runErr error) {
 					surviving = append(surviving, e)
 				}
 			}
+			// Single atomic Write of the full frame.
+			_, _ = w.Write(frame.Bytes())
 			lastLines = totalLines
 
 			// Remove finished animations.

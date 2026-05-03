@@ -123,7 +123,8 @@ func (pkgDiscoverer) Discover(pattern, modulePrefix string, logger *slog.Logger)
 			// Document via spec amendment if a real use case appears.
 			if named.TypeParams() != nil && named.TypeParams().Len() > 0 {
 				if logger != nil {
-					logger.Warn("mockgen: skipping generic interface (type parameters not supported)",
+					// Debug-level: this is an expected v0 limitation, not a problem.
+					logger.Debug("mockgen: skipping generic interface (type parameters not supported)",
 						"type", name, "pkg", pkg.PkgPath)
 				}
 				continue

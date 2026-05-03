@@ -40,6 +40,16 @@ type regConfig struct {
 	required   map[string]struct{}
 	choices    map[string][]string
 	validate   map[string]func(string) error
+
+	// summary is a one-line description of the command shown in the
+	// top-level help listing. Empty when WithSummary was not provided.
+	summary string
+	// category groups commands in the top-level help (e.g. "create", "develop",
+	// "inspect", "utility"). Empty falls back to "other".
+	category string
+	// longDesc is a multi-line description shown below the synopsis on
+	// per-command help pages. Empty when WithLongDescription was not provided.
+	longDesc string
 }
 
 // entry is an internal command registration record.
@@ -335,27 +345,49 @@ func (a *App) Main() {
 	os.Exit(1)
 }
 
-// Help writes the usage page for the command identified by path to the App's
-// configured stdout writer. If path is empty, the root command's usage is written.
-// Returns nil if the command exists, *ErrUnknownCommand otherwise.
-func (a *App) Help(path string) error {
-	a.mu.RLock()
-	defer a.mu.RUnlock()
-
-	if path == "" {
-		path = a.rootPath
-	}
-
+// Annotate applies help-related options (WithSummary, WithCategory,
+// WithLongDescription) to an already-registered command. Useful when the
+// generator (cligen) does not yet emit these options at registration time;
+// the SDK can attach metadata in a separate init() call.
+//
+// Annotate reads only the help fields (summary, category, longDesc) from
+// the supplied options; identity fields (name, parent, root) cannot be
+// changed post-registration.
+//
+// Returns *ErrUnknownCommand if path is not registered, or any error from
+// option.Apply.
+func (a *App) Annotate(path string, opts ...option.Option[regConfig]) error {
+	a.mu.Lock()
+	defer a.mu.Unlock()
 	e, ok := a.commands[path]
 	if !ok {
 		return &ErrUnknownCommand{Path: path}
 	}
-
-	fs, _ := buildFlagSet(e.cmd, e.cfg, e.path)
-	fmt.Fprintf(a.cfg.stdout, "Usage: %s [flags]\n\n", e.path)
-	fs.SetOutput(a.cfg.stdout)
-	fs.PrintDefaults()
+	delta, err := option.Apply(opts)
+	if err != nil {
+		return err
+	}
+	if delta.summary != "" {
+		e.cfg.summary = delta.summary
+	}
+	if delta.category != "" {
+		e.cfg.category = delta.category
+	}
+	if delta.longDesc != "" {
+		e.cfg.longDesc = delta.longDesc
+	}
 	return nil
+}
+
+// Help writes the usage page for the command identified by path to the App's
+// configured stdout writer. If path is empty, the root command's usage is written.
+// Returns nil if the command exists, *ErrUnknownCommand otherwise.
+//
+// The rendering is delegated to renderHelp in help.go, which produces a
+// banner + grouped subcommands + global flags + footer page for the root
+// command and a synopsis + flags + see-also page for each subcommand.
+func (a *App) Help(path string) error {
+	return a.renderHelp(a.cfg.stdout, path)
 }
 
 // Version writes the version string to stdout.

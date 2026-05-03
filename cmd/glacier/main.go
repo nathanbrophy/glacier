@@ -41,10 +41,18 @@ func main() {
 // configureLogging sets slog.Default to a Glacier-style handler and pins the
 // process logger via the log package's SetDefault. Subsequent calls to
 // slog.Default()/log.Default() return the configured logger.
+//
+// Default level is Warn (per spec 0032 D-S31): INFO records from generators
+// and other internals are suppressed unless --verbose / GLACIER_DEBUG bumps
+// the level. This keeps the user-visible output dominated by report.Status
+// kaomoji lines, with structured logs only for warnings and errors.
 func configureLogging() {
-	level := slog.LevelInfo
-	if os.Getenv("GLACIER_DEBUG") != "" {
+	level := slog.LevelWarn
+	switch {
+	case os.Getenv("GLACIER_DEBUG") != "":
 		level = slog.LevelDebug
+	case os.Getenv("GLACIER_VERBOSE") != "":
+		level = slog.LevelInfo
 	}
 	handler := log.NewHandler(os.Stderr, log.WithLevel(level))
 	logger := slog.New(handler)
