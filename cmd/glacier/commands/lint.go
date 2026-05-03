@@ -181,8 +181,14 @@ func (c *LintCmd) Run(ctx context.Context) error {
 	// 4. Glacier-specific lints via the Linter interface.
 	cacheUpdated := false
 	_ = filepath.WalkDir(".", func(path string, d os.DirEntry, walkErr error) error {
-		if walkErr != nil || d.IsDir() {
+		if walkErr != nil {
 			return walkErr
+		}
+		if d.IsDir() {
+			if skipDir(path) {
+				return filepath.SkipDir
+			}
+			return nil
 		}
 		if !strings.HasSuffix(path, ".go") {
 			return nil
@@ -310,6 +316,26 @@ func sha256File(src []byte) string {
 	return hex.EncodeToString(sum[:])
 }
 
+// skipDir reports whether path is a directory that should not be linted.
+// It excludes VCS state, build artifacts, vendored deps, and Claude
+// worktree scratch trees so the linter walks only first-class source.
+//
+// The exclusions matter on two axes: correctness (worktree copies of the
+// same files would double-count every finding) and robustness (staticcheck
+// has historically panicked in its IR builder when fed partial or
+// experimental code from worktrees).
+func skipDir(path string) bool {
+	switch filepath.Base(path) {
+	case ".git", ".glacier", ".claude", "node_modules", "vendor", "dist":
+		return true
+	}
+	p := filepath.ToSlash(path)
+	if strings.HasPrefix(p, ".claude/") || strings.Contains(p, "/.claude/") {
+		return true
+	}
+	return false
+}
+
 // loadCache reads .glacier/lint-cache.json into cache, ignoring any read error.
 func loadCache(repoRoot string, cache lintCache) {
 	path := filepath.Join(repoRoot, ".glacier", "lint-cache.json")
@@ -357,8 +383,14 @@ func fixMarkers(src []byte) ([]byte, bool) {
 // Returns findings for files that were not (or could not be) fixed.
 func runGofmtCheck(_ context.Context, fix bool) (findings []Finding, fixed []string, err error) {
 	walkErr := filepath.WalkDir(".", func(path string, d os.DirEntry, wErr error) error {
-		if wErr != nil || d.IsDir() {
+		if wErr != nil {
 			return wErr
+		}
+		if d.IsDir() {
+			if skipDir(path) {
+				return filepath.SkipDir
+			}
+			return nil
 		}
 		if !strings.HasSuffix(path, ".go") {
 			return nil
@@ -423,29 +455,104 @@ func runGoVet(ctx context.Context, patterns []string) ([]Finding, error) {
 	return findings, nil
 }
 
+// sanitizeStaticcheckPatterns expands "./..." into a per-top-level-dir set
+// with skipDir directories removed. Other patterns pass through unchanged.
+// If no top-level dirs survive the filter, an empty slice is returned and
+// the caller should treat that as "nothing to check".
+func sanitizeStaticcheckPatterns(patterns []string) ([]string, error) {
+	hasWildcard := false
+	other := make([]string, 0, len(patterns))
+	for _, p := range patterns {
+		if p == "./..." {
+			hasWildcard = true
+			continue
+		}
+		other = append(other, p)
+	}
+	if !hasWildcard {
+		return other, nil
+	}
+	entries, err := os.ReadDir(".")
+	if err != nil {
+		return nil, fmt.Errorf("staticcheck: read repo root: %w", err)
+	}
+	expanded := other
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+		if skipDir(e.Name()) {
+			continue
+		}
+		expanded = append(expanded, "./"+e.Name()+"/...")
+	}
+	return expanded, nil
+}
+
 // runStaticcheck runs staticcheck and parses its output.
+//
+// If patterns contains the wildcard "./...", that pattern is expanded into a
+// per-top-level-dir set with skipDir directories removed. This prevents
+// staticcheck from analysing files under .claude/worktrees, vendor, etc.,
+// which would otherwise duplicate findings and (historically) trigger an
+// IR-builder nil-pointer crash inside honnef.co/go/tools.
 func runStaticcheck(ctx context.Context, patterns []string) ([]Finding, error) {
-	args := append([]string{}, patterns...)
-	cmd := exec.CommandContext(ctx, "staticcheck", args...)
-	cmd.Env = os.Environ()
-	out, err := cmd.CombinedOutput()
-	if err != nil && len(out) == 0 {
+	expanded, err := sanitizeStaticcheckPatterns(patterns)
+	if err != nil {
 		return nil, err
 	}
+	cmd := exec.CommandContext(ctx, "staticcheck", expanded...)
+	cmd.Env = os.Environ()
+	out, scErr := cmd.CombinedOutput()
+	if scErr != nil && len(out) == 0 {
+		return nil, scErr
+	}
+	return parseStaticcheckOutput(out, scErr), nil
+}
+
+// staticcheckFindingRe matches a real staticcheck diagnostic of the form
+// "path:line:col: rule message". Anything else (panic stack frames,
+// "internal error" lines, "(compile)" prefix lines) is treated as tool
+// noise and folded into a single summary finding.
+var staticcheckFindingRe = regexp.MustCompile(`^[^:\s][^:]*:\d+:\d+:`)
+
+// parseStaticcheckOutput converts staticcheck's stdout/stderr into Finding
+// values. Lines that look like real diagnostics become individual findings.
+// If the tool produced output that does not look like a diagnostic (panic
+// trace, version-mismatch error), a single summary Finding is emitted with
+// a pointer to the cause so users see one signal, not 17 stack frames.
+func parseStaticcheckOutput(out []byte, runErr error) []Finding {
 	var findings []Finding
+	var noise []string
 	scanner := bufio.NewScanner(bytes.NewReader(out))
 	for scanner.Scan() {
 		line := scanner.Text()
 		if line == "" {
 			continue
 		}
+		if staticcheckFindingRe.MatchString(line) {
+			findings = append(findings, Finding{
+				Rule:     "staticcheck",
+				Severity: "warning",
+				Message:  line,
+			})
+			continue
+		}
+		noise = append(noise, line)
+	}
+	if len(findings) == 0 && (len(noise) > 0 || runErr != nil) {
+		summary := "staticcheck did not produce diagnostics"
+		if len(noise) > 0 {
+			summary = noise[0]
+		}
 		findings = append(findings, Finding{
 			Rule:     "staticcheck",
 			Severity: "warning",
-			Message:  line,
+			Message:  "tool failure: " + summary,
+			FixHint:  "upgrade staticcheck (`go install honnef.co/go/tools/cmd/staticcheck@latest`) or remove it from PATH",
 		})
 	}
-	return findings, nil
+	return findings
 }
 
 // runNonGoEmDash checks .md and .txt files for U+2014 and optionally fixes them.
@@ -590,7 +697,19 @@ func (l *panicInLibraryLinter) Name() string { return "panic-in-library" }
 // Severity returns the default severity for this rule.
 func (l *panicInLibraryLinter) Severity() Severity { return SeverityError }
 
-// Check scans src for panic( in library files.
+// Check parses src and reports calls to the builtin panic in library code.
+//
+// Detection is AST-based so the rule does not match the substring "panic("
+// inside comments or string literals. Files in cmd/, _test.go files, and
+// generated files (zz_generated_*.go) are exempt.
+//
+// A panic call is suppressed when any of the following carries a
+// //glacier:nolint=panic-in-library directive: a same-line trailing
+// comment, the comment block on the immediately preceding line, or the
+// doc comment of the enclosing func declaration. This lets canonical
+// programmer-error panics (assert.Must*, conf.Register duplicates,
+// concur.Group post-shutdown calls) opt out with a justification rather
+// than be refactored to error returns they cannot meaningfully produce.
 func (l *panicInLibraryLinter) Check(file string, src []byte) []Finding {
 	if !strings.HasSuffix(file, ".go") {
 		return nil
@@ -602,23 +721,98 @@ func (l *panicInLibraryLinter) Check(file string, src []byte) []Finding {
 	if strings.HasPrefix(normalized, "cmd/") {
 		return nil
 	}
+	base := filepath.Base(file)
+	if strings.HasPrefix(base, "zz_generated_") {
+		return nil
+	}
+
+	fset := token.NewFileSet()
+	f, err := parser.ParseFile(fset, file, src, parser.ParseComments)
+	if err != nil {
+		return nil
+	}
+
 	var findings []Finding
-	scanner := bufio.NewScanner(bytes.NewReader(src))
-	lineNum := 0
-	for scanner.Scan() {
-		lineNum++
-		if bytes.Contains(scanner.Bytes(), []byte("panic(")) {
+	for _, decl := range f.Decls {
+		fn, ok := decl.(*ast.FuncDecl)
+		if !ok || fn.Body == nil {
+			continue
+		}
+		fnDocSuppressed := commentGroupSuppresses(fn.Doc, l.Name())
+		ast.Inspect(fn.Body, func(n ast.Node) bool {
+			call, ok := n.(*ast.CallExpr)
+			if !ok {
+				return true
+			}
+			id, ok := call.Fun.(*ast.Ident)
+			if !ok || id.Name != "panic" {
+				return true
+			}
+			pos := fset.Position(call.Pos())
+			if fnDocSuppressed || nolintAt(f, fset, pos.Line, l.Name()) {
+				return true
+			}
 			findings = append(findings, Finding{
 				Rule:     l.Name(),
 				File:     file,
-				Line:     lineNum,
+				Line:     pos.Line,
 				Severity: l.Severity().String(),
 				Message:  "panic( in library code; use error returns instead",
-				FixHint:  "replace panic with an error return",
+				FixHint:  "replace panic with an error return, or annotate //glacier:nolint=panic-in-library with a justification",
 			})
-		}
+			return true
+		})
 	}
 	return findings
+}
+
+// nolintAt reports whether the line at lineNum (or the comment block on the
+// line immediately above) carries a //glacier:nolint=<rule> directive.
+func nolintAt(f *ast.File, fset *token.FileSet, lineNum int, rule string) bool {
+	for _, cg := range f.Comments {
+		for _, c := range cg.List {
+			cl := fset.Position(c.Pos()).Line
+			if cl == lineNum || cl == lineNum-1 {
+				if commentTextSuppresses(c.Text, rule) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+// commentGroupSuppresses reports whether any comment in cg carries
+// //glacier:nolint=<rule>.
+func commentGroupSuppresses(cg *ast.CommentGroup, rule string) bool {
+	if cg == nil {
+		return false
+	}
+	for _, c := range cg.List {
+		if commentTextSuppresses(c.Text, rule) {
+			return true
+		}
+	}
+	return false
+}
+
+// commentTextSuppresses reports whether s contains a glacier:nolint=<rule>
+// directive token. The token may appear anywhere in the comment so a
+// trailing free-form justification is allowed.
+func commentTextSuppresses(s, rule string) bool {
+	idx := strings.Index(s, "glacier:nolint=")
+	if idx < 0 {
+		return false
+	}
+	rest := s[idx+len("glacier:nolint="):]
+	for _, tok := range strings.FieldsFunc(rest, func(r rune) bool {
+		return r == ',' || r == ' ' || r == '\t'
+	}) {
+		if tok == rule {
+			return true
+		}
+	}
+	return false
 }
 
 // exportedDocCommentLinter warns when an exported symbol lacks a doc comment
@@ -760,7 +954,14 @@ func (l *packageExampleTestLinter) Name() string { return "package-example-test"
 func (l *packageExampleTestLinter) Severity() Severity { return SeverityWarning }
 
 // Check inspects the directory containing file for Example* functions.
-// It only fires on non-internal, non-cmd, non-test Go files.
+//
+// It fires on consumer-facing library packages only. Skipped:
+//   - internal packages (/internal/, internal/)
+//   - cmd packages (/cmd/, cmd/)
+//   - testdata directories (/testdata/, testdata/)
+//   - codegen example fixtures under docs/examples/
+//   - package main (entry-point packages have no exported surface to exemplify)
+//   - the integration-test "tests" package (consumed via go test, not import)
 func (l *packageExampleTestLinter) Check(file string, _ []byte) []Finding {
 	if !strings.HasSuffix(file, ".go") {
 		return nil
@@ -769,11 +970,16 @@ func (l *packageExampleTestLinter) Check(file string, _ []byte) []Finding {
 		return nil
 	}
 	normalized := filepath.ToSlash(file)
-	// Skip internal packages and cmd packages.
 	if strings.Contains(normalized, "/internal/") || strings.HasPrefix(normalized, "internal/") {
 		return nil
 	}
 	if strings.Contains(normalized, "/cmd/") || strings.HasPrefix(normalized, "cmd/") {
+		return nil
+	}
+	if strings.Contains(normalized, "/testdata/") || strings.HasPrefix(normalized, "testdata/") {
+		return nil
+	}
+	if strings.Contains(normalized, "/docs/examples/") || strings.HasPrefix(normalized, "docs/examples/") {
 		return nil
 	}
 
@@ -786,6 +992,21 @@ func (l *packageExampleTestLinter) Check(file string, _ []byte) []Finding {
 		return nil
 	}
 	l.seen[dir] = true
+
+	// Determine the package name once: used for both the main-package skip
+	// and the finding message.
+	fset := token.NewFileSet()
+	pf, parseErr := parser.ParseFile(fset, file, nil, parser.PackageClauseOnly)
+	pkgName := filepath.Base(dir)
+	if parseErr == nil && pf.Name != nil {
+		pkgName = pf.Name.Name
+	}
+	if pkgName == "main" {
+		return nil
+	}
+	if pkgName == "tests" && filepath.Base(dir) == "tests" {
+		return nil
+	}
 
 	// Check whether the directory contains any *_test.go file with an Example* func.
 	entries, err := os.ReadDir(dir)
@@ -801,25 +1022,17 @@ func (l *packageExampleTestLinter) Check(file string, _ []byte) []Finding {
 		if readErr != nil {
 			continue
 		}
-		fset := token.NewFileSet()
-		tf, parseErr := parser.ParseFile(fset, testPath, testSrc, 0)
-		if parseErr != nil {
+		tfset := token.NewFileSet()
+		tf, parseTestErr := parser.ParseFile(tfset, testPath, testSrc, 0)
+		if parseTestErr != nil {
 			continue
 		}
 		for _, decl := range tf.Decls {
 			fn, ok := decl.(*ast.FuncDecl)
 			if ok && strings.HasPrefix(fn.Name.Name, "Example") {
-				return nil // found one — package is compliant
+				return nil
 			}
 		}
-	}
-
-	// Determine the package name from the non-test file.
-	fset := token.NewFileSet()
-	f, parseErr := parser.ParseFile(fset, file, nil, parser.PackageClauseOnly)
-	pkgName := dir
-	if parseErr == nil && f.Name != nil {
-		pkgName = f.Name.Name
 	}
 
 	return []Finding{{
@@ -910,6 +1123,11 @@ func (l *libraryErrorRegisterLinter) Check(file string, src []byte) []Finding {
 				}
 				// Unquote the string value.
 				val := strings.Trim(lit.Value, `"`)
+				// Empty-string returns are nil-receiver guards (e.g.
+				// `if w == nil { return "" }`), not real error messages.
+				if val == "" {
+					continue
+				}
 				if !errorStringRe.MatchString(val) {
 					pos := fset.Position(lit.Pos())
 					findings = append(findings, Finding{

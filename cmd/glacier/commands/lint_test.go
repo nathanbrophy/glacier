@@ -102,7 +102,9 @@ func TestLintNoEmDash(t *testing.T) {
 	}
 }
 
-// TestLintPanicInLibrary verifies the panic-in-library linter detects panic( in non-cmd non-test code.
+// TestLintPanicInLibrary verifies the panic-in-library linter detects panic
+// calls in non-cmd non-test code, and that AST-based detection ignores
+// occurrences in comments and string literals.
 func TestLintPanicInLibrary(t *testing.T) {
 	t.Parallel()
 	l := &panicInLibraryLinter{}
@@ -136,6 +138,48 @@ func TestLintPanicInLibrary(t *testing.T) {
 			file:    "mylib/foo.go",
 			src:     "package mylib\nfunc f() error { return nil }\n",
 			wantHit: false,
+		},
+		{
+			name:    "panic_token_in_comment_only",
+			file:    "mylib/foo.go",
+			src:     "package mylib\n// f calls panic( on a misuse.\nfunc f() error { return nil }\n",
+			wantHit: false,
+		},
+		{
+			name:    "panic_token_in_string_literal_only",
+			file:    "mylib/foo.go",
+			src:     "package mylib\nfunc emit() string { return \"\\tpanic(err)\\n\" }\n",
+			wantHit: false,
+		},
+		{
+			name:    "skips_zz_generated",
+			file:    "mylib/zz_generated_cli.go",
+			src:     "package mylib\nfunc f() { panic(\"generated\") }\n",
+			wantHit: false,
+		},
+		{
+			name:    "nolint_directive_on_same_line",
+			file:    "mylib/foo.go",
+			src:     "package mylib\nfunc f() { panic(\"x\") //glacier:nolint=panic-in-library reason\n}\n",
+			wantHit: false,
+		},
+		{
+			name:    "nolint_directive_on_preceding_line",
+			file:    "mylib/foo.go",
+			src:     "package mylib\nfunc f() {\n\t//glacier:nolint=panic-in-library Must convention\n\tpanic(\"x\")\n}\n",
+			wantHit: false,
+		},
+		{
+			name:    "nolint_directive_in_func_doc",
+			file:    "mylib/foo.go",
+			src:     "package mylib\n// f panics on bad input.\n//\n//glacier:nolint=panic-in-library\nfunc f() { panic(\"x\") }\n",
+			wantHit: false,
+		},
+		{
+			name:    "nolint_directive_for_other_rule_does_not_suppress",
+			file:    "mylib/foo.go",
+			src:     "package mylib\nfunc f() { panic(\"x\") //glacier:nolint=other-rule\n}\n",
+			wantHit: true,
 		},
 	}
 	for _, tc := range tests {
@@ -275,6 +319,161 @@ func TestLintPackageExampleTest(t *testing.T) {
 	assert.Equal(t, 0, len(findings2))
 }
 
+// TestLintPackageExampleTestSkips verifies that the rule skips structural
+// directories (testdata, docs/examples), package main, and the integration
+// test package.
+func TestLintPackageExampleTestSkips(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name    string
+		relPath string
+		src     string
+	}{
+		{
+			name:    "skips_testdata_dir",
+			relPath: "mock/gen/testdata/x.go",
+			src:     "package mypkg\n",
+		},
+		{
+			name:    "skips_docs_examples",
+			relPath: "docs/examples/codegen/cli/simple/in.go",
+			src:     "package main\n",
+		},
+		{
+			name:    "skips_package_main",
+			relPath: "cmd_oddball/main.go",
+			src:     "package main\n",
+		},
+		{
+			name:    "skips_tests_integration_package",
+			relPath: "tests/foo.go",
+			src:     "package tests\n",
+		},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			// Cannot run subtests in parallel: they share os.Chdir state.
+			dir := t.TempDir()
+			full := filepath.Join(dir, tc.relPath)
+			if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(full, []byte(tc.src), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			old, _ := os.Getwd()
+			t.Cleanup(func() { _ = os.Chdir(old) })
+			if err := os.Chdir(dir); err != nil {
+				t.Fatal(err)
+			}
+			l := &packageExampleTestLinter{}
+			findings := l.Check(tc.relPath, []byte(tc.src))
+			assert.Equal(t, 0, len(findings))
+		})
+	}
+}
+
+// TestSkipDir verifies the directory skip helper used by every walk.
+func TestSkipDir(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		path string
+		want bool
+	}{
+		{".git", true},
+		{".glacier", true},
+		{"node_modules", true},
+		{"vendor", true},
+		{"dist", true},
+		{".claude", true},
+		{".claude/worktrees", true},
+		{".claude/worktrees/unruffled-pare-eac778", true},
+		{"some/path/.claude/scratch", true},
+		{"cli", false},
+		{"cmd/glacier/commands", false},
+		{"docs/examples", false},
+	}
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.path, func(t *testing.T) {
+			t.Parallel()
+			got := skipDir(tc.path)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+// TestParseStaticcheckOutput verifies that real diagnostics pass through
+// individually and that tool-failure noise (panic traces, version
+// mismatches) collapses into a single summary finding.
+func TestParseStaticcheckOutput(t *testing.T) {
+	t.Parallel()
+
+	t.Run("real_diagnostics_pass_through", func(t *testing.T) {
+		t.Parallel()
+		out := []byte("foo.go:12:5: SA9003 empty branch\nbar.go:7:2: ST1005 message\n")
+		findings := parseStaticcheckOutput(out, nil)
+		assert.Equal(t, 2, len(findings))
+		assert.Equal(t, "staticcheck", findings[0].Rule)
+	})
+
+	t.Run("panic_trace_collapses_to_summary", func(t *testing.T) {
+		t.Parallel()
+		out := []byte("panic: runtime error: invalid memory address\n[signal 0xc0000005]\ngoroutine 1 [running]:\n\thonnef.co/go/tools/...\n")
+		findings := parseStaticcheckOutput(out, nil)
+		assert.Equal(t, 1, len(findings))
+		assert.True(t, strings.Contains(findings[0].Message, "tool failure"), "expected summary; got %q", findings[0].Message)
+	})
+
+	t.Run("version_mismatch_collapses_to_summary", func(t *testing.T) {
+		t.Parallel()
+		out := []byte(`-: internal error in importing "cmp" (unsupported version: 2); please report an issue (compile)`)
+		findings := parseStaticcheckOutput(out, nil)
+		assert.Equal(t, 1, len(findings))
+		assert.True(t, strings.Contains(findings[0].Message, "tool failure"), "expected summary; got %q", findings[0].Message)
+	})
+
+	t.Run("empty_output_no_findings", func(t *testing.T) {
+		t.Parallel()
+		findings := parseStaticcheckOutput(nil, nil)
+		assert.Equal(t, 0, len(findings))
+	})
+}
+
+// TestSanitizeStaticcheckPatterns verifies that ./... is expanded to a
+// per-top-level-dir set with skipped dirs removed.
+func TestSanitizeStaticcheckPatterns(t *testing.T) {
+	dir := t.TempDir()
+	for _, sub := range []string{"cli", "mock", ".claude", ".git", "vendor", "dist"} {
+		if err := os.MkdirAll(filepath.Join(dir, sub), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	old, _ := os.Getwd()
+	t.Cleanup(func() { _ = os.Chdir(old) })
+	if err := os.Chdir(dir); err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := sanitizeStaticcheckPatterns([]string{"./..."})
+	assert.NoError(t, err)
+
+	gotSet := make(map[string]bool, len(got))
+	for _, p := range got {
+		gotSet[p] = true
+	}
+	assert.True(t, gotSet["./cli/..."], "expected ./cli/... in expanded patterns; got %v", got)
+	assert.True(t, gotSet["./mock/..."], "expected ./mock/... in expanded patterns; got %v", got)
+	assert.False(t, gotSet["./.claude/..."], "expected .claude excluded; got %v", got)
+	assert.False(t, gotSet["./.git/..."], "expected .git excluded; got %v", got)
+	assert.False(t, gotSet["./vendor/..."], "expected vendor excluded; got %v", got)
+	assert.False(t, gotSet["./dist/..."], "expected dist excluded; got %v", got)
+}
+
 // TestLintLibraryErrorRegister verifies the library-error-register linter.
 func TestLintLibraryErrorRegister(t *testing.T) {
 	t.Parallel()
@@ -328,6 +527,22 @@ func (e *MyError) Error() string { return "Bad." }
 			src: `package main
 type MyError struct{}
 func (e *MyError) Error() string { return "Bad." }
+`,
+			wantHit: false,
+		},
+		{
+			// Empty-string returns are nil-receiver guards, not real error
+			// messages: see Wrapper.Error in errs/errs.go.
+			name: "empty_string_return_is_nil_guard",
+			file: "mylib/errors.go",
+			src: `package mylib
+type Wrapper struct{}
+func (w *Wrapper) Error() string {
+	if w == nil {
+		return ""
+	}
+	return "mylib: wrapped"
+}
 `,
 			wantHit: false,
 		},
@@ -421,9 +636,14 @@ func TestLintSeverityThreshold(t *testing.T) {
 }
 
 // TestLintFormatJSON verifies JSON output contains expected keys.
+//
+// Not t.Parallel: rebinds the process-wide os.Stdout. See
+// TestRun_FormatJSON_AggregateEmitted in test_test.go for the matching
+// rationale: the three tests in this package that swap os.Stdout
+// (this one, TestRun_FormatJSON_AggregateEmitted, and the
+// TestBannerSuppressedOnSubcommands "explain_list" subtest) must run
+// serially so the redirection windows don't overlap.
 func TestLintFormatJSON(t *testing.T) {
-	t.Parallel()
-
 	// Redirect stdout to capture JSON output.
 	old := os.Stdout
 	r, w, _ := os.Pipe()
