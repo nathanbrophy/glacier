@@ -95,8 +95,13 @@ func loadTopics(fsys fs.FS) ([]Topic, error) {
 // parseTopic reads a topic file: YAML front matter block (between --- delimiters)
 // followed by the body. Only the fields slug, title, category, and see_also are
 // parsed. see_also is a bracketed comma-separated list of quoted strings.
+//
+// Tolerant of both LF and CRLF line endings: git's autocrlf may rewrite
+// committed files to CRLF on Windows checkouts, and the embed.FS preserves
+// whatever the on-disk bytes are.
 func parseTopic(data []byte) (Topic, error) {
-	text := string(data)
+	// Normalise line endings so the rest of the parser can assume LF.
+	text := strings.ReplaceAll(string(data), "\r\n", "\n")
 
 	// Require opening ---.
 	if !strings.HasPrefix(text, "---\n") {
