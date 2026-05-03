@@ -6,6 +6,10 @@
 
 <img src="./site/public/mascot/companion-wave.svg" width="200"> <img src="./site/public/wordmark.svg" width="600">
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/nathanbrophy/glacier)](https://goreportcard.com/report/github.com/nathanbrophy/glacier) [![Static Badge](https://img.shields.io/badge/github-Read_The_Docs-teal?style=plastic&logo=github&logoColor=teal&labelColor=white)](https://nathanbrophy.github.io/glacier/)
+
+
+
 Glacier is a Go framework that handles the plumbing so you can focus on what's yours. Like a glacier that shapes the landscape beneath the surface, Glacier is stable, deep, and predictable about the messy parts: argument parsing, configuration layering, lifecycle and signal handling, mock-driven testing, and HTTP transport faking. You write the logic. Glacier handles the rest.
 
 ## Status
