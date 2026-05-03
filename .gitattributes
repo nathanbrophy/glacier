@@ -1,0 +1,31 @@
+# Pin source-file line endings to LF so the SDK's generators (which always
+# emit LF) round-trip cleanly through git on Windows checkouts. Without this,
+# git's autocrlf rewrites *.go and *.md to CRLF on checkout, then
+# `glacier generate --check` reports false-positive drift because the
+# regenerated content (LF) does not byte-equal the on-disk content (CRLF).
+#
+# The same applies to embedded markdown topic files (cmd/glacier/internal/explain/topics/*.md)
+# whose parser would also reject CRLF without the topics.go normalisation
+# fallback. Pinning to LF is the canonical fix.
+
+# Source code: always LF.
+*.go    text eol=lf
+*.tmpl  text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.xml   text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+*.sh    text eol=lf
+*.snap  text eol=lf
+*.mod   text eol=lf
+*.sum   text eol=lf
+
+# Specific dotfiles.
+.gitignore     text eol=lf
+.gitattributes text eol=lf
+
+# Windows-only files keep CRLF.
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
