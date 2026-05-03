@@ -788,7 +788,8 @@ func ExamplePost_MultipartBody() {
 // through context to all httpc calls. No conditional code is needed at call sites.
 func ExampleWithDryRun() {
     type DeployCmd struct {
-        DryRun bool `json:"dry_run"` // +glacier:default false
+        // +glacier:default false
+        DryRun bool `json:"dry_run"`
     }
 
     func (d *DeployCmd) Run(ctx context.Context) error {

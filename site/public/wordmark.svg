@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 280" preserveAspectRatio="xMidYMid meet" role="img" aria-label="GLACIER">
+  <title>GLACIER</title>
+  <defs>
+    <linearGradient id="ice" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0"   stop-color="#A5F3FC"/>
+      <stop offset="0.2" stop-color="#67E8F9"/>
+      <stop offset="0.4" stop-color="#22D3EE"/>
+      <stop offset="0.6" stop-color="#0891B2"/>
+      <stop offset="0.8" stop-color="#2DD4BF"/>
+      <stop offset="1"   stop-color="#0D9488"/>
+    </linearGradient>
+  </defs>
+  <text
+    x="0" y="48"
+    font-family="'JetBrains Mono','Cascadia Code','Consolas',ui-monospace,Menlo,Monaco,monospace"
+    font-size="42"
+    font-weight="700"
+    fill="url(#ice)"
+    xml:space="preserve">
+    <tspan x="0" dy="0"> ██████╗ ██╗      █████╗  ██████╗███████╗███████╗██████╗</tspan>
+    <tspan x="0" dy="42">██╔════╝ ██║     ██╔══██╗██╔════╝╚═██╔══╝██╔════╝██╔══██╗</tspan>
+    <tspan x="0" dy="42">██║  ███╗██║     ███████║██║       ██║   █████╗  ██████╔╝</tspan>
+    <tspan x="0" dy="42">██║   ██║██║     ██╔══██║██║       ██║   ██╔══╝  ██╔══██╗</tspan>
+    <tspan x="0" dy="42">╚██████╔╝███████╗██║  ██║╚██████╗███████╗███████╗██║  ██║</tspan>
+    <tspan x="0" dy="42"> ╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝╚══════╝╚══════╝╚═╝  ╚═╝</tspan>
+  </text>
+</svg>

@@ -1,0 +1,59 @@
+# Glacier site PR checks: runs on every PR touching /site or /specs.
+# Spec 0031 §Architecture / Build & deploy + §Security & Supply-Chain Notes.
+#
+# Hardening (per Falcon, D-S25):
+#   - Trigger is `pull_request` ONLY. NEVER pull_request_target (would
+#     leak secrets to fork PRs even with SHA-pinned actions).
+#   - permissions: contents: read only. No secrets needed.
+#   - Every action ref is 40-char SHA pinned.
+#
+# Steps:
+#   - npm ci --ignore-scripts (no post-install code execution)
+#   - npm run build
+#   - bash scripts/check-site.sh (full static-check sweep)
+#
+# TODO (slice B5): linkinator dist + axe-core + lighthouse-ci + Vitest +
+# Playwright e2e suite. Those land when the test deps are added to
+# package.json. The static checks above are the floor we hold today.
+
+name: site-pr-checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'specs/**'
+      - '.github/workflows/site-pr-checks.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      # actions/checkout v4.2.2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      # actions/setup-node v4.1.0
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install (no post-install scripts)
+        run: npm ci --ignore-scripts
+
+      - name: Fetch vendored fonts
+        run: bash scripts/fetch-fonts.sh
+
+      - name: Build site
+        run: npm run build
+
+      - name: Run static checks (scripts/check-site.sh)
+        run: bash scripts/check-site.sh
