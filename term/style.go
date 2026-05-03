@@ -125,14 +125,15 @@ func Fprint(w io.Writer, s Style, text string) {
 	fmt.Fprint(w, renderTo(s, text, w))
 }
 
-// renderTo renders text with style s targeting writer w for capability detection.
+// renderTo renders text with style s targeting writer w. The decision to
+// emit color is delegated to ShouldColor, which honors the global color
+// mode (default ModeAlways) and the NO_COLOR / GLACIER_NO_COLOR conventions.
 // If w is nil, os.Stderr is used as the default.
 func renderTo(s Style, text string, w io.Writer) string {
 	if w == nil {
 		w = os.Stderr
 	}
-	caps := Capability(w)
-	if caps.NoColorEnv || caps.SupportsColor == ColorNone {
+	if !ShouldColor(w) {
 		return text
 	}
 	prefix := escapePrefix(s)

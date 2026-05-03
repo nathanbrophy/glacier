@@ -84,7 +84,15 @@ func WithTitleStyle(s Style) BoxOption {
 // On non-UTF-8 writers, ASCII border characters are used automatically.
 // Concurrency: pure function; goroutine-safe.
 func Box(text string, opts ...BoxOption) string {
-	cfg := boxConfig{corners: roundedCorners}
+	// Pre-seed defaults so callers get colored borders/title without having
+	// to opt in. Options applied below override these.
+	defaultBorderColor, _ := Hex("#46D9FF")  // bright cyan
+	defaultTitleColor, _ := Hex("#7FE7FF")   // lighter cyan for the title
+	cfg := boxConfig{
+		corners:     roundedCorners,
+		borderStyle: New().Foreground(defaultBorderColor),
+		titleStyle:  New().Foreground(defaultTitleColor).Bold(),
+	}
 	for _, o := range opts {
 		if o == nil {
 			continue
@@ -93,9 +101,9 @@ func Box(text string, opts ...BoxOption) string {
 	}
 
 	caps := Capability(os.Stderr)
-	if !caps.SupportsUTF8 {
-		cfg.corners = asciiCorners
-	}
+	// Default to Unicode borders. Modern Windows Console (post-1903),
+	// Windows Terminal, macOS Terminal/iTerm2, Linux terminals: all UTF-8
+	// capable. Fall back to ASCII only if a caller explicitly opts in.
 
 	termW := caps.Width
 	if termW <= 0 {
@@ -122,14 +130,15 @@ func Box(text string, opts ...BoxOption) string {
 	}
 
 	totalInner := contentW + cfg.padding[3] + cfg.padding[1]
+	useColor := ShouldColor(os.Stderr)
 	border := func(s string) string {
-		if caps.NoColorEnv || caps.SupportsColor == ColorNone {
+		if !useColor {
 			return s
 		}
 		return renderTo(cfg.borderStyle, s, os.Stderr)
 	}
 	titleStr := func(s string) string {
-		if caps.NoColorEnv || caps.SupportsColor == ColorNone {
+		if !useColor {
 			return s
 		}
 		return renderTo(cfg.titleStyle, s, os.Stderr)

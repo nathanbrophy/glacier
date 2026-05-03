@@ -33,8 +33,7 @@ func (a *App) renderHelp(w io.Writer, path string) error {
 		return &ErrUnknownCommand{Path: path}
 	}
 
-	caps := term.Capability(w)
-	useColor := caps.IsTTY && !caps.NoColorEnv && caps.SupportsColor != term.ColorNone
+	useColor := term.ShouldColor(w)
 
 	if e.cfg.root {
 		a.renderRoot(w, e, useColor)

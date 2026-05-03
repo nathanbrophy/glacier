@@ -28,16 +28,16 @@ func initBanner() {
 	})
 }
 
-// writeBanner writes the banner to w, applying ANSI gradient color when the
-// writer is a TTY with color support and NO_COLOR is not set.
+// writeBanner writes the banner to w, applying ANSI gradient color when
+// term.ShouldColor reports color is permitted under the global policy.
+// The default global policy is "always emit color" (per spec 0032 user
+// direction); --no-color, NO_COLOR, and GLACIER_NO_COLOR turn it off.
 func writeBanner(w io.Writer) {
 	initBanner()
-	caps := term.Capability(w)
-	if caps.IsTTY && caps.SupportsColor >= term.Color24Bit && !caps.NoColorEnv {
-		// Apply a simple cyan→blue gradient across lines.
+	if term.ShouldColor(w) {
+		// Apply a simple cyan to blue gradient across lines.
 		lines := bytes.Split(bannerColored, []byte("\n"))
 		for i, line := range lines {
-			// Cycle through a simple palette: cyan at top, deeper blue at bottom.
 			r, g, b := gradientColor(i, len(lines))
 			_, _ = w.Write([]byte("\x1b[38;2;" +
 				itoa(r) + ";" + itoa(g) + ";" + itoa(b) + "m"))

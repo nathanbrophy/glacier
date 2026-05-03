@@ -43,6 +43,18 @@ type GlacierCmd struct {
 	//
 	// +glacier:env OTEL_EXPORTER_OTLP_ENDPOINT
 	OtelEndpoint string
+
+	// NoColor disables ANSI color output. Equivalent to setting NO_COLOR
+	// in the environment.
+	//
+	// +glacier:default false
+	NoColor bool
+
+	// ForceColor forces ANSI color emission even when output is not a TTY.
+	// Useful for piping into less -R or capturing colored logs to a file.
+	//
+	// +glacier:default false
+	ForceColor bool
 }
 
 // Run shows help when the root command is invoked with no subcommand.

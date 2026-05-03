@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -264,13 +265,9 @@ func (c *TestCmd) Run(ctx context.Context) error {
 			} else {
 				// Package-level result; update the status panel.
 				if sb != nil {
-					glyph := "ʕ⌐■-■ʔ"
-					if ev.Action == "fail" {
-						glyph = "ʕ× ×ʔ"
-					}
 					sb.Remove(ev.Package)
 					removePanelKey(&panelKeys, ev.Package)
-					fmt.Fprintf(os.Stderr, "%s %s (%.3fs)\n", glyph, ev.Package, ev.Elapsed)
+					emitPackageResultLine(os.Stderr, ev.Action, ev.Package, ev.Elapsed)
 				}
 			}
 		}
@@ -454,49 +451,177 @@ func parseCoverage(lines []string) float64 {
 	return 0
 }
 
-// printTestSummary renders the summary box to stderr.
+// emitPackageResultLine writes one streaming "PKG (Xs)" line per completed
+// package, colored by pass/fail/skip semantics.
+func emitPackageResultLine(w io.Writer, action, pkg string, elapsed float64) {
+	useColor := term.ShouldColor(w)
+	const reset = "\x1b[0m"
+	var glyph, glyphColor, pkgColor, elapsedColor string
+	switch action {
+	case "fail":
+		glyph = "ʕ× ×ʔ"
+		glyphColor = "\x1b[1;38;5;203m" // bold red
+		pkgColor = "\x1b[38;5;203m"
+		elapsedColor = "\x1b[2;38;5;203m"
+	case "skip":
+		glyph = "ʕ•_•ʔ"
+		glyphColor = "\x1b[1;38;5;228m" // bold yellow
+		pkgColor = "\x1b[38;5;228m"
+		elapsedColor = "\x1b[2;38;5;228m"
+	default: // pass
+		glyph = "ʕ⌐■-■ʔ"
+		glyphColor = "\x1b[1;38;5;84m" // bold green
+		pkgColor = "\x1b[38;5;75m"
+		elapsedColor = "\x1b[2;38;5;87m"
+	}
+	if !useColor {
+		fmt.Fprintf(w, "%s %s (%.3fs)\n", glyph, pkg, elapsed)
+		return
+	}
+	fmt.Fprintf(w, "%s%s%s %s%s%s %s(%.3fs)%s\n",
+		glyphColor, glyph, reset,
+		pkgColor, pkg, reset,
+		elapsedColor, elapsed, reset)
+}
+
+// printTestSummary renders the summary box to stderr with rich color
+// (numerical colors per metric, fail/slow/output highlighting).
 func printTestSummary(sum Summary) {
+	useColor := term.ShouldColor(os.Stderr)
+	c := newSummaryColors(useColor)
+
 	var sb strings.Builder
 	total := sum.Pass + sum.Fail + sum.Skip
-	fmt.Fprintf(&sb, "%d package(s), %d tests, %d pass, %d fail, %d skip\n",
-		sum.Packages, total, sum.Pass, sum.Fail, sum.Skip)
-	if sum.Coverage > 0 {
-		fmt.Fprintf(&sb, "coverage: %.1f%%\n", sum.Coverage*100)
+
+	// Top metrics line: each count tinted by semantic.
+	sb.WriteString(c.label("packages: "))
+	sb.WriteString(c.numNeutral(fmt.Sprintf("%d", sum.Packages)))
+	sb.WriteString("  ")
+	sb.WriteString(c.label("tests: "))
+	sb.WriteString(c.numNeutral(fmt.Sprintf("%d", total)))
+	sb.WriteString("  ")
+	sb.WriteString(c.label("pass: "))
+	sb.WriteString(c.pass(fmt.Sprintf("%d", sum.Pass)))
+	sb.WriteString("  ")
+	sb.WriteString(c.label("fail: "))
+	if sum.Fail > 0 {
+		sb.WriteString(c.fail(fmt.Sprintf("%d", sum.Fail)))
+	} else {
+		sb.WriteString(c.dim("0"))
 	}
-	fmt.Fprintf(&sb, "wall: %.1fs\n", sum.WallSeconds)
+	sb.WriteString("  ")
+	sb.WriteString(c.label("skip: "))
+	if sum.Skip > 0 {
+		sb.WriteString(c.skip(fmt.Sprintf("%d", sum.Skip)))
+	} else {
+		sb.WriteString(c.dim("0"))
+	}
+	sb.WriteString("\n")
+
+	if sum.Coverage > 0 {
+		covStr := fmt.Sprintf("%.1f%%", sum.Coverage*100)
+		sb.WriteString(c.label("coverage: "))
+		switch {
+		case sum.Coverage >= 0.9:
+			sb.WriteString(c.pass(covStr))
+		case sum.Coverage >= 0.75:
+			sb.WriteString(c.numNeutral(covStr))
+		default:
+			sb.WriteString(c.warn(covStr))
+		}
+		sb.WriteString("\n")
+	}
+	sb.WriteString(c.label("wall: "))
+	sb.WriteString(c.numNeutral(fmt.Sprintf("%.1fs", sum.WallSeconds)))
+	sb.WriteString("\n")
 
 	if len(sum.Slowest) > 0 {
-		fmt.Fprintf(&sb, "\nSlowest %d tests:\n", len(sum.Slowest))
+		sb.WriteString("\n")
+		sb.WriteString(c.heading(fmt.Sprintf("Slowest %d tests:", len(sum.Slowest))))
+		sb.WriteString("\n")
 		for i, r := range sum.Slowest {
-			fmt.Fprintf(&sb, "  %d. %s/%s  %.3fs\n", i+1, r.Package, r.Test, r.Elapsed)
+			fmt.Fprintf(&sb, "  %s. %s%s  %s\n",
+				c.dim(fmt.Sprintf("%d", i+1)),
+				c.pkg(r.Package+"/"),
+				c.testName(r.Test),
+				c.numNeutral(fmt.Sprintf("%.3fs", r.Elapsed)))
 		}
 	}
 
 	if len(sum.Failures) > 0 {
-		sb.WriteString("\nʕ× ×ʔ Failures:\n")
+		sb.WriteString("\n")
+		sb.WriteString(c.fail("ʕ× ×ʔ Failures:"))
+		sb.WriteString("\n")
 		for _, r := range sum.Failures {
-			fmt.Fprintf(&sb, "  %s/%s\n", r.Package, r.Test)
+			fmt.Fprintf(&sb, "  %s%s\n",
+				c.pkg(r.Package+"/"),
+				c.testName(r.Test))
 			if r.Output != "" {
 				for _, outLine := range strings.Split(strings.TrimRight(r.Output, "\n"), "\n") {
-					sb.WriteString("    " + outLine + "\n")
+					sb.WriteString("    " + c.dim(outLine) + "\n")
 				}
 			}
 		}
 		sb.WriteString("\n  Try running the failing test in isolation:\n")
 		if len(sum.Failures) == 1 {
 			f := sum.Failures[0]
-			fmt.Fprintf(&sb, "    glacier test ./%s/ -run %s -v\n", f.Package, f.Test)
+			fmt.Fprintf(&sb, "    %s\n", c.cmd(fmt.Sprintf("glacier test ./%s/ -run %s -v", f.Package, f.Test)))
 		}
-		sb.WriteString("\n  Run `glacier explain 66` for exit-code details.\n")
+		fmt.Fprintf(&sb, "\n  Run %s for exit-code details.\n", c.cmd("`glacier explain exit:66`"))
 	}
 
+	title := "glacier test summary  " + time.Now().Format("15:04:05")
 	box := term.Box(
 		sb.String(),
-		term.WithTitle("glacier test summary  "+time.Now().Format("15:04:05")),
+		term.WithTitle(title),
 		term.WithRoundedCorners(),
 		term.WithPadding(1, 2, 1, 2),
 	)
 	fmt.Fprintln(os.Stderr, box)
+}
+
+// summaryColors holds the styled-string functions used by printTestSummary.
+// Centralized so the same palette is consistent across pass/fail/skip lines.
+type summaryColors struct {
+	pass, fail, skip, warn, dim                 func(string) string
+	pkg, testName, label, numNeutral, heading   func(string) string
+	cmd                                         func(string) string
+}
+
+func newSummaryColors(useColor bool) summaryColors {
+	if !useColor {
+		id := func(s string) string { return s }
+		return summaryColors{pass: id, fail: id, skip: id, warn: id, dim: id, pkg: id, testName: id, label: id, numNeutral: id, heading: id, cmd: id}
+	}
+	const (
+		green   = "\x1b[38;5;84m"
+		red     = "\x1b[38;5;203m"
+		yellow  = "\x1b[38;5;228m"
+		orange  = "\x1b[38;5;215m"
+		cyan    = "\x1b[38;5;87m"
+		blue    = "\x1b[38;5;75m"
+		magenta = "\x1b[38;5;213m"
+		bold    = "\x1b[1m"
+		dim     = "\x1b[2m"
+		under   = "\x1b[4m"
+		reset   = "\x1b[0m"
+	)
+	wrap := func(prefix string) func(string) string {
+		return func(s string) string { return prefix + s + reset }
+	}
+	return summaryColors{
+		pass:       wrap(bold + green),
+		fail:       wrap(bold + red),
+		skip:       wrap(yellow),
+		warn:       wrap(orange),
+		dim:        wrap(dim),
+		pkg:        wrap(blue),
+		testName:   wrap(magenta),
+		label:      wrap(dim + cyan),
+		numNeutral: wrap(cyan),
+		heading:    wrap(bold + cyan + under),
+		cmd:        wrap(bold + cyan),
+	}
 }
 
 // --- JSON aggregate ---

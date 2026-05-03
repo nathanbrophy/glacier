@@ -9,12 +9,14 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"slices"
 	"time"
 
 	"github.com/nathanbrophy/glacier/cli"
 	_ "github.com/nathanbrophy/glacier/cmd/glacier/commands" // register all commands via init()
 	"github.com/nathanbrophy/glacier/log"
 	"github.com/nathanbrophy/glacier/obs"
+	"github.com/nathanbrophy/glacier/term"
 )
 
 // main is the SDK binary entry point. It performs three setup steps before
@@ -31,11 +33,42 @@ import (
 //     chain for any cli.ExitCoder and propagates the embedded code to
 //     os.Exit per spec 0032 D-S27.
 func main() {
+	// Color is on by default. Pre-parse os.Args BEFORE the cli framework
+	// renders its banner so the color decision is made before any output.
+	configureColor()
 	configureLogging()
 	shutdown := configureTelemetry()
 	defer shutdown()
 
 	cli.Default.Main()
+}
+
+// configureColor sets the global term.ColorMode based on, in order of
+// precedence (highest first):
+//
+//  1. --no-color flag, NO_COLOR env, GLACIER_NO_COLOR env: ModeNever
+//  2. --force-color flag, FORCE_COLOR env, GLACIER_FORCE_COLOR env: ModeAlways
+//  3. default: ModeAlways (color on by default)
+//
+// term.ShouldColor(w) is the single point of truth at every emission site
+// (kaomoji status lines, banner, help, box borders, lint findings, etc.).
+func configureColor() {
+	args := os.Args[1:]
+	noColor := slices.Contains(args, "--no-color") ||
+		os.Getenv("NO_COLOR") != "" ||
+		os.Getenv("GLACIER_NO_COLOR") != ""
+	forceColor := slices.Contains(args, "--force-color") ||
+		os.Getenv("FORCE_COLOR") != "" ||
+		os.Getenv("GLACIER_FORCE_COLOR") != ""
+
+	switch {
+	case noColor:
+		term.SetColorMode(term.ModeNever)
+	case forceColor:
+		term.SetColorMode(term.ModeAlways)
+	default:
+		term.SetColorMode(term.ModeAlways) // default: color on
+	}
 }
 
 // configureLogging sets slog.Default to a Glacier-style handler and pins the

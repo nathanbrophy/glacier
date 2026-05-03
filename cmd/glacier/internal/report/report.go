@@ -125,18 +125,11 @@ func renderLine(level Level, glyph, message string, w io.Writer) string {
 		" " + colorStart + message + ansiReset + "\n"
 }
 
-// shouldColor reports whether ANSI color codes should be emitted for w.
-// Returns false for non-TTY writers, when NO_COLOR / GLACIER_NO_COLOR is set,
-// or when term.Capability reports no color support.
+// shouldColor delegates to term.ShouldColor, which honors the global color
+// mode (default: always on) and the NO_COLOR / GLACIER_NO_COLOR conventions.
+// Kept as a local wrapper so future SDK-specific gating can plug in here.
 func shouldColor(w io.Writer) bool {
-	caps := term.Capability(w)
-	if caps.NoColorEnv {
-		return false
-	}
-	if !caps.IsTTY {
-		return false
-	}
-	return caps.SupportsColor != term.ColorNone
+	return term.ShouldColor(w)
 }
 
 // itoa is a small base-10 integer-to-string helper that avoids the strconv
