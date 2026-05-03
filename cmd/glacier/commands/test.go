@@ -17,6 +17,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/nathanbrophy/glacier/cmd/glacier/internal/benchcmp"
 	"github.com/nathanbrophy/glacier/cmd/glacier/internal/report"
@@ -496,20 +497,27 @@ func printBenchSummary(w io.Writer, current, baseline []benchcmp.BenchEntry) {
 		}
 		return prefix + s + reset
 	}
-	// padLeft pads s to width n by prepending spaces. Always operates on
-	// visible content (no ANSI), so callers should pad BEFORE wrapping color.
+	// runeWidth returns the count of runes (visible columns for plain ASCII +
+	// single-codepoint Unicode like µ). Bench cell strings never contain ANSI
+	// escapes, so rune count == visible width here.
+	runeWidth := func(s string) int { return utf8.RuneCountInString(s) }
+	// padLeft pads s to width n by prepending spaces, measuring by rune count.
+	// Always operates on visible content (no ANSI), so callers should pad
+	// BEFORE wrapping color.
 	padLeft := func(s string, n int) string {
-		if len(s) >= n {
+		w := runeWidth(s)
+		if w >= n {
 			return s
 		}
-		return strings.Repeat(" ", n-len(s)) + s
+		return strings.Repeat(" ", n-w) + s
 	}
 	// padRight pads s to width n by appending spaces.
 	padRight := func(s string, n int) string {
-		if len(s) >= n {
+		w := runeWidth(s)
+		if w >= n {
 			return s
 		}
-		return s + strings.Repeat(" ", n-len(s))
+		return s + strings.Repeat(" ", n-w)
 	}
 
 	// Index baseline by name for quick lookup.
@@ -558,20 +566,20 @@ func printBenchSummary(w io.Writer, current, baseline []benchcmp.BenchEntry) {
 				r.deltaColor = labelDim
 			}
 		}
-		if len(r.name) > colW.name {
-			colW.name = len(r.name)
+		if w := runeWidth(r.name); w > colW.name {
+			colW.name = w
 		}
-		if len(r.ns) > colW.ns {
-			colW.ns = len(r.ns)
+		if w := runeWidth(r.ns); w > colW.ns {
+			colW.ns = w
 		}
-		if len(r.b) > colW.b {
-			colW.b = len(r.b)
+		if w := runeWidth(r.b); w > colW.b {
+			colW.b = w
 		}
-		if len(r.alloc) > colW.alloc {
-			colW.alloc = len(r.alloc)
+		if w := runeWidth(r.alloc); w > colW.alloc {
+			colW.alloc = w
 		}
-		if len(r.delta) > colW.delta {
-			colW.delta = len(r.delta)
+		if w := runeWidth(r.delta); w > colW.delta {
+			colW.delta = w
 		}
 		rows = append(rows, r)
 	}
